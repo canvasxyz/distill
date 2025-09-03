@@ -20,25 +20,17 @@ export function TweetEntry({ tweet }: { tweet: Tweet }) {
         borderRadius: "5px",
         padding: "10px",
         marginBottom: "10px",
-        display: "grid",
-        gridTemplateColumns: "1fr 1fr 1fr",
-        gridTemplateRows: "auto auto auto",
-        gap: "10px",
       }}
     >
-      <input type="checkbox" style={{ gridColumn: "1", gridRow: "1" }} />
-      <span style={{ gridColumn: "3", gridRow: "1", color: textColor }}>
-        {tweet.status}
-      </span>
-      <p style={{ gridColumn: "2", gridRow: "2", margin: 0 }}>
-        &quot;{tweet.text}&quot;
-      </p>
-      <span style={{ gridColumn: "1", gridRow: "3" }}>
-        {new Date(tweet.created).toLocaleString()}
-      </span>
-      {tweet.label && (
-        <span style={{ gridColumn: "3", gridRow: "3" }}>{tweet.label}</span>
-      )}
+      <div style={{ display: "flex", justifyContent: "space-between" }}>
+        <input type="checkbox" />
+        <span style={{ color: textColor }}>{tweet.status}</span>
+      </div>
+      <p style={{ margin: "10px 0" }}>&quot;{tweet.text}&quot;</p>
+      <div style={{ display: "flex", justifyContent: "space-between" }}>
+        <span>{new Date(tweet.created).toLocaleString()}</span>
+        {tweet.label && <span>{tweet.label}</span>}
+      </div>
     </div>
   );
 }
