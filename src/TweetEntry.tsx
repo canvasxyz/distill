@@ -1,30 +1,36 @@
 import type { Tweet } from "./types";
 
-const getColorByStatus = (status: string) => {
-  switch (status) {
-    case "excluded":
-      return { borderColor: "red", textColor: "red" };
-    case "included":
-      return { borderColor: "green", textColor: "green" };
-    default:
-      return { borderColor: "gray", textColor: "black" };
-  }
-};
+export function TweetEntry({
+  tweet,
+  onCheckboxChange,
+  checked,
+  isIncluded,
+}: {
+  tweet: Tweet;
+  onCheckboxChange: (isChecked: boolean) => void;
+  checked: boolean;
+  isIncluded: boolean;
+}) {
+  const color = isIncluded ? "green" : "red";
 
-export function TweetEntry({ tweet }: { tweet: Tweet }) {
-  const { borderColor, textColor } = getColorByStatus(tweet.status);
   return (
     <div
       style={{
-        border: `1px solid ${borderColor}`,
+        border: `1px solid ${color}`,
         borderRadius: "5px",
         padding: "10px",
         marginBottom: "10px",
       }}
     >
       <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <input type="checkbox" />
-        <span style={{ color: textColor }}>{tweet.status}</span>
+        <input
+          type="checkbox"
+          checked={checked}
+          onChange={(event) => onCheckboxChange(event.target.checked)}
+        />
+        <span style={{ color: color }}>
+          {isIncluded ? "included" : "excluded"}
+        </span>
       </div>
       <p style={{ margin: "10px 0" }}>&quot;{tweet.text}&quot;</p>
       <div style={{ display: "flex", justifyContent: "space-between" }}>

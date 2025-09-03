@@ -1,6 +1,6 @@
 export type Tweet = {
+  id: string;
   text: string;
-  status: string;
   label: string;
   created: string;
 };

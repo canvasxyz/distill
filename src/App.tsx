@@ -1,23 +1,54 @@
+import { useState } from "react";
 import "./App.css";
 import { Sidebar } from "./Sidebar";
 import { TweetEntry } from "./TweetEntry";
 import type { Tweet } from "./types";
 
 function App() {
-  const tweets: Tweet[] = [
+  const [tweets, setTweets] = useState<Tweet[]>([
     {
+      id: "1",
       text: "I find people who go to McDonald's to be absolutely disgusting",
-      status: "excluded",
       label: "Offensive",
       created: "2023-10-01T10:15:30Z",
     },
     {
+      id: "2",
       text: "Good morning! The weather in Amsterdam is beautiful right now.",
-      status: "included",
       label: "",
       created: "2023-10-02T08:45:00Z",
     },
-  ];
+  ]);
+
+  const [checkedTweets, setCheckedTweets] = useState<{
+    [id: string]: boolean;
+  }>({});
+
+  const [includedTweets, setIncludedTweets] = useState<Record<string, boolean>>(
+    tweets.reduce(
+      (acc, tweet) => {
+        acc[tweet.id] = true;
+        return acc;
+      },
+      {} as Record<string, boolean>
+    )
+  );
+
+  const handleIncludeExclude = (newStatus: "included" | "excluded") => {
+    setIncludedTweets((prevIncludedTweets) => {
+      const updatedIncludedTweets = { ...prevIncludedTweets };
+      Object.keys(checkedTweets).forEach((id) => {
+        if (checkedTweets[id]) {
+          updatedIncludedTweets[id] = newStatus === "included";
+        }
+      });
+      return updatedIncludedTweets;
+    });
+    setCheckedTweets({});
+  };
+
+  const handleInclude = () => handleIncludeExclude("included");
+  const handleExclude = () => handleIncludeExclude("excluded");
 
   return (
     <div style={{ display: "flex", height: "100vh" }}>
@@ -35,10 +66,16 @@ function App() {
           }}
         >
           <button>Select all</button>
-          <button style={{ backgroundColor: "green", color: "white" }}>
+          <button
+            onClick={handleInclude}
+            style={{ backgroundColor: "green", color: "white" }}
+          >
             Include
           </button>
-          <button style={{ backgroundColor: "red", color: "white" }}>
+          <button
+            onClick={handleExclude}
+            style={{ backgroundColor: "red", color: "white" }}
+          >
             Exclude
           </button>
         </div>
@@ -46,7 +83,22 @@ function App() {
         {/* Tweet card container */}
         <div>
           {tweets.map((tweet, index) => (
-            <TweetEntry tweet={tweet} key={index} />
+            <TweetEntry
+              tweet={tweet}
+              checked={checkedTweets[tweet.id] || false}
+              isIncluded={includedTweets[tweet.id]}
+              key={index}
+              onCheckboxChange={(isChecked) => {
+                if (isChecked) {
+                  setCheckedTweets({ ...checkedTweets, [tweet.id]: true });
+                } else {
+                  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                  const { [tweet.id]: _discard, ...newCheckedTweets } =
+                    checkedTweets;
+                  setCheckedTweets(newCheckedTweets);
+                }
+              }}
+            />
           ))}
         </div>
       </div>
