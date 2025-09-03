@@ -1,36 +1,10 @@
 import "./App.css";
-
-function Sidebar() {
-  return (
-    <div
-      style={{ width: "250px", borderRight: "1px solid #ccc", padding: "10px" }}
-    >
-      <h1>Tweet Archive Explorer</h1>
-      <ul style={{ listStyleType: "none", padding: 0 }}>
-        <li>All tweets</li>
-        <li>Included 👍</li>
-        <li>Excluded 👎</li>
-        <li>Offensive 🤬</li>
-        <li>NSFW 🔞</li>
-        <li>Beef 🐄</li>
-      </ul>
-    </div>
-  );
-}
-
-const getColorByStatus = (status: string) => {
-  switch (status) {
-    case "excluded":
-      return { borderColor: "red", textColor: "red" };
-    case "included":
-      return { borderColor: "green", textColor: "green" };
-    default:
-      return { borderColor: "gray", textColor: "black" };
-  }
-};
+import { Sidebar } from "./Sidebar";
+import { TweetEntry } from "./TweetEntry";
+import type { Tweet } from "./types";
 
 function App() {
-  const tweets = [
+  const tweets: Tweet[] = [
     {
       text: "I find people who go to McDonald's to be absolutely disgusting",
       status: "excluded",
@@ -71,45 +45,9 @@ function App() {
 
         {/* Tweet card container */}
         <div>
-          {tweets.map((tweet, index) => {
-            const { borderColor, textColor } = getColorByStatus(tweet.status);
-            return (
-              <div
-                key={index}
-                style={{
-                  border: `1px solid ${borderColor}`,
-                  borderRadius: "5px",
-                  padding: "10px",
-                  marginBottom: "10px",
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr 1fr",
-                  gridTemplateRows: "auto auto auto",
-                  gap: "10px",
-                }}
-              >
-                <input
-                  type="checkbox"
-                  style={{ gridColumn: "1", gridRow: "1" }}
-                />
-                <span
-                  style={{ gridColumn: "3", gridRow: "1", color: textColor }}
-                >
-                  {tweet.status}
-                </span>
-                <p style={{ gridColumn: "2", gridRow: "2", margin: 0 }}>
-                  &quot;{tweet.text}&quot;
-                </p>
-                <span style={{ gridColumn: "1", gridRow: "3" }}>
-                  {new Date(tweet.created).toLocaleString()}
-                </span>
-                {tweet.label && (
-                  <span style={{ gridColumn: "3", gridRow: "3" }}>
-                    {tweet.label}
-                  </span>
-                )}
-              </div>
-            );
-          })}
+          {tweets.map((tweet, index) => (
+            <TweetEntry tweet={tweet} key={index} />
+          ))}
         </div>
       </div>
     </div>
