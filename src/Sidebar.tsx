@@ -1,4 +1,10 @@
-export function Sidebar() {
+export function Sidebar({
+  currentView,
+  setCurrentView,
+}: {
+  currentView: string;
+  setCurrentView: (newView: string) => void;
+}) {
   const itemStyle = {
     border: "1px solid darkgray",
     borderRadius: "5px",
@@ -9,6 +15,15 @@ export function Sidebar() {
   const hoverStyle = {
     backgroundColor: "#f0f0f0",
   };
+
+  const filters = [
+    { label: "Embarrassing 🫣", name: "embarrassing" },
+    { label: "Beef 🐄", name: "beef" },
+    { label: "Illegal 🧑‍⚖️", name: "illegal" },
+    { label: "Controversial ⁉️", name: "controversial" },
+    { label: "Offensive 🤬", name: "offensive" },
+    { label: "NSFW 🔞", name: "nsfw" },
+  ];
 
   return (
     <div
@@ -22,59 +37,113 @@ export function Sidebar() {
       <h1 style={{ fontSize: "22px" }}>Tweet Archive Explorer</h1>
       <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
         <div
-          style={itemStyle}
+          style={{
+            ...itemStyle,
+            backgroundColor: currentView === `all-tweets` ? "#d6d6d6" : "",
+            cursor: "pointer",
+          }}
           onMouseEnter={(e) =>
             (e.currentTarget.style.backgroundColor = hoverStyle.backgroundColor)
           }
-          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "")}
+          onMouseLeave={(e) =>
+            (e.currentTarget.style.backgroundColor =
+              currentView === `all-tweets` ? "#d6d6d6" : "")
+          }
+          onClick={() => setCurrentView("all-tweets")}
         >
           All tweets
         </div>
         <div
-          style={{ ...itemStyle, border: "1px solid green" }}
+          style={{
+            ...itemStyle,
+            border: "1px solid green",
+            backgroundColor: currentView === `included-tweets` ? "#d6d6d6" : "",
+            cursor: "pointer",
+          }}
           onMouseEnter={(e) =>
             (e.currentTarget.style.backgroundColor = hoverStyle.backgroundColor)
           }
-          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "")}
+          onMouseLeave={(e) =>
+            (e.currentTarget.style.backgroundColor =
+              currentView === `included-tweets` ? "#d6d6d6" : "")
+          }
+          onClick={() => setCurrentView("included-tweets")}
         >
           Included 👍
         </div>
         <div
-          style={{ ...itemStyle, border: "1px solid red" }}
+          style={{
+            ...itemStyle,
+            border: "1px solid red",
+            backgroundColor: currentView === `excluded-tweets` ? "#d6d6d6" : "",
+            cursor: "pointer",
+          }}
           onMouseEnter={(e) =>
             (e.currentTarget.style.backgroundColor = hoverStyle.backgroundColor)
           }
-          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "")}
+          onMouseLeave={(e) =>
+            (e.currentTarget.style.backgroundColor =
+              currentView === `excluded-tweets` ? "#d6d6d6" : "")
+          }
+          onClick={() => setCurrentView("excluded-tweets")}
         >
           Excluded 👎
         </div>
-        <div
-          style={itemStyle}
+        <hr
+          style={{
+            margin: "20px 0",
+            border: "none",
+            borderTop: "1px solid #ccc",
+          }}
+        />
+
+        {filters.map((filter, index) => (
+          <div
+            key={index}
+            style={{
+              ...itemStyle,
+              backgroundColor:
+                currentView === `filter-${filter.name}` ? "#d6d6d6" : "",
+              cursor: "pointer",
+            }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.backgroundColor =
+                hoverStyle.backgroundColor)
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.backgroundColor =
+                currentView === `filter-${filter.name}` ? "#d6d6d6" : "")
+            }
+            onClick={() => setCurrentView(`filter-${filter.name}`)}
+          >
+            {filter.label}
+          </div>
+        ))}
+
+        <hr
+          style={{
+            margin: "20px 0",
+            border: "none",
+            borderTop: "1px solid #ccc",
+          }}
+        />
+
+        <button
+          style={{
+            ...itemStyle,
+            border: "1px solid blue",
+            backgroundColor: "white",
+            cursor: "pointer",
+          }}
           onMouseEnter={(e) =>
             (e.currentTarget.style.backgroundColor = hoverStyle.backgroundColor)
           }
-          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "")}
-        >
-          Offensive 🤬
-        </div>
-        <div
-          style={itemStyle}
-          onMouseEnter={(e) =>
-            (e.currentTarget.style.backgroundColor = hoverStyle.backgroundColor)
+          onMouseLeave={(e) =>
+            (e.currentTarget.style.backgroundColor = "white")
           }
-          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "")}
         >
-          NSFW 🔞
-        </div>
-        <div
-          style={itemStyle}
-          onMouseEnter={(e) =>
-            (e.currentTarget.style.backgroundColor = hoverStyle.backgroundColor)
-          }
-          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "")}
-        >
-          Beef 🐄
-        </div>
+          Download Included Tweets
+        </button>
       </div>
     </div>
   );
