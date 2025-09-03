@@ -18,21 +18,28 @@ function Sidebar() {
   );
 }
 
+const getColorByStatus = (status: string) => {
+  switch (status) {
+    case "excluded":
+      return { borderColor: "red", textColor: "red" };
+    case "included":
+      return { borderColor: "green", textColor: "green" };
+    default:
+      return { borderColor: "gray", textColor: "black" };
+  }
+};
+
 function App() {
   const tweets = [
     {
       text: "I find people who go to McDonald's to be absolutely disgusting",
       status: "excluded",
       label: "Offensive",
-      borderColor: "red",
-      textColor: "red",
     },
     {
       text: "Good morning! The weather in Amsterdam is beautiful right now.",
       status: "included",
       label: "",
-      borderColor: "green",
-      textColor: "green",
     },
   ];
 
@@ -47,7 +54,7 @@ function App() {
         <div
           style={{
             display: "flex",
-            gap:"10px",
+            gap: "10px",
             marginBottom: "20px",
           }}
         >
@@ -62,33 +69,36 @@ function App() {
 
         {/* Tweet card container */}
         <div>
-          {tweets.map((tweet, index) => (
-            <div
-              key={index}
-              style={{
-                border: `1px solid ${tweet.borderColor}`,
-                borderRadius: "5px",
-                padding: "10px",
-                marginBottom: "10px",
-              }}
-            >
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <p style={{ margin: 0 }}>{tweet.text}</p>
-                <span style={{ color: tweet.textColor }}>{tweet.status}</span>
-              </div>
+          {tweets.map((tweet, index) => {
+            const { borderColor, textColor } = getColorByStatus(tweet.status);
+            return (
               <div
+                key={index}
                 style={{
-                  display: "flex",
-                  justifyContent: tweet.label ? "flex-end" : "flex-start",
-                  marginTop: "10px",
+                  border: `1px solid ${borderColor}`,
+                  borderRadius: "5px",
+                  padding: "10px",
+                  marginBottom: "10px",
                 }}
               >
-                {tweet.label && (
-                  <span>{tweet.label}</span>
-                ) }
+                <div
+                  style={{ display: "flex", justifyContent: "space-between" }}
+                >
+                  <p style={{ margin: 0 }}>{tweet.text}</p>
+                  <span style={{ color: textColor }}>{tweet.status}</span>
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: tweet.label ? "flex-end" : "flex-start",
+                    marginTop: "10px",
+                  }}
+                >
+                  {tweet.label && <span>{tweet.label}</span>}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>
