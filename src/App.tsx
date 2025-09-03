@@ -76,16 +76,57 @@ function App() {
             marginBottom: "20px",
           }}
         >
-          <button onClick={handleSelectAll}>Select all</button>
+          <button
+            onClick={handleSelectAll}
+            style={{
+              backgroundColor: "white",
+              borderRadius: "5px",
+              padding: "5px",
+              border: "1px solid black",
+              transition: "background-color 0.1s",
+            }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.backgroundColor = "#f0f0f0")
+            }
+            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "")}
+          >
+            Select all
+          </button>
           <button
             onClick={handleInclude}
-            style={{ backgroundColor: "green", color: "white" }}
+            style={{
+              backgroundColor: "green",
+              color: "white",
+              borderRadius: "5px",
+              padding: "5px",
+              border: "1px solid black",
+              transition: "background-color 0.1s",
+            }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.backgroundColor = "#48c91a")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.backgroundColor = "green")
+            }
           >
             Include
           </button>
           <button
             onClick={handleExclude}
-            style={{ backgroundColor: "red", color: "white" }}
+            style={{
+              backgroundColor: "red",
+              color: "white",
+              borderRadius: "5px",
+              padding: "5px",
+              border: "1px solid black",
+              transition: "background-color 0.1s",
+            }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.backgroundColor = "#ff6661")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.backgroundColor = "red")
+            }
           >
             Exclude
           </button>
