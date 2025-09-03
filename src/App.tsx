@@ -8,15 +8,35 @@ function App() {
   const [tweets, setTweets] = useState<Tweet[]>([
     {
       id: "1",
-      text: "I find people who go to McDonald's to be absolutely disgusting",
-      label: "Offensive",
-      created: "2023-10-01T10:15:30Z",
+      id_str: "1",
+      full_text:
+        "I find people who go to McDonald's to be absolutely disgusting",
+      created_at: "2023-10-01T10:15:30Z",
+      retweet_count: "0",
+      favorite_count: "0",
+      favorited: false,
+      retweeted: false,
+      truncated: false,
+      lang: "en",
+      source:
+        '<a href="https://mobile.twitter.com" rel="nofollow">Twitter Web App</a>',
+      raw_json: "",
     },
     {
       id: "2",
-      text: "Good morning! The weather in Amsterdam is beautiful right now.",
-      label: "",
-      created: "2023-10-02T08:45:00Z",
+      id_str: "2",
+      full_text:
+        "Good morning! The weather in Amsterdam is beautiful right now.",
+      created_at: "2023-10-02T08:45:00Z",
+      retweet_count: "0",
+      favorite_count: "0",
+      favorited: false,
+      retweeted: false,
+      truncated: false,
+      lang: "en",
+      source:
+        '<a href="https://mobile.twitter.com" rel="nofollow">Twitter Web App</a>',
+      raw_json: "",
     },
   ]);
 

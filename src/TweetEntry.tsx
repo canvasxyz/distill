@@ -32,10 +32,10 @@ export function TweetEntry({
           {isIncluded ? "included" : "excluded"}
         </span>
       </div>
-      <p style={{ margin: "10px 0" }}>&quot;{tweet.text}&quot;</p>
+      <p style={{ margin: "10px 0" }}>&quot;{tweet.full_text}&quot;</p>
       <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <span>{new Date(tweet.created).toLocaleString()}</span>
-        {tweet.label && <span>{tweet.label}</span>}
+        <span>{new Date(tweet.created_at).toLocaleString()}</span>
+        {/* {tweet.label && <span>{tweet.label}</span>} */}
       </div>
     </div>
   );
