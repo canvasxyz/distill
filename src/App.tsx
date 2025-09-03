@@ -5,8 +5,9 @@ function Sidebar() {
     <div
       style={{ width: "250px", borderRight: "1px solid #ccc", padding: "10px" }}
     >
-      <h2>All tweets 💬</h2>
+      <h1>Tweet Archive Explorer</h1>
       <ul style={{ listStyleType: "none", padding: 0 }}>
+        <li>All tweets</li>
         <li>Included 👍</li>
         <li>Excluded 👎</li>
         <li>Offensive 🤬</li>
@@ -46,7 +47,7 @@ function App() {
         <div
           style={{
             display: "flex",
-            justifyContent: "space-between",
+            gap:"10px",
             marginBottom: "20px",
           }}
         >
@@ -82,14 +83,9 @@ function App() {
                   marginTop: "10px",
                 }}
               >
-                {tweet.label ? (
-                  <>
-                    <button style={{ marginRight: "10px" }}>X</button>
-                    <span>{tweet.label}</span>
-                  </>
-                ) : (
-                  <input type="checkbox" style={{ marginRight: "10px" }} />
-                )}
+                {tweet.label && (
+                  <span>{tweet.label}</span>
+                ) }
               </div>
             </div>
           ))}
