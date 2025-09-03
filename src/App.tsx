@@ -94,6 +94,7 @@ function App() {
             display: "flex",
             gap: "10px",
             marginBottom: "20px",
+            marginTop: "50px",
           }}
         >
           <button
@@ -170,6 +171,7 @@ function App() {
                   setCheckedTweets(newCheckedTweets);
                 }
               }}
+              labels={["Offensive", "Beef"]}
             />
           ))}
         </div>

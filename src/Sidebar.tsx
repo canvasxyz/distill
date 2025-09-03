@@ -12,9 +12,14 @@ export function Sidebar() {
 
   return (
     <div
-      style={{ width: "250px", borderRight: "1px solid #ccc", padding: "10px" }}
+      style={{
+        width: "250px",
+        borderRight: "1px solid #ccc",
+        paddingLeft: "10px",
+        paddingRight: "10px",
+      }}
     >
-      <h1>Tweet Archive Explorer</h1>
+      <h1 style={{ fontSize: "22px" }}>Tweet Archive Explorer</h1>
       <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
         <div
           style={itemStyle}
