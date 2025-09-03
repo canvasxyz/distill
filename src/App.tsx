@@ -35,11 +35,13 @@ function App() {
       text: "I find people who go to McDonald's to be absolutely disgusting",
       status: "excluded",
       label: "Offensive",
+      created: "2023-10-01T10:15:30Z",
     },
     {
       text: "Good morning! The weather in Amsterdam is beautiful right now.",
       status: "included",
       label: "",
+      created: "2023-10-02T08:45:00Z",
     },
   ];
 
@@ -79,23 +81,32 @@ function App() {
                   borderRadius: "5px",
                   padding: "10px",
                   marginBottom: "10px",
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr 1fr",
+                  gridTemplateRows: "auto auto auto",
+                  gap: "10px",
                 }}
               >
-                <div
-                  style={{ display: "flex", justifyContent: "space-between" }}
+                <input
+                  type="checkbox"
+                  style={{ gridColumn: "1", gridRow: "1" }}
+                />
+                <span
+                  style={{ gridColumn: "3", gridRow: "1", color: textColor }}
                 >
-                  <p style={{ margin: 0 }}>{tweet.text}</p>
-                  <span style={{ color: textColor }}>{tweet.status}</span>
-                </div>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: tweet.label ? "flex-end" : "flex-start",
-                    marginTop: "10px",
-                  }}
-                >
-                  {tweet.label && <span>{tweet.label}</span>}
-                </div>
+                  {tweet.status}
+                </span>
+                <p style={{ gridColumn: "2", gridRow: "2", margin: 0 }}>
+                  &quot;{tweet.text}&quot;
+                </p>
+                <span style={{ gridColumn: "1", gridRow: "3" }}>
+                  {new Date(tweet.created).toLocaleString()}
+                </span>
+                {tweet.label && (
+                  <span style={{ gridColumn: "3", gridRow: "3" }}>
+                    {tweet.label}
+                  </span>
+                )}
               </div>
             );
           })}
