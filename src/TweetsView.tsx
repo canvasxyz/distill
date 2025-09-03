@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import { TweetEntry } from "./TweetEntry";
 import type { Tweet } from "./types";
+import { filters } from "./filters";
 
 export function TweetsView({ tweets }: { tweets: Tweet[] }) {
   const [checkedTweets, setCheckedTweets] = useState<{
@@ -17,19 +18,23 @@ export function TweetsView({ tweets }: { tweets: Tweet[] }) {
     )
   );
 
-  const [labels, setLabels] = useState<Record<string, string[]>>(
-    tweets.reduce(
-      (acc, tweet) => {
-        acc[tweet.id] = [];
-        return acc;
-      },
-      {} as Record<string, string[]>
-    )
-  );
+  const [labelsByTweetId, labels] = useMemo(() => {
+    const labelsByTweetId: Record<string, string[]> = {};
+    const labels: Record<string, string[]> = {};
 
-  useEffect(() => {
-    setLabels({ "1": ["Offensive 🤬"], "2": [] });
-  }, []);
+    console.log("running filters...");
+    for (const tweet of tweets) {
+      for (const filter of filters) {
+        if (filter.shouldFilter(tweet)) {
+          labelsByTweetId[tweet.id] ||= [];
+          labelsByTweetId[tweet.id].push(filter.name);
+          labels[filter.name] ||= [];
+          labels[filter.name].push(tweet.id);
+        }
+      }
+    }
+    return [labelsByTweetId, labels];
+  }, [tweets]);
 
   const handleIncludeExclude = (newStatus: "included" | "excluded") => {
     setIncludedTweets((prevIncludedTweets) => {
@@ -139,7 +144,7 @@ export function TweetsView({ tweets }: { tweets: Tweet[] }) {
                 setCheckedTweets(newCheckedTweets);
               }
             }}
-            labels={labels[tweet.id] || []}
+            labels={labelsByTweetId[tweet.id] || []}
           />
         ))}
       </div>

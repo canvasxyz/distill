@@ -1,3 +1,5 @@
+import { filters } from "./filters";
+
 export function Sidebar({
   currentView,
   setCurrentView,
@@ -15,15 +17,6 @@ export function Sidebar({
   const hoverStyle = {
     backgroundColor: "#f0f0f0",
   };
-
-  const filters = [
-    { label: "Embarrassing 🫣", name: "embarrassing" },
-    { label: "Beef 🐄", name: "beef" },
-    { label: "Illegal 🧑‍⚖️", name: "illegal" },
-    { label: "Controversial ⁉️", name: "controversial" },
-    { label: "Offensive 🤬", name: "offensive" },
-    { label: "NSFW 🔞", name: "nsfw" },
-  ];
 
   return (
     <div
