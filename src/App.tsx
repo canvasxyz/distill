@@ -47,6 +47,17 @@ function App() {
     setCheckedTweets({});
   };
 
+  const handleSelectAll = () => {
+    const allChecked = tweets.reduce(
+      (acc, tweet) => {
+        acc[tweet.id] = true;
+        return acc;
+      },
+      {} as Record<string, boolean>
+    );
+    setCheckedTweets(allChecked);
+  };
+
   const handleInclude = () => handleIncludeExclude("included");
   const handleExclude = () => handleIncludeExclude("excluded");
 
@@ -65,7 +76,7 @@ function App() {
             marginBottom: "20px",
           }}
         >
-          <button>Select all</button>
+          <button onClick={handleSelectAll}>Select all</button>
           <button
             onClick={handleInclude}
             style={{ backgroundColor: "green", color: "white" }}
