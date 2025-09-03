@@ -54,6 +54,16 @@ function App() {
     )
   );
 
+  const [labels, setLabels] = useState<Record<string, string[]>>(
+    tweets.reduce(
+      (acc, tweet) => {
+        acc[tweet.id] = [];
+        return acc;
+      },
+      {} as Record<string, string[]>
+    )
+  );
+
   const handleIncludeExclude = (newStatus: "included" | "excluded") => {
     setIncludedTweets((prevIncludedTweets) => {
       const updatedIncludedTweets = { ...prevIncludedTweets };
@@ -171,7 +181,7 @@ function App() {
                   setCheckedTweets(newCheckedTweets);
                 }
               }}
-              labels={["Offensive", "Beef"]}
+              labels={labels[tweet.id]}
             />
           ))}
         </div>
