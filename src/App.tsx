@@ -1,20 +1,27 @@
 import './App.css'
 
+
+function Sidebar() {
+  return (
+    <div style={{ width: '250px', borderRight: '1px solid #ccc', padding: '10px' }}>
+      <h2>All tweets 💬</h2>
+      <ul style={{ listStyleType: 'none', padding: 0 }}>
+        <li>Included 👍</li>
+        <li>Excluded 👎</li>
+        <li>Offensive 🤬</li>
+        <li>NSFW 🔞</li>
+        <li>Beef 🐄</li>
+      </ul>
+    </div>
+  );
+}
+
 function App() {
 
   return (
     <div style={{ display: 'flex', height: '100vh' }}>
       {/* Sidebar */}
-      <div style={{ width: '250px', borderRight: '1px solid #ccc', padding: '10px' }}>
-        <h2>All tweets 💬</h2>
-        <ul style={{ listStyleType: 'none', padding: 0 }}>
-          <li>Included 👍</li>
-          <li>Excluded 👎</li>
-          <li>Offensive 🤬</li>
-          <li>NSFW 🔞</li>
-          <li>Beef 🐄</li>
-        </ul>
-      </div>
+      <Sidebar />
 
       {/* Main Content */}
       <div style={{ flexGrow: 1, padding: '10px' }}>
@@ -52,7 +59,7 @@ function App() {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 export default App
