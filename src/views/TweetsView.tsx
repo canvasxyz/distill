@@ -48,7 +48,14 @@ export function TweetsView({ tweetsToDisplay }: { tweetsToDisplay: Tweet[] }) {
   }
 
   return (
-    <div style={{ flexGrow: 1, padding: "10px" }}>
+    <div
+      style={{
+        padding: "10px",
+        maxHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
       <div
         style={{
           display: "flex",

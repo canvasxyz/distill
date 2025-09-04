@@ -34,7 +34,7 @@ export function TweetEntry({
           {isIncluded ? "included" : "excluded"}
         </span>
       </div>
-      <p style={{ margin: "10px 0" }}>&quot;{tweet.full_text}&quot;</p>
+      <div style={{ margin: "10px 0" }}>&quot;{tweet.full_text}&quot;</div>
       <div style={{ display: "flex", justifyContent: "space-between" }}>
         <span>{new Date(tweet.created_at).toLocaleString()}</span>
         <div style={{ display: "flex", gap: "10px" }}>

@@ -4,10 +4,10 @@ import { Sidebar } from "./Sidebar";
 
 function App() {
   return (
-    <div style={{ display: "flex", height: "100vh", width: "100vw" }}>
+    <div style={{ display: "flex", height: "100vh" }}>
       <Sidebar />
 
-      <div style={{ flexGrow: 1 }}>
+      <div style={{ flex: 1 }}>
         <Outlet />
       </div>
     </div>
