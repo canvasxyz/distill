@@ -1,17 +1,7 @@
-import { NavLink } from "react-router";
 import { filters } from "./filters";
+import { LinkButton } from "./LinkButton";
 
 export function Sidebar() {
-  const itemStyle = {
-    border: "1px solid darkgray",
-    borderRadius: "5px",
-    padding: "5px",
-    transition: "background-color 0.1s",
-    textDecoration: "none",
-    cursor: "pointer",
-    color: "black",
-  };
-
   const hoverStyle = {
     backgroundColor: "#f0f0f0",
   };
@@ -27,35 +17,9 @@ export function Sidebar() {
     >
       <h1 style={{ fontSize: "22px" }}>Tweet Archive Explorer</h1>
       <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-        <NavLink
-          to="/"
-          style={({ isActive }) => ({
-            ...itemStyle,
-            backgroundColor: isActive ? "#d6d6d6" : "",
-          })}
-        >
-          All tweets
-        </NavLink>
-
-        <NavLink
-          to="/included-tweets"
-          style={({ isActive }) => ({
-            ...itemStyle,
-            backgroundColor: isActive ? "#d6d6d6" : "",
-          })}
-        >
-          Included 👍
-        </NavLink>
-
-        <NavLink
-          to="/excluded-tweets"
-          style={({ isActive }) => ({
-            ...itemStyle,
-            backgroundColor: isActive ? "#d6d6d6" : "",
-          })}
-        >
-          Excluded 👎
-        </NavLink>
+        <LinkButton to="/">All tweets</LinkButton>
+        <LinkButton to="/included-tweets">Included 👍</LinkButton>
+        <LinkButton to="/excluded-tweets">Excluded 👎</LinkButton>
 
         <hr
           style={{
@@ -66,16 +30,9 @@ export function Sidebar() {
         />
 
         {filters.map((filter, index) => (
-          <NavLink
-            key={index}
-            to={`/filters/${filter.name}`}
-            style={({ isActive }) => ({
-              ...itemStyle,
-              backgroundColor: isActive ? "#d6d6d6" : "",
-            })}
-          >
+          <LinkButton key={index} to={`/filters/${filter.name}`}>
             {filter.label}
-          </NavLink>
+          </LinkButton>
         ))}
 
         <hr
@@ -88,7 +45,11 @@ export function Sidebar() {
 
         <button
           style={{
-            ...itemStyle,
+            borderRadius: "5px",
+            padding: "5px",
+            transition: "background-color 0.1s",
+            textDecoration: "none",
+            color: "black",
             border: "1px solid blue",
             backgroundColor: "white",
             cursor: "pointer",
