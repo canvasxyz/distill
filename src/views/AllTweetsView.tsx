@@ -7,5 +7,5 @@ export function AllTweetsView() {
   if (tweets === null) {
     return <UploadView />;
   }
-  return <TweetsView tweetsToDisplay={tweets} />;
+  return <TweetsView title="All Tweets" tweetsToDisplay={tweets} />;
 }

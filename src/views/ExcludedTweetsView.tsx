@@ -16,5 +16,10 @@ export function ExcludedTweetsView() {
     return <UploadView />;
   }
 
-  return <TweetsView tweetsToDisplay={excludedTweetsToDisplay} />;
+  return (
+    <TweetsView
+      title="Excluded Tweets"
+      tweetsToDisplay={excludedTweetsToDisplay}
+    />
+  );
 }

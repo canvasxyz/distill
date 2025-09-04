@@ -5,7 +5,15 @@ import { useStore } from "../store";
 import { UploadView } from "./UploadView";
 import type { Tweet } from "../types";
 
-export function TweetsView({ tweetsToDisplay }: { tweetsToDisplay: Tweet[] }) {
+export function TweetsView({
+  tweetsToDisplay,
+  title,
+  blurb,
+}: {
+  tweetsToDisplay: Tweet[];
+  title: string;
+  blurb?: string;
+}) {
   const {
     labelsByTweetId,
     addExcludedTweets,
@@ -56,12 +64,17 @@ export function TweetsView({ tweetsToDisplay }: { tweetsToDisplay: Tweet[] }) {
         flexDirection: "column",
       }}
     >
+      <h1>{title}</h1>
+      {blurb && (
+        <p>
+          <em>{blurb}</em>
+        </p>
+      )}
       <div
         style={{
           display: "flex",
           gap: "10px",
           marginBottom: "20px",
-          marginTop: "50px",
         }}
       >
         <button

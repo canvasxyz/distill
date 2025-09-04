@@ -3,6 +3,7 @@ import { useStore } from "../store";
 import { TweetsView } from "./TweetsView";
 import { UploadView } from "./UploadView";
 import { useParams } from "react-router";
+import { filters } from "../filters";
 
 export function FilteredTweetsView() {
   const params = useParams();
@@ -19,5 +20,13 @@ export function FilteredTweetsView() {
     return <UploadView />;
   }
 
-  return <TweetsView tweetsToDisplay={filteredTweetsToDisplay} />;
+  const filter = filters.filter((f) => f.name === filterName)[0];
+
+  return (
+    <TweetsView
+      title={filter.label}
+      blurb={filter.blurb}
+      tweetsToDisplay={filteredTweetsToDisplay}
+    />
+  );
 }

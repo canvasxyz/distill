@@ -16,5 +16,10 @@ export function IncludedTweetsView() {
     return <UploadView />;
   }
 
-  return <TweetsView tweetsToDisplay={includedTweetsToDisplay} />;
+  return (
+    <TweetsView
+      title="Included Tweets"
+      tweetsToDisplay={includedTweetsToDisplay}
+    />
+  );
 }
