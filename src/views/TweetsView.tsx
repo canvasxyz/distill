@@ -40,6 +40,7 @@ export function TweetsView() {
     } else {
       addExcludedTweets(checkedTweetIds);
     }
+    setCheckedTweets({});
   };
 
   const handleSelectAll = () => {
