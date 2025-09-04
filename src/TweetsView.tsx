@@ -18,7 +18,7 @@ export function TweetsView({ tweets }: { tweets: Tweet[] }) {
     )
   );
 
-  const [labelsByTweetId, labels] = useMemo(() => {
+  const [labelsByTweetId] = useMemo(() => {
     const labelsByTweetId: Record<string, string[]> = {};
     const labels: Record<string, string[]> = {};
 
