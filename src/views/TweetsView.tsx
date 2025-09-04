@@ -6,15 +6,12 @@ import { useStore } from "../store";
 import { UploadView } from "./UploadView";
 
 export function TweetsView() {
-  const { tweets } = useStore();
+  const { tweets, addExcludedTweets, removeExcludedTweets, excludedTweets } =
+    useStore();
 
   const [checkedTweets, setCheckedTweets] = useState<{
     [id: string]: boolean;
   }>({});
-
-  const [excludedTweets, setExcludedTweets] = useState<Record<string, boolean>>(
-    {}
-  );
 
   const [labelsByTweetId] = useMemo(() => {
     const labelsByTweetId: Record<string, string[]> = {};
@@ -35,16 +32,14 @@ export function TweetsView() {
   }, [tweets]);
 
   const handleIncludeExclude = (newStatus: "included" | "excluded") => {
-    setExcludedTweets((prevExcludedTweets) => {
-      const updatedExcludedTweets = { ...prevExcludedTweets };
-      Object.keys(checkedTweets).forEach((id) => {
-        if (checkedTweets[id]) {
-          updatedExcludedTweets[id] = newStatus === "excluded";
-        }
-      });
-      return updatedExcludedTweets;
-    });
-    setCheckedTweets({});
+    const checkedTweetIds = Object.keys(checkedTweets).filter(
+      (tweetId) => checkedTweets[tweetId]
+    );
+    if (newStatus === "included") {
+      removeExcludedTweets(checkedTweetIds);
+    } else {
+      addExcludedTweets(checkedTweetIds);
+    }
   };
 
   const handleSelectAll = () => {
