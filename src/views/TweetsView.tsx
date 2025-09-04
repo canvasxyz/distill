@@ -1,35 +1,21 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { TweetEntry } from "../TweetEntry";
 
-import { filters } from "../filters";
 import { useStore } from "../store";
 import { UploadView } from "./UploadView";
+import type { Tweet } from "../types";
 
-export function TweetsView() {
-  const { tweets, addExcludedTweets, removeExcludedTweets, excludedTweets } =
-    useStore();
+export function TweetsView({ tweetsToDisplay }: { tweetsToDisplay: Tweet[] }) {
+  const {
+    labelsByTweetId,
+    addExcludedTweets,
+    removeExcludedTweets,
+    excludedTweets,
+  } = useStore();
 
   const [checkedTweets, setCheckedTweets] = useState<{
     [id: string]: boolean;
   }>({});
-
-  const [labelsByTweetId] = useMemo(() => {
-    const labelsByTweetId: Record<string, string[]> = {};
-    const labels: Record<string, string[]> = {};
-
-    console.log("running filters...");
-    for (const tweet of tweets || []) {
-      for (const filter of filters) {
-        if (filter.shouldFilter(tweet)) {
-          labelsByTweetId[tweet.id] ||= [];
-          labelsByTweetId[tweet.id].push(filter.name);
-          labels[filter.name] ||= [];
-          labels[filter.name].push(tweet.id);
-        }
-      }
-    }
-    return [labelsByTweetId, labels];
-  }, [tweets]);
 
   const handleIncludeExclude = (newStatus: "included" | "excluded") => {
     const checkedTweetIds = Object.keys(checkedTweets).filter(
@@ -44,7 +30,7 @@ export function TweetsView() {
   };
 
   const handleSelectAll = () => {
-    const allChecked = (tweets || []).reduce(
+    const allChecked = (tweetsToDisplay || []).reduce(
       (acc, tweet) => {
         acc[tweet.id] = true;
         return acc;
@@ -57,7 +43,7 @@ export function TweetsView() {
   const handleInclude = () => handleIncludeExclude("included");
   const handleExclude = () => handleIncludeExclude("excluded");
 
-  if (tweets === null) {
+  if (tweetsToDisplay === null) {
     return <UploadView />;
   }
 
@@ -126,7 +112,7 @@ export function TweetsView() {
       </div>
 
       <div style={{ overflowY: "auto", flexGrow: 1 }}>
-        {tweets.map((tweet, index) => (
+        {tweetsToDisplay.map((tweet, index) => (
           <TweetEntry
             tweet={tweet}
             checked={checkedTweets[tweet.id] || false}
