@@ -1,23 +1,15 @@
-import { useState } from "react";
+import { Outlet } from "react-router";
 import "./App.css";
 import { Sidebar } from "./Sidebar";
-import type { Tweet } from "./types";
-import { TweetsView } from "./TweetsView";
-import { UploadView } from "./UploadView";
 
 function App() {
-  const [tweets, setTweets] = useState<Tweet[]>([]);
-  const [currentView, setCurrentView] = useState("all-tweets");
-
   return (
-    <div style={{ display: "flex", height: "100vh" }}>
-      <Sidebar currentView={currentView} setCurrentView={setCurrentView} />
+    <div style={{ display: "flex", height: "100vh", width: "100vw" }}>
+      <Sidebar />
 
-      {tweets.length > 0 ? (
-        <TweetsView tweets={tweets.slice(0, 100)} />
-      ) : (
-        <UploadView setTweets={setTweets} />
-      )}
+      <div style={{ flexGrow: 1 }}>
+        <Outlet />
+      </div>
     </div>
   );
 }

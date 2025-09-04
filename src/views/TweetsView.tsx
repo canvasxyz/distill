@@ -1,21 +1,19 @@
 import { useMemo, useState } from "react";
-import { TweetEntry } from "./TweetEntry";
-import type { Tweet } from "./types";
-import { filters } from "./filters";
+import { TweetEntry } from "../TweetEntry";
 
-export function TweetsView({ tweets }: { tweets: Tweet[] }) {
+import { filters } from "../filters";
+import { useStore } from "../store";
+import { UploadView } from "./UploadView";
+
+export function TweetsView() {
+  const { tweets } = useStore();
+
   const [checkedTweets, setCheckedTweets] = useState<{
     [id: string]: boolean;
   }>({});
 
-  const [includedTweets, setIncludedTweets] = useState<Record<string, boolean>>(
-    tweets.reduce(
-      (acc, tweet) => {
-        acc[tweet.id] = true;
-        return acc;
-      },
-      {} as Record<string, boolean>
-    )
+  const [excludedTweets, setExcludedTweets] = useState<Record<string, boolean>>(
+    {}
   );
 
   const [labelsByTweetId] = useMemo(() => {
@@ -23,7 +21,7 @@ export function TweetsView({ tweets }: { tweets: Tweet[] }) {
     const labels: Record<string, string[]> = {};
 
     console.log("running filters...");
-    for (const tweet of tweets) {
+    for (const tweet of tweets || []) {
       for (const filter of filters) {
         if (filter.shouldFilter(tweet)) {
           labelsByTweetId[tweet.id] ||= [];
@@ -37,20 +35,20 @@ export function TweetsView({ tweets }: { tweets: Tweet[] }) {
   }, [tweets]);
 
   const handleIncludeExclude = (newStatus: "included" | "excluded") => {
-    setIncludedTweets((prevIncludedTweets) => {
-      const updatedIncludedTweets = { ...prevIncludedTweets };
+    setExcludedTweets((prevExcludedTweets) => {
+      const updatedExcludedTweets = { ...prevExcludedTweets };
       Object.keys(checkedTweets).forEach((id) => {
         if (checkedTweets[id]) {
-          updatedIncludedTweets[id] = newStatus === "included";
+          updatedExcludedTweets[id] = newStatus === "excluded";
         }
       });
-      return updatedIncludedTweets;
+      return updatedExcludedTweets;
     });
     setCheckedTweets({});
   };
 
   const handleSelectAll = () => {
-    const allChecked = tweets.reduce(
+    const allChecked = (tweets || []).reduce(
       (acc, tweet) => {
         acc[tweet.id] = true;
         return acc;
@@ -62,6 +60,10 @@ export function TweetsView({ tweets }: { tweets: Tweet[] }) {
 
   const handleInclude = () => handleIncludeExclude("included");
   const handleExclude = () => handleIncludeExclude("excluded");
+
+  if (tweets === null) {
+    return <UploadView />;
+  }
 
   return (
     <div style={{ flexGrow: 1, padding: "10px" }}>
@@ -132,7 +134,7 @@ export function TweetsView({ tweets }: { tweets: Tweet[] }) {
           <TweetEntry
             tweet={tweet}
             checked={checkedTweets[tweet.id] || false}
-            isIncluded={includedTweets[tweet.id]}
+            isIncluded={!excludedTweets[tweet.id]}
             key={index}
             onCheckboxChange={(isChecked) => {
               if (isChecked) {

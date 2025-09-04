@@ -1,17 +1,15 @@
+import { NavLink } from "react-router";
 import { filters } from "./filters";
 
-export function Sidebar({
-  currentView,
-  setCurrentView,
-}: {
-  currentView: string;
-  setCurrentView: (newView: string) => void;
-}) {
+export function Sidebar() {
   const itemStyle = {
     border: "1px solid darkgray",
     borderRadius: "5px",
     padding: "5px",
     transition: "background-color 0.1s",
+    textDecoration: "none",
+    cursor: "pointer",
+    color: "black",
   };
 
   const hoverStyle = {
@@ -29,59 +27,36 @@ export function Sidebar({
     >
       <h1 style={{ fontSize: "22px" }}>Tweet Archive Explorer</h1>
       <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-        <div
-          style={{
+        <NavLink
+          to="/"
+          style={({ isActive }) => ({
             ...itemStyle,
-            backgroundColor: currentView === `all-tweets` ? "#d6d6d6" : "",
-            cursor: "pointer",
-          }}
-          onMouseEnter={(e) =>
-            (e.currentTarget.style.backgroundColor = hoverStyle.backgroundColor)
-          }
-          onMouseLeave={(e) =>
-            (e.currentTarget.style.backgroundColor =
-              currentView === `all-tweets` ? "#d6d6d6" : "")
-          }
-          onClick={() => setCurrentView("all-tweets")}
+            backgroundColor: isActive ? "#d6d6d6" : "",
+          })}
         >
           All tweets
-        </div>
-        <div
-          style={{
+        </NavLink>
+
+        <NavLink
+          to="/included-tweets"
+          style={({ isActive }) => ({
             ...itemStyle,
-            border: "1px solid green",
-            backgroundColor: currentView === `included-tweets` ? "#d6d6d6" : "",
-            cursor: "pointer",
-          }}
-          onMouseEnter={(e) =>
-            (e.currentTarget.style.backgroundColor = hoverStyle.backgroundColor)
-          }
-          onMouseLeave={(e) =>
-            (e.currentTarget.style.backgroundColor =
-              currentView === `included-tweets` ? "#d6d6d6" : "")
-          }
-          onClick={() => setCurrentView("included-tweets")}
+            backgroundColor: isActive ? "#d6d6d6" : "",
+          })}
         >
           Included 👍
-        </div>
-        <div
-          style={{
+        </NavLink>
+
+        <NavLink
+          to="/excluded-tweets"
+          style={({ isActive }) => ({
             ...itemStyle,
-            border: "1px solid red",
-            backgroundColor: currentView === `excluded-tweets` ? "#d6d6d6" : "",
-            cursor: "pointer",
-          }}
-          onMouseEnter={(e) =>
-            (e.currentTarget.style.backgroundColor = hoverStyle.backgroundColor)
-          }
-          onMouseLeave={(e) =>
-            (e.currentTarget.style.backgroundColor =
-              currentView === `excluded-tweets` ? "#d6d6d6" : "")
-          }
-          onClick={() => setCurrentView("excluded-tweets")}
+            backgroundColor: isActive ? "#d6d6d6" : "",
+          })}
         >
           Excluded 👎
-        </div>
+        </NavLink>
+
         <hr
           style={{
             margin: "20px 0",
@@ -91,26 +66,16 @@ export function Sidebar({
         />
 
         {filters.map((filter, index) => (
-          <div
+          <NavLink
             key={index}
-            style={{
+            to={`/filters/${filter.name}`}
+            style={({ isActive }) => ({
               ...itemStyle,
-              backgroundColor:
-                currentView === `filter-${filter.name}` ? "#d6d6d6" : "",
-              cursor: "pointer",
-            }}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.backgroundColor =
-                hoverStyle.backgroundColor)
-            }
-            onMouseLeave={(e) =>
-              (e.currentTarget.style.backgroundColor =
-                currentView === `filter-${filter.name}` ? "#d6d6d6" : "")
-            }
-            onClick={() => setCurrentView(`filter-${filter.name}`)}
+              backgroundColor: isActive ? "#d6d6d6" : "",
+            })}
           >
             {filter.label}
-          </div>
+          </NavLink>
         ))}
 
         <hr
