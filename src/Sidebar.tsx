@@ -1,7 +1,10 @@
 import { filters } from "./filters";
 import { LinkButton } from "./LinkButton";
+import { useStore } from "./store";
 
 export function Sidebar() {
+  const { tweets } = useStore();
+
   const hoverStyle = {
     backgroundColor: "#f0f0f0",
   };
@@ -17,7 +20,9 @@ export function Sidebar() {
     >
       <h1 style={{ fontSize: "22px" }}>Tweet Archive Explorer</h1>
       <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-        <LinkButton to="/">All tweets</LinkButton>
+        <LinkButton to="/">
+          All tweets {tweets && `(${tweets.length})`}
+        </LinkButton>
         <LinkButton to="/included-tweets">Included 👍</LinkButton>
         <LinkButton to="/excluded-tweets">Excluded 👎</LinkButton>
 

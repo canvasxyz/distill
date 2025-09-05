@@ -5,13 +5,13 @@ import { UploadView } from "./UploadView";
 import { usePagination } from "../hooks/usePagination";
 
 export function IncludedTweetsView() {
-  const { tweets, excludedTweets } = useStore();
+  const { tweets, excludedTweetIds } = useStore();
 
   const includedTweetsToDisplay = useMemo(() => {
     if (tweets === null) return [];
 
-    return tweets.filter((tweet) => !excludedTweets[tweet.id]);
-  }, [tweets, excludedTweets]);
+    return tweets.filter((tweet) => !excludedTweetIds[tweet.id]);
+  }, [tweets, excludedTweetIds]);
 
   const {
     itemsToDisplay: paginatedIncludedTweetsToDisplay,

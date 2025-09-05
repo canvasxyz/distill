@@ -22,7 +22,7 @@ export function TweetsView({
     labelsByTweetId,
     addExcludedTweets,
     removeExcludedTweets,
-    excludedTweets,
+    excludedTweetIds,
   } = useStore();
 
   const [checkedTweets, setCheckedTweets] = useState<{
@@ -141,7 +141,7 @@ export function TweetsView({
           <TweetEntry
             tweet={tweet}
             checked={checkedTweets[tweet.id] || false}
-            isIncluded={!excludedTweets[tweet.id]}
+            isIncluded={!excludedTweetIds[tweet.id]}
             key={index}
             onCheckboxChange={(isChecked) => {
               if (isChecked) {
