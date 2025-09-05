@@ -17,6 +17,7 @@ export const useStore = create<StoreTypes>((set) => ({
   tweets: null,
   tweetsById: {},
   setTweets: (tweets: Tweet[]) => {
+    const start = performance.now();
     // apply filters
     const labelsByTweetId: Record<string, string[]> = {};
     const tweetIdsByLabel: Record<string, string[]> = {};
@@ -32,6 +33,8 @@ export const useStore = create<StoreTypes>((set) => ({
         }
       }
     }
+    const end = performance.now();
+    console.log(`Processing filters took ${end - start}ms`);
     set(() => ({
       tweets,
       tweetsById,
