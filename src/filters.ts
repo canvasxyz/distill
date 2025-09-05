@@ -1,3 +1,4 @@
+import { offensiveWordsRegExp } from "./offensive";
 import type { Tweet } from "./types";
 
 export const filters = [
@@ -29,8 +30,7 @@ export const filters = [
   {
     label: "Offensive 🤬",
     name: "offensive",
-    shouldFilter: (tweet: Tweet) =>
-      tweet.full_text.includes("fuck") || tweet.full_text.includes("shit"),
+    shouldFilter: (tweet: Tweet) => offensiveWordsRegExp.test(tweet.full_text),
     blurb: "Tweets that may be offensive to some users, e.g. profanity",
   },
   {
