@@ -7,7 +7,7 @@ type StoreTypes = {
   tweetsById: Record<string, Tweet>;
   setTweets: (tweets: Tweet[]) => void;
   labelsByTweetId: Record<string, string[]>;
-  tweetIdsByLabel: Record<string, string[]>;
+  tweetsByLabel: Record<string, Tweet[]>;
   excludedTweetIds: Record<string, boolean>;
   excludedTweets: Tweet[] | null;
   includedTweets: Tweet[] | null;
@@ -22,7 +22,7 @@ export const useStore = create<StoreTypes>((set, get) => ({
     const start = performance.now();
     // apply filters
     const labelsByTweetId: Record<string, string[]> = {};
-    const tweetIdsByLabel: Record<string, string[]> = {};
+    const tweetsByLabel: Record<string, Tweet[]> = {};
     const tweetsById: Record<string, Tweet> = {};
     for (const tweet of tweets || []) {
       tweetsById[tweet.id] = tweet;
@@ -30,8 +30,8 @@ export const useStore = create<StoreTypes>((set, get) => ({
         if (filter.shouldFilter(tweet)) {
           labelsByTweetId[tweet.id] ||= [];
           labelsByTweetId[tweet.id].push(filter.name);
-          tweetIdsByLabel[filter.name] ||= [];
-          tweetIdsByLabel[filter.name].push(tweet.id);
+          tweetsByLabel[filter.name] ||= [];
+          tweetsByLabel[filter.name].push(tweet);
         }
       }
     }
@@ -43,11 +43,11 @@ export const useStore = create<StoreTypes>((set, get) => ({
       includedTweets: tweets,
       tweetsById,
       labelsByTweetId,
-      tweetIdsByLabel,
+      tweetsByLabel,
     }));
   },
   labelsByTweetId: {},
-  tweetIdsByLabel: {},
+  tweetsByLabel: {},
   excludedTweetIds: {},
   excludedTweets: null,
   includedTweets: null,

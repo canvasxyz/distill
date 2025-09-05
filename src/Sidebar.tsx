@@ -3,7 +3,7 @@ import { LinkButton } from "./LinkButton";
 import { useStore } from "./store";
 
 export function Sidebar() {
-  const { tweets, excludedTweets, includedTweets } = useStore();
+  const { tweets, excludedTweets, includedTweets, tweetsByLabel } = useStore();
 
   const hoverStyle = {
     backgroundColor: "#f0f0f0",
@@ -24,10 +24,10 @@ export function Sidebar() {
           All tweets {tweets && `(${tweets.length})`}
         </LinkButton>
         <LinkButton to="/included-tweets">
-          Included {includedTweets && `(${includedTweets.length})`} 👍
+          Included 👍 {includedTweets && `(${includedTweets.length})`}
         </LinkButton>
         <LinkButton to="/excluded-tweets">
-          Excluded {excludedTweets && `(${excludedTweets.length})`} 👎
+          Excluded 👎 {excludedTweets && `(${excludedTweets.length})`}
         </LinkButton>
 
         <hr
@@ -40,7 +40,9 @@ export function Sidebar() {
 
         {filters.map((filter, index) => (
           <LinkButton key={index} to={`/filters/${filter.name}`}>
-            {filter.label}
+            {filter.label}{" "}
+            {tweetsByLabel[filter.name] &&
+              `(${tweetsByLabel[filter.name].length})`}
           </LinkButton>
         ))}
 

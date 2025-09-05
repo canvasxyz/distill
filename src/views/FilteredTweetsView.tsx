@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import { useStore } from "../store";
 import { TweetsView } from "./TweetsView";
 import { UploadView } from "./UploadView";
@@ -8,25 +7,20 @@ import { usePagination } from "../hooks/usePagination";
 
 export function FilteredTweetsView() {
   const params = useParams();
-  const { tweetsById, tweetIdsByLabel } = useStore();
+  const { tweetsByLabel } = useStore();
 
   const filterName = params.filter as string;
 
-  const filteredTweetsToDisplay = useMemo(() => {
-    const tweetIds = tweetIdsByLabel[filterName] || [];
-    return tweetIds.map((tweetId) => tweetsById[tweetId]);
-  }, [tweetsById, tweetIdsByLabel, filterName]);
-
   const {
-    itemsToDisplay: paginatedFilteredTweetsToDisplay,
+    itemsToDisplay: paginatedFilteredTweets,
     navigateNext,
     navigatePrevious,
   } = usePagination({
-    items: filteredTweetsToDisplay,
+    items: tweetsByLabel[filterName],
     limit: 20,
   });
 
-  if (paginatedFilteredTweetsToDisplay === null) {
+  if (paginatedFilteredTweets === null) {
     return <UploadView />;
   }
 
@@ -36,7 +30,7 @@ export function FilteredTweetsView() {
     <TweetsView
       title={filter.label}
       blurb={filter.blurb}
-      tweetsToDisplay={paginatedFilteredTweetsToDisplay}
+      tweetsToDisplay={paginatedFilteredTweets}
       navigateNext={navigateNext}
       navigatePrevious={navigatePrevious}
     />
