@@ -30,20 +30,38 @@ export function TweetEntry({
         marginRight: checked ? 0 : 2,
         marginBottom: checked ? 10 : 12,
         borderRadius: "5px",
-        padding: "10px",
+        padding: "5px",
+        paddingTop: "8px",
+        paddingBottom: "8px",
+        display: "flex",
+        flexDirection: "row",
       }}
     >
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <span>
+      <div>
+        {/* checkbox goes here */}
+        <input
+          type="checkbox"
+          checked={checked}
+          onChange={() => onCheckboxChange(!checked)}
+        />
+      </div>
+
+      <div
+        style={{
+          marginLeft: "5px",
+          display: "flex",
+          flexDirection: "column",
+          gap: "10px",
+        }}
+      >
+        {/* username */}
+        <div>
           {account?.accountDisplayName} ·{" "}
           {new Date(tweet.created_at).toLocaleString()}
-        </span>
-        <span style={{ color: color }}>
-          {isIncluded ? "included" : "excluded"}
-        </span>
-      </div>
-      <div style={{ margin: "10px 0" }}>&quot;{tweet.full_text}&quot;</div>
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
+        </div>
+        {/* tweet body */}
+        <span>&quot;{tweet.full_text}&quot;</span>
+        {/* labels */}
         <div style={{ display: "flex", gap: "10px" }}>
           {labels.map((label, index) => (
             <a href={`#/filters/${label}`}>
@@ -66,6 +84,13 @@ export function TweetEntry({
             </a>
           ))}
         </div>
+      </div>
+
+      <div style={{ marginLeft: "auto" }}>
+        {/* included or excluded */}
+        <span style={{ color: color }}>
+          {isIncluded ? "included" : "excluded"}
+        </span>
       </div>
     </div>
   );

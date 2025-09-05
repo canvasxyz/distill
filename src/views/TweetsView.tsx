@@ -29,6 +29,26 @@ export function TweetsView({
     [id: string]: boolean;
   }>({});
 
+  const [selectAllChecked, setSelectAllChecked] = useState(false);
+
+  const onSelectAllChange = (value: boolean) => {
+    setSelectAllChecked(value);
+    if (value === true) {
+      // check all tweets in the view
+      const newChecked: Record<string, boolean> = {};
+      for (const tweet of tweetsToDisplay) {
+        newChecked[tweet.id] = true;
+      }
+      setCheckedTweets((existingCheckedTweets) => ({
+        ...existingCheckedTweets,
+        ...newChecked,
+      }));
+    } else {
+      // uncheck all tweets
+      setCheckedTweets({});
+    }
+  };
+
   const handleIncludeExclude = (newStatus: "included" | "excluded") => {
     const checkedTweetIds = Object.keys(checkedTweets).filter(
       (tweetId) => checkedTweets[tweetId]
@@ -38,18 +58,8 @@ export function TweetsView({
     } else {
       addExcludedTweets(checkedTweetIds);
     }
+    setSelectAllChecked(false);
     setCheckedTweets({});
-  };
-
-  const handleSelectAll = () => {
-    const allChecked = (tweetsToDisplay || []).reduce(
-      (acc, tweet) => {
-        acc[tweet.id] = true;
-        return acc;
-      },
-      {} as Record<string, boolean>
-    );
-    setCheckedTweets(allChecked);
   };
 
   const handleInclude = () => handleIncludeExclude("included");
@@ -82,22 +92,12 @@ export function TweetsView({
           marginBottom: "20px",
         }}
       >
-        <button
-          onClick={handleSelectAll}
-          style={{
-            backgroundColor: "white",
-            borderRadius: "5px",
-            padding: "5px",
-            border: "1px solid black",
-            transition: "background-color 0.1s",
-          }}
-          onMouseEnter={(e) =>
-            (e.currentTarget.style.backgroundColor = "#f0f0f0")
-          }
-          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "")}
-        >
-          Select all
-        </button>
+        <input
+          checked={selectAllChecked}
+          type="checkbox"
+          onChange={(event) => onSelectAllChange(event.target.checked)}
+        ></input>
+
         <button
           onClick={handleInclude}
           style={{
