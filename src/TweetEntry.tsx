@@ -19,33 +19,35 @@ export function TweetEntry({
 
   return (
     <div
+      onClick={() => onCheckboxChange(!checked)}
       style={{
-        border: `1px solid ${color}`,
+        backgroundColor: isIncluded ? "#e0ffe1" : "#ffe0e0",
+        border: checked ? `3px solid black` : "1px solid black",
+        marginTop: checked ? -2 : 2,
+        marginLeft: checked ? 0 : 2,
+        marginRight: checked ? 0 : 2,
+        marginBottom: checked ? 10 : 12,
         borderRadius: "5px",
         padding: "10px",
-        marginBottom: "10px",
       }}
     >
       <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <input
-          type="checkbox"
-          checked={checked}
-          onChange={(event) => onCheckboxChange(event.target.checked)}
-        />
+        <span>
+          {account?.accountDisplayName} ·{" "}
+          {new Date(tweet.created_at).toLocaleString()}
+        </span>
         <span style={{ color: color }}>
           {isIncluded ? "included" : "excluded"}
         </span>
       </div>
-      <div style={{ margin: "10px 0" }}>
-        {account?.accountDisplayName}: &quot;{tweet.full_text}&quot;
-      </div>
+      <div style={{ margin: "10px 0" }}>&quot;{tweet.full_text}&quot;</div>
       <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <span>{new Date(tweet.created_at).toLocaleString()}</span>
         <div style={{ display: "flex", gap: "10px" }}>
           {labels.map((label, index) => (
             <a href={`#/filters/${label}`}>
               <div
                 style={{
+                  backgroundColor: "white",
                   borderColor: "#e0e0e0",
                   borderStyle: "solid",
                   borderWidth: "1px",
