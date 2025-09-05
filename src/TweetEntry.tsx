@@ -1,3 +1,4 @@
+import { useStore } from "./store";
 import type { Tweet } from "./types";
 
 export function TweetEntry({
@@ -13,6 +14,7 @@ export function TweetEntry({
   isIncluded: boolean;
   labels: string[];
 }) {
+  const { account } = useStore();
   const color = isIncluded ? "green" : "red";
 
   return (
@@ -34,7 +36,9 @@ export function TweetEntry({
           {isIncluded ? "included" : "excluded"}
         </span>
       </div>
-      <div style={{ margin: "10px 0" }}>&quot;{tweet.full_text}&quot;</div>
+      <div style={{ margin: "10px 0" }}>
+        {account?.accountDisplayName}: &quot;{tweet.full_text}&quot;
+      </div>
       <div style={{ display: "flex", justifyContent: "space-between" }}>
         <span>{new Date(tweet.created_at).toLocaleString()}</span>
         <div style={{ display: "flex", gap: "10px" }}>

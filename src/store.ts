@@ -1,8 +1,10 @@
 import { create } from "zustand";
-import type { Tweet } from "./types";
+import type { Account, Tweet } from "./types";
 import { filters } from "./filters";
 
 type StoreTypes = {
+  account: Account | null;
+  setAccount: (account: Account) => void;
   tweets: Tweet[] | null;
   tweetsById: Record<string, Tweet>;
   setTweets: (tweets: Tweet[]) => void;
@@ -16,6 +18,8 @@ type StoreTypes = {
 };
 
 export const useStore = create<StoreTypes>((set, get) => ({
+  account: null,
+  setAccount: (account) => set({ account }),
   tweets: null,
   tweetsById: {},
   setTweets: (tweets: Tweet[]) => {

@@ -1,3 +1,12 @@
+export type Account = {
+  email: string;
+  createdVia: string;
+  username: string;
+  accountId: string;
+  createdAt: string;
+  accountDisplayName: string;
+};
+
 export type Tweet = {
   id: string;
   id_str: string;

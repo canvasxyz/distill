@@ -3,7 +3,7 @@
  * @param content The raw file content as a string
  * @returns Parsed JSON data or null if parsing fails
  */
-export function parseTwitterArchiveFile(content: string): any[] | null {
+export function parseTwitterArchiveFile<T>(content: string): T | null {
   try {
     const lines = content.split("\n");
 
@@ -35,13 +35,7 @@ export function parseTwitterArchiveFile(content: string): any[] | null {
       lines.slice(startIndex + 1).join("\n");
 
     // Parse as JSON
-    const data = JSON.parse(jsonContent);
-
-    if (!Array.isArray(data)) {
-      return null;
-    }
-
-    return data;
+    return JSON.parse(jsonContent);
   } catch (error) {
     console.error("Error parsing Twitter archive file:", error);
     return null;
