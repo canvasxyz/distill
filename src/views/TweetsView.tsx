@@ -139,6 +139,7 @@ export function TweetsView({
       <div style={{ overflowY: "auto", flexGrow: 1 }}>
         {tweetsToDisplay.map((tweet, index) => (
           <TweetEntry
+            isFirst={index === 0}
             tweet={tweet}
             checked={checkedTweets[tweet.id] || false}
             isIncluded={!excludedTweetIds[tweet.id]}

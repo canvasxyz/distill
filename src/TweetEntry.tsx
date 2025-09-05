@@ -2,12 +2,14 @@ import { useStore } from "./store";
 import type { Tweet } from "./types";
 
 export function TweetEntry({
+  isFirst,
   tweet,
   onCheckboxChange,
   checked,
   isIncluded,
   labels,
 }: {
+  isFirst: boolean;
   tweet: Tweet;
   onCheckboxChange: (isChecked: boolean) => void;
   checked: boolean;
@@ -23,7 +25,7 @@ export function TweetEntry({
       style={{
         backgroundColor: isIncluded ? "#e0ffe1" : "#ffe0e0",
         border: checked ? `3px solid black` : "1px solid black",
-        marginTop: checked ? -2 : 2,
+        marginTop: checked ? (isFirst ? 2 : -2) : 4,
         marginLeft: checked ? 0 : 2,
         marginRight: checked ? 0 : 2,
         marginBottom: checked ? 10 : 12,
