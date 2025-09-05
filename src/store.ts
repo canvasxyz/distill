@@ -9,11 +9,13 @@ type StoreTypes = {
   labelsByTweetId: Record<string, string[]>;
   tweetIdsByLabel: Record<string, string[]>;
   excludedTweetIds: Record<string, boolean>;
+  excludedTweets: Tweet[];
+  includedTweets: Tweet[];
   addExcludedTweets: (tweetIdsToExclude: string[]) => void;
   removeExcludedTweets: (tweetIdsToInclude: string[]) => void;
 };
 
-export const useStore = create<StoreTypes>((set) => ({
+export const useStore = create<StoreTypes>((set, get) => ({
   tweets: null,
   tweetsById: {},
   setTweets: (tweets: Tweet[]) => {
@@ -37,6 +39,8 @@ export const useStore = create<StoreTypes>((set) => ({
     console.log(`Processing filters took ${end - start}ms`);
     set(() => ({
       tweets,
+      excludedTweets: [],
+      includedTweets: tweets,
       tweetsById,
       labelsByTweetId,
       tweetIdsByLabel,
@@ -45,13 +49,21 @@ export const useStore = create<StoreTypes>((set) => ({
   labelsByTweetId: {},
   tweetIdsByLabel: {},
   excludedTweetIds: {},
+  excludedTweets: [],
+  includedTweets: [],
   addExcludedTweets: (tweetIdsToExclude) => {
     set(({ excludedTweetIds: oldExcludedTweets }) => {
       const newExcludedTweets = { ...oldExcludedTweets };
       for (const tweetId of tweetIdsToExclude) {
         newExcludedTweets[tweetId] = true;
       }
-      return { excludedTweetIds: newExcludedTweets };
+
+      const tweets = get().tweets || [];
+      return {
+        excludedTweetIds: newExcludedTweets,
+        includedTweets: tweets.filter((tweet) => !newExcludedTweets[tweet.id]),
+        excludedTweets: tweets.filter((tweet) => newExcludedTweets[tweet.id]),
+      };
     });
   },
   removeExcludedTweets: (tweetIdsToInclude) => {
@@ -60,7 +72,12 @@ export const useStore = create<StoreTypes>((set) => ({
       for (const tweetId of tweetIdsToInclude) {
         delete newExcludedTweets[tweetId];
       }
-      return { excludedTweetIds: newExcludedTweets };
+      const tweets = get().tweets || [];
+      return {
+        excludedTweetIds: newExcludedTweets,
+        includedTweets: tweets.filter((tweet) => !newExcludedTweets[tweet.id]),
+        excludedTweets: tweets.filter((tweet) => newExcludedTweets[tweet.id]),
+      };
     });
   },
 }));
