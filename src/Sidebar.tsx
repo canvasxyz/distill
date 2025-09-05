@@ -5,10 +5,6 @@ import { useStore } from "./store";
 export function Sidebar() {
   const { tweets, excludedTweets, includedTweets, tweetsByLabel } = useStore();
 
-  const hoverStyle = {
-    backgroundColor: "#f0f0f0",
-  };
-
   return (
     <div
       style={{
@@ -20,13 +16,13 @@ export function Sidebar() {
     >
       <h1 style={{ fontSize: "22px" }}>Tweet Archive Explorer</h1>
       <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-        <LinkButton to="/">
+        <LinkButton to="/" disabled={!tweets}>
           All tweets {tweets && `(${tweets.length})`}
         </LinkButton>
-        <LinkButton to="/included-tweets">
+        <LinkButton to="/included-tweets" disabled={!tweets}>
           Included 👍 {includedTweets && `(${includedTweets.length})`}
         </LinkButton>
-        <LinkButton to="/excluded-tweets">
+        <LinkButton to="/excluded-tweets" disabled={!tweets}>
           Excluded 👎 {excludedTweets && `(${excludedTweets.length})`}
         </LinkButton>
 
@@ -39,14 +35,18 @@ export function Sidebar() {
         />
 
         {filters.map((filter, index) => (
-          <LinkButton key={index} to={`/filters/${filter.name}`}>
+          <LinkButton
+            key={index}
+            to={`/filters/${filter.name}`}
+            disabled={!tweets}
+          >
             {filter.label}{" "}
             {tweetsByLabel[filter.name] &&
               `(${tweetsByLabel[filter.name].length})`}
           </LinkButton>
         ))}
 
-        <hr
+        {/* <hr
           style={{
             margin: "20px 0",
             border: "none",
@@ -66,14 +66,14 @@ export function Sidebar() {
             cursor: "pointer",
           }}
           onMouseEnter={(e) =>
-            (e.currentTarget.style.backgroundColor = hoverStyle.backgroundColor)
+            (e.currentTarget.style.backgroundColor = "#f0f0f0")
           }
           onMouseLeave={(e) =>
             (e.currentTarget.style.backgroundColor = "white")
           }
         >
           Download Included Tweets
-        </button>
+        </button> */}
       </div>
     </div>
   );

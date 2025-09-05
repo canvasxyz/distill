@@ -1,10 +1,10 @@
 import { useStore } from "../store";
 import { TweetsView } from "./TweetsView";
-import { UploadView } from "./UploadView";
 import { usePagination } from "../hooks/usePagination";
+import { Navigate } from "react-router";
 
 export function IncludedTweetsView() {
-  const { includedTweets } = useStore();
+  const { includedTweets, tweets } = useStore();
 
   const {
     itemsToDisplay: paginatedIncludedTweets,
@@ -15,14 +15,14 @@ export function IncludedTweetsView() {
     limit: 20,
   });
 
-  if (paginatedIncludedTweets === null) {
-    return <UploadView />;
+  if (tweets === null) {
+    return <Navigate to="/upload-tweets" />;
   }
 
   return (
     <TweetsView
       title="Included Tweets"
-      tweetsToDisplay={paginatedIncludedTweets}
+      tweetsToDisplay={paginatedIncludedTweets!}
       navigateNext={navigateNext}
       navigatePrevious={navigatePrevious}
     />

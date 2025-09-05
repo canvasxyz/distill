@@ -3,6 +3,7 @@ import type { Tweet } from "../types";
 import { unzip, type ZipEntry } from "unzipit";
 import { parseTwitterArchiveFile } from "../twitterArchiveParser";
 import { useStore } from "../store";
+import { Navigate, useNavigate } from "react-router";
 
 const processTwitterArchive = async (file: File): Promise<Tweet[]> => {
   // This is a stub method. Implement the logic to parse the Twitter archive zip file.
@@ -33,7 +34,7 @@ const processTwitterArchive = async (file: File): Promise<Tweet[]> => {
 };
 
 export function UploadView() {
-  const { setTweets } = useStore();
+  const { setTweets, tweets } = useStore();
 
   const handleFileUpload = async (
     event: React.ChangeEvent<HTMLInputElement>
@@ -45,6 +46,10 @@ export function UploadView() {
       setTweets(tweets);
     }
   };
+
+  if (tweets !== null) {
+    return <Navigate to="/" />;
+  }
 
   return (
     <div

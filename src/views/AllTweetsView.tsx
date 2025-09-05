@@ -1,7 +1,7 @@
+import { Navigate } from "react-router";
 import { usePagination } from "../hooks/usePagination";
 import { useStore } from "../store";
 import { TweetsView } from "./TweetsView";
-import { UploadView } from "./UploadView";
 
 export function AllTweetsView() {
   const { tweets } = useStore();
@@ -10,14 +10,14 @@ export function AllTweetsView() {
     limit: 20,
   });
 
-  if (itemsToDisplay === null) {
-    return <UploadView />;
+  if (tweets === null) {
+    return <Navigate to="upload-tweets" />;
   }
 
   return (
     <TweetsView
       title="All Tweets"
-      tweetsToDisplay={itemsToDisplay}
+      tweetsToDisplay={itemsToDisplay!}
       navigateNext={navigateNext}
       navigatePrevious={navigatePrevious}
     />

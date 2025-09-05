@@ -1,13 +1,12 @@
 import { useStore } from "../store";
 import { TweetsView } from "./TweetsView";
-import { UploadView } from "./UploadView";
-import { useParams } from "react-router";
+import { Navigate, useParams } from "react-router";
 import { filters } from "../filters";
 import { usePagination } from "../hooks/usePagination";
 
 export function FilteredTweetsView() {
   const params = useParams();
-  const { tweetsByLabel } = useStore();
+  const { tweets, tweetsByLabel } = useStore();
 
   const filterName = params.filter as string;
 
@@ -20,8 +19,8 @@ export function FilteredTweetsView() {
     limit: 20,
   });
 
-  if (paginatedFilteredTweets === null) {
-    return <UploadView />;
+  if (tweets === null) {
+    return <Navigate to="/upload-tweets" />;
   }
 
   const filter = filters.filter((f) => f.name === filterName)[0];
@@ -30,7 +29,7 @@ export function FilteredTweetsView() {
     <TweetsView
       title={filter.label}
       blurb={filter.blurb}
-      tweetsToDisplay={paginatedFilteredTweets}
+      tweetsToDisplay={paginatedFilteredTweets!}
       navigateNext={navigateNext}
       navigatePrevious={navigatePrevious}
     />
