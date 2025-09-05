@@ -9,10 +9,14 @@ export function TweetsView({
   tweetsToDisplay,
   title,
   blurb,
+  navigateNext,
+  navigatePrevious,
 }: {
   tweetsToDisplay: Tweet[];
   title: string;
   blurb?: string;
+  navigateNext?: () => void;
+  navigatePrevious?: () => void;
 }) {
   const {
     labelsByTweetId,
@@ -58,10 +62,11 @@ export function TweetsView({
   return (
     <div
       style={{
-        padding: "10px",
         maxHeight: "100vh",
         display: "flex",
         flexDirection: "column",
+        paddingLeft: "10px",
+        paddingRight: "10px",
       }}
     >
       <h1>{title}</h1>
@@ -151,6 +156,52 @@ export function TweetsView({
             labels={labelsByTweetId[tweet.id] || []}
           />
         ))}
+      </div>
+
+      <div
+        style={{
+          gap: "10px",
+          display: "flex",
+          flexDirection: "row",
+          paddingTop: "10px",
+          paddingBottom: "10px",
+          justifyContent: "end",
+        }}
+      >
+        <button
+          disabled={!navigatePrevious}
+          onClick={navigatePrevious}
+          style={{
+            backgroundColor: "white",
+            borderRadius: "5px",
+            padding: "5px",
+            border: "1px solid black",
+            transition: "background-color 0.1s",
+          }}
+          onMouseEnter={(e) =>
+            (e.currentTarget.style.backgroundColor = "#f0f0f0")
+          }
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "")}
+        >
+          Previous
+        </button>
+        <button
+          disabled={!navigateNext}
+          onClick={navigateNext}
+          style={{
+            backgroundColor: "white",
+            borderRadius: "5px",
+            padding: "5px",
+            border: "1px solid black",
+            transition: "background-color 0.1s",
+          }}
+          onMouseEnter={(e) =>
+            (e.currentTarget.style.backgroundColor = "#f0f0f0")
+          }
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "")}
+        >
+          Next
+        </button>
       </div>
     </div>
   );

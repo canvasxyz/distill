@@ -4,10 +4,11 @@ import { TweetsView } from "./TweetsView";
 import { UploadView } from "./UploadView";
 import { useParams } from "react-router";
 import { filters } from "../filters";
+import { usePagination } from "../hooks/usePagination";
 
 export function FilteredTweetsView() {
   const params = useParams();
-  const { tweets, tweetsById, tweetIdsByLabel } = useStore();
+  const { tweetsById, tweetIdsByLabel } = useStore();
 
   const filterName = params.filter as string;
 
@@ -16,7 +17,16 @@ export function FilteredTweetsView() {
     return tweetIds.map((tweetId) => tweetsById[tweetId]);
   }, [tweetsById, tweetIdsByLabel, filterName]);
 
-  if (tweets === null) {
+  const {
+    itemsToDisplay: paginatedFilteredTweetsToDisplay,
+    navigateNext,
+    navigatePrevious,
+  } = usePagination({
+    items: filteredTweetsToDisplay,
+    limit: 20,
+  });
+
+  if (paginatedFilteredTweetsToDisplay === null) {
     return <UploadView />;
   }
 
@@ -26,7 +36,9 @@ export function FilteredTweetsView() {
     <TweetsView
       title={filter.label}
       blurb={filter.blurb}
-      tweetsToDisplay={filteredTweetsToDisplay}
+      tweetsToDisplay={paginatedFilteredTweetsToDisplay}
+      navigateNext={navigateNext}
+      navigatePrevious={navigatePrevious}
     />
   );
 }
