@@ -9,8 +9,8 @@ type StoreTypes = {
   labelsByTweetId: Record<string, string[]>;
   tweetIdsByLabel: Record<string, string[]>;
   excludedTweetIds: Record<string, boolean>;
-  excludedTweets: Tweet[];
-  includedTweets: Tweet[];
+  excludedTweets: Tweet[] | null;
+  includedTweets: Tweet[] | null;
   addExcludedTweets: (tweetIdsToExclude: string[]) => void;
   removeExcludedTweets: (tweetIdsToInclude: string[]) => void;
 };
@@ -49,8 +49,8 @@ export const useStore = create<StoreTypes>((set, get) => ({
   labelsByTweetId: {},
   tweetIdsByLabel: {},
   excludedTweetIds: {},
-  excludedTweets: [],
-  includedTweets: [],
+  excludedTweets: null,
+  includedTweets: null,
   addExcludedTweets: (tweetIdsToExclude) => {
     set(({ excludedTweetIds: oldExcludedTweets }) => {
       const newExcludedTweets = { ...oldExcludedTweets };

@@ -29,7 +29,8 @@ export const filters = [
   {
     label: "Offensive 🤬",
     name: "offensive",
-    shouldFilter: (tweet: Tweet) => tweet.full_text.includes("fuck"),
+    shouldFilter: (tweet: Tweet) =>
+      tweet.full_text.includes("fuck") || tweet.full_text.includes("shit"),
     blurb: "Tweets that may be offensive to some users, e.g. profanity",
   },
   {

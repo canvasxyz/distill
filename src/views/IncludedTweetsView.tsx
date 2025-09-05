@@ -1,35 +1,28 @@
-import { useMemo } from "react";
 import { useStore } from "../store";
 import { TweetsView } from "./TweetsView";
 import { UploadView } from "./UploadView";
 import { usePagination } from "../hooks/usePagination";
 
 export function IncludedTweetsView() {
-  const { tweets, excludedTweetIds } = useStore();
-
-  const includedTweetsToDisplay = useMemo(() => {
-    if (tweets === null) return [];
-
-    return tweets.filter((tweet) => !excludedTweetIds[tweet.id]);
-  }, [tweets, excludedTweetIds]);
+  const { includedTweets } = useStore();
 
   const {
-    itemsToDisplay: paginatedIncludedTweetsToDisplay,
+    itemsToDisplay: paginatedIncludedTweets,
     navigateNext,
     navigatePrevious,
   } = usePagination({
-    items: includedTweetsToDisplay,
+    items: includedTweets,
     limit: 20,
   });
 
-  if (paginatedIncludedTweetsToDisplay === null) {
+  if (paginatedIncludedTweets === null) {
     return <UploadView />;
   }
 
   return (
     <TweetsView
       title="Included Tweets"
-      tweetsToDisplay={paginatedIncludedTweetsToDisplay}
+      tweetsToDisplay={paginatedIncludedTweets}
       navigateNext={navigateNext}
       navigatePrevious={navigatePrevious}
     />
