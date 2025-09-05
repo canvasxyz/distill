@@ -21,7 +21,6 @@ export function TweetEntry({
 
   return (
     <div
-      onClick={() => onCheckboxChange(!checked)}
       style={{
         backgroundColor: isIncluded ? "#e0ffe1" : "#ffe0e0",
         border: checked ? `3px solid black` : "1px solid black",
