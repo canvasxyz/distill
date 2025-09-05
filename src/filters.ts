@@ -7,18 +7,21 @@ export const filters = [
     name: "embarrassing",
     shouldFilter: () => false,
     blurb: "Tweets that contain embarrassing personal information",
+    requiresOpenrouter: true,
   },
   {
     label: "Beef 🐄",
     name: "beef",
     shouldFilter: () => false,
     blurb: "Tweets that involve arguments and disputes with other people",
+    requiresOpenrouter: true,
   },
   {
     label: "Illegal 🧑‍⚖️",
     name: "illegal",
     shouldFilter: () => false,
     blurb: "Tweets that make reference to illegal activities or content",
+    requiresOpenrouter: true,
   },
   {
     label: "Controversial ⁉️",
@@ -26,6 +29,7 @@ export const filters = [
     shouldFilter: () => false,
     blurb:
       "Tweets that refer to controversial subject areas, e.g. politics and religion",
+    requiresOpenrouter: true,
   },
   {
     label: "Offensive 🤬",
@@ -38,5 +42,6 @@ export const filters = [
     name: "nsfw",
     shouldFilter: () => false,
     blurb: "Tweets that refer to sexually explicit or violent themes",
+    requiresOpenrouter: true,
   },
 ];

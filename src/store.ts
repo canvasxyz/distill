@@ -3,6 +3,7 @@ import type { Account, Tweet } from "./types";
 import { filters } from "./filters";
 
 type StoreTypes = {
+  openrouterKey: string | null;
   account: Account | null;
   setAccount: (account: Account) => void;
   tweets: Tweet[] | null;
@@ -18,6 +19,8 @@ type StoreTypes = {
 };
 
 export const useStore = create<StoreTypes>((set, get) => ({
+  openrouterKey: null,
+
   account: null,
   setAccount: (account) => set({ account }),
   tweets: null,

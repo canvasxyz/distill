@@ -3,7 +3,13 @@ import { LinkButton } from "./LinkButton";
 import { useStore } from "./store";
 
 export function Sidebar() {
-  const { tweets, excludedTweets, includedTweets, tweetsByLabel } = useStore();
+  const {
+    tweets,
+    excludedTweets,
+    includedTweets,
+    tweetsByLabel,
+    openrouterKey,
+  } = useStore();
 
   return (
     <div
@@ -38,7 +44,7 @@ export function Sidebar() {
           <LinkButton
             key={index}
             to={`/filters/${filter.name}`}
-            disabled={!tweets}
+            disabled={!tweets || (filter.requiresOpenrouter && !openrouterKey)}
           >
             {filter.label}{" "}
             {tweetsByLabel[filter.name] &&
