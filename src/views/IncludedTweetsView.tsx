@@ -21,6 +21,7 @@ export function IncludedTweetsView() {
 
   return (
     <TweetsView
+      allTweets={includedTweets!}
       title="Included Tweets"
       tweetsToDisplay={paginatedIncludedTweets!}
       navigateNext={navigateNext}

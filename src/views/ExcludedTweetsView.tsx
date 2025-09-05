@@ -21,6 +21,7 @@ export function ExcludedTweetsView() {
 
   return (
     <TweetsView
+      allTweets={excludedTweets!}
       title="Excluded Tweets"
       tweetsToDisplay={paginatedExcludedTweets!}
       navigateNext={navigateNext}

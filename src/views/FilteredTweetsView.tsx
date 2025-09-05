@@ -27,6 +27,7 @@ export function FilteredTweetsView() {
 
   return (
     <TweetsView
+      allTweets={tweetsByLabel[filterName]}
       title={filter.label}
       blurb={filter.blurb}
       tweetsToDisplay={paginatedFilteredTweets!}

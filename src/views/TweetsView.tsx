@@ -4,14 +4,17 @@ import { TweetEntry } from "../TweetEntry";
 import { useStore } from "../store";
 import { UploadView } from "./UploadView";
 import type { Tweet } from "../types";
+import { PseudoLink } from "../PseudoLink";
 
 export function TweetsView({
+  allTweets,
   tweetsToDisplay,
   title,
   blurb,
   navigateNext,
   navigatePrevious,
 }: {
+  allTweets: Tweet[];
   tweetsToDisplay: Tweet[];
   title: string;
   blurb?: string;
@@ -49,6 +52,14 @@ export function TweetsView({
     }
   };
 
+  const checkAllTweets = () => {
+    const newCheckedTweets: Record<string, boolean> = {};
+    for (const tweet of allTweets) {
+      newCheckedTweets[tweet.id] = true;
+    }
+    setCheckedTweets(newCheckedTweets);
+  };
+
   const handleIncludeExclude = (newStatus: "included" | "excluded") => {
     const checkedTweetIds = Object.keys(checkedTweets).filter(
       (tweetId) => checkedTweets[tweetId]
@@ -81,15 +92,16 @@ export function TweetsView({
     >
       <h1>{title}</h1>
       {blurb && (
-        <p>
+        <div style={{ marginBottom: "10px" }}>
           <em>{blurb}</em>
-        </p>
+        </div>
       )}
       <div
         style={{
           display: "flex",
           gap: "10px",
-          marginBottom: "20px",
+          marginBottom: "10px",
+          alignItems: "center",
         }}
       >
         <input
@@ -134,6 +146,16 @@ export function TweetsView({
         >
           Exclude
         </button>
+        <div>
+          {Object.keys(checkedTweets).length > 0 && (
+            <>
+              {Object.keys(checkedTweets).length} tweets are selected.{" "}
+              <PseudoLink onClick={checkAllTweets}>
+                Select all tweets in {title}.
+              </PseudoLink>
+            </>
+          )}
+        </div>
       </div>
 
       <div style={{ overflowY: "auto", flexGrow: 1 }}>

@@ -17,6 +17,7 @@ export function AllTweetsView() {
   return (
     <TweetsView
       title="All Tweets"
+      allTweets={tweets}
       tweetsToDisplay={itemsToDisplay!}
       navigateNext={navigateNext}
       navigatePrevious={navigatePrevious}
