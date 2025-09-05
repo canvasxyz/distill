@@ -62,6 +62,8 @@ export function TweetEntry({
         <span>&quot;{tweet.full_text}&quot;</span>
         {/* labels */}
         <div style={{ display: "flex", gap: "10px" }}>
+          <span>⭐ {tweet.favorite_count}</span>
+          <span>🔁 {tweet.retweet_count}</span>
           {labels.map((label, index) => (
             <a href={`#/filters/${label}`}>
               <div
