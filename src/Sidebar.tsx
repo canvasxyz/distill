@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { filters } from "./filters";
 import { LinkButton } from "./LinkButton";
 import { useStore } from "./store";
@@ -9,7 +10,10 @@ export function Sidebar() {
     includedTweets,
     tweetsByLabel,
     openrouterKey,
+    setOpenrouterKey,
   } = useStore();
+
+  const [formOpenrouterKey, setFormOpenrouterKey] = useState("");
 
   return (
     <div
@@ -80,6 +84,27 @@ export function Sidebar() {
         >
           Download Included Tweets
         </button> */}
+
+        {openrouterKey ? (
+          <span>
+            <a href="https://openrouter.ai/">OpenRouter</a> enabled
+          </span>
+        ) : (
+          <>
+            Some filters require OpenRouter - enter your API key to enable them:
+            <input
+              value={formOpenrouterKey}
+              onChange={(e) => setFormOpenrouterKey(e.target.value)}
+            />
+            <button
+              onClick={() => {
+                setOpenrouterKey(formOpenrouterKey);
+              }}
+            >
+              Enable OpenRouter
+            </button>
+          </>
+        )}
       </div>
     </div>
   );
