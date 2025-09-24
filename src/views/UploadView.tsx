@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import type { Account, Tweet } from "../types";
 import { unzip, type ZipEntry } from "unzipit";
 import { parseTwitterArchiveFile } from "../twitterArchiveParser";
@@ -63,6 +63,7 @@ const processTwitterArchive = async (
 
 export function UploadView() {
   const { setAccount, setTweets, tweets } = useStore();
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const handleFileUpload = async (
     event: React.ChangeEvent<HTMLInputElement>
@@ -108,6 +109,9 @@ export function UploadView() {
           cursor: "pointer",
           transition: "background-color 0.2s",
         }}
+        onClick={() => {
+          fileInputRef.current!.click();
+        }}
         onDragOver={(e) => e.preventDefault()}
         onDrop={async (e) => {
           e.preventDefault();
@@ -130,6 +134,7 @@ export function UploadView() {
         </p>
         <input
           id="file-upload"
+          ref={fileInputRef}
           type="file"
           accept=".zip"
           onChange={handleFileUpload}
