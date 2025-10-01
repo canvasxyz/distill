@@ -20,6 +20,79 @@ export function TweetEntry({
   const { account } = useStore();
   const color = isIncluded ? "green" : "red";
 
+  // Find all regex matches from labels
+  // Each match: { start: number, end: number }
+  type MatchRange = { start: number; end: number };
+  const matchRanges: MatchRange[] = [];
+
+  labels.forEach((label) => {
+    if (
+      label.filterMatch &&
+      label.filterMatch.type === "regex" &&
+      label.filterMatch.filter &&
+      label.filterMatch.matches &&
+      typeof label.filterMatch.matches.index === "number"
+    ) {
+      const matchText = label.filterMatch.matches[0];
+      const start = label.filterMatch.matches.index;
+      if (typeof start === "number" && matchText) {
+        matchRanges.push({ start, end: start + matchText.length });
+      }
+    }
+  });
+
+  // Merge overlapping/adjacent ranges
+  matchRanges.sort((a, b) => a.start - b.start);
+  const mergedRanges: MatchRange[] = [];
+  for (const range of matchRanges) {
+    if (
+      mergedRanges.length > 0 &&
+      range.start <= mergedRanges[mergedRanges.length - 1].end
+    ) {
+      // Overlap or adjacent, merge
+      mergedRanges[mergedRanges.length - 1].end = Math.max(
+        mergedRanges[mergedRanges.length - 1].end,
+        range.end
+      );
+    } else {
+      mergedRanges.push({ ...range });
+    }
+  }
+
+  // Split tweet.full_text into parts, highlighting matches
+  const highlightedTweetParts: React.ReactNode[] = [];
+  let lastIndex = 0;
+  for (const { start, end } of mergedRanges) {
+    if (lastIndex < start) {
+      highlightedTweetParts.push(
+        <span key={lastIndex + "-plain"}>
+          {tweet.full_text.slice(lastIndex, start)}
+        </span>
+      );
+    }
+    highlightedTweetParts.push(
+      <span
+        key={start + "-highlight"}
+        style={{
+          backgroundColor: "#fff3b0",
+          fontWeight: "bold",
+          borderRadius: "3px",
+          padding: "0 2px",
+        }}
+      >
+        {tweet.full_text.slice(start, end)}
+      </span>
+    );
+    lastIndex = end;
+  }
+  if (lastIndex < tweet.full_text.length) {
+    highlightedTweetParts.push(
+      <span key={lastIndex + "-plain-end"}>
+        {tweet.full_text.slice(lastIndex)}
+      </span>
+    );
+  }
+
   return (
     <div
       style={{
@@ -60,13 +133,13 @@ export function TweetEntry({
           {new Date(tweet.created_at).toLocaleString()}
         </div>
         {/* tweet body */}
-        <span>&quot;{tweet.full_text}&quot;</span>
+        <span>&quot;{highlightedTweetParts}&quot;</span>
         {/* labels */}
         <div style={{ display: "flex", gap: "10px" }}>
           <span>⭐ {tweet.favorite_count}</span>
           <span>🔁 {tweet.retweet_count}</span>
           {labels.map((label, index) => (
-            <a href={`#/filters/${label}`}>
+            <a href={`#/filters/${label.name}`} key={index}>
               <div
                 style={{
                   backgroundColor: "white",
@@ -79,7 +152,6 @@ export function TweetEntry({
                   fontSize: "12px",
                   color: "#333",
                 }}
-                key={index}
               >
                 {label.name}
               </div>
