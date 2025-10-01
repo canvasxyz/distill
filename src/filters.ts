@@ -18,6 +18,14 @@ export const filters = [
     requiresOpenrouter: true,
   },
   {
+    label: "Dunk 🤣",
+    name: "dunk",
+    shouldFilter: () => false,
+    blurb:
+      "Tweets that involve people dunking on other people, criticising, slandering",
+    requiresOpenrouter: true,
+  },
+  {
     label: "Illegal 🧑‍⚖️",
     name: "illegal",
     shouldFilter: (tweet: Tweet) => illegalWordsRegExp.test(tweet.full_text),
@@ -31,6 +39,13 @@ export const filters = [
     blurb:
       "Tweets that refer to controversial subject areas, e.g. politics and religion",
     requiresOpenrouter: true,
+  },
+  {
+    label: "Horny 😳",
+    name: "horny",
+    shouldFilter: () => false,
+    requiresOpenrouter: true,
+    blurb: "Sexually provocative, flirty tweets",
   },
   {
     label: "Offensive 🤬",

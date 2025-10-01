@@ -11,6 +11,8 @@ export function Sidebar() {
     tweetsByLabel,
     openrouterKey,
     setOpenrouterKey,
+    analyzeTweets,
+    printLabels,
   } = useStore();
 
   const [formOpenrouterKey, setFormOpenrouterKey] = useState("");
@@ -86,9 +88,36 @@ export function Sidebar() {
         </button> */}
 
         {openrouterKey ? (
-          <span>
-            <a href="https://openrouter.ai/">OpenRouter</a> enabled
-          </span>
+          <>
+            <span>
+              <a href="https://openrouter.ai/">OpenRouter</a> enabled
+            </span>
+            <button
+              style={{
+                borderRadius: "5px",
+                padding: "5px",
+                transition: "background-color 0.1s",
+                textDecoration: "none",
+                color: "black",
+                border: "1px solid blue",
+                backgroundColor: "white",
+                cursor: "pointer",
+                marginTop: "10px",
+                marginBottom: "10px",
+              }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.backgroundColor = "#f0f0f0")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.backgroundColor = "white")
+              }
+              onClick={() => {
+                analyzeTweets();
+              }}
+            >
+              Analyze Tweets ⚡
+            </button>
+          </>
         ) : (
           <>
             Some filters require OpenRouter - enter your API key to enable them:
@@ -105,6 +134,31 @@ export function Sidebar() {
             </button>
           </>
         )}
+        <button
+          style={{
+            borderRadius: "5px",
+            padding: "5px",
+            transition: "background-color 0.1s",
+            textDecoration: "none",
+            color: "black",
+            border: "1px solid blue",
+            backgroundColor: "white",
+            cursor: "pointer",
+            marginTop: "10px",
+            marginBottom: "10px",
+          }}
+          onMouseEnter={(e) =>
+            (e.currentTarget.style.backgroundColor = "#f0f0f0")
+          }
+          onMouseLeave={(e) =>
+            (e.currentTarget.style.backgroundColor = "white")
+          }
+          onClick={() => {
+            printLabels();
+          }}
+        >
+          Print labels
+        </button>
       </div>
     </div>
   );
