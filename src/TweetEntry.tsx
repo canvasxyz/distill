@@ -130,7 +130,12 @@ export function TweetEntry({
         {/* username */}
         <div>
           {account?.accountDisplayName} ·{" "}
-          {new Date(tweet.created_at).toLocaleString()}
+          <a
+            href={`https://x.com/${account?.username}/status/${tweet.id}`}
+            target="_blank"
+          >
+            {new Date(tweet.created_at).toLocaleString()}
+          </a>
         </div>
         {/* tweet body */}
         <span>&quot;{highlightedTweetParts}&quot;</span>
