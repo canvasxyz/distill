@@ -404,4 +404,6 @@ export const offensiveWords = [
   "🖕",
 ];
 
-export const offensiveWordsRegExp = new RegExp(offensiveWords.join("|"));
+export const offensiveWordsRegExp = new RegExp(
+  offensiveWords.map((word) => `\\b${word}\\b`).join("|")
+);

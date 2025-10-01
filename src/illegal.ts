@@ -13,4 +13,6 @@ export const illegalWords = [
   "crack",
 ];
 
-export const illegalWordsRegExp = new RegExp(illegalWords.join("|"));
+export const illegalWordsRegExp = new RegExp(
+  illegalWords.map((word) => `\\b${word}\\b`).join("|")
+);
