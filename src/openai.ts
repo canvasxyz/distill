@@ -1,13 +1,5 @@
 export const serverUrl = "https://tweet-analysis-worker.bob-wbb.workers.dev";
 
-type ClassificationResult = {
-  Offensive: number;
-  Beef: number;
-  Dunk: number;
-  Horny: number;
-  NSFW: number;
-};
-
 export const classificationLabels = [
   "Offensive",
   "Beef",

@@ -9,7 +9,6 @@ export function Sidebar() {
     includedTweets,
     tweetsByLabel,
     analyzeTweets,
-    printLabels,
   } = useStore();
 
   return (
