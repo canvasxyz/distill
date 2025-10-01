@@ -83,7 +83,35 @@ export function Sidebar() {
 
         {analysisInProgress ? (
           <>
-            {numTweetsAnalyzed}/{totalNumTweets} analyzed
+            <div style={{ width: "100%", margin: "10px 0" }}>
+              <div
+                style={{ display: "flex", alignItems: "center", gap: "10px" }}
+              >
+                <div
+                  style={{
+                    flex: 1,
+                    height: "16px",
+                    background: "#eee",
+                    borderRadius: "8px",
+                    overflow: "hidden",
+                    position: "relative",
+                    minWidth: "60px",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: `${totalNumTweets ? (numTweetsAnalyzed / totalNumTweets) * 100 : 0}%`,
+                      height: "100%",
+                      background: "#4caf50",
+                      transition: "width 0.3s",
+                    }}
+                  />
+                </div>
+                <span style={{ fontSize: "13px", minWidth: "90px" }}>
+                  {numTweetsAnalyzed}/{totalNumTweets} analyzed
+                </span>
+              </div>
+            </div>
           </>
         ) : (
           <button

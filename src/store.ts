@@ -5,7 +5,7 @@ import PQueue from "p-queue";
 
 import { classificationLabels, getClassification } from "./openai";
 
-const concurrency = 10;
+const concurrency = 20;
 
 type StoreTypes = {
   analyzeTweetState: number; // % completed analyzing tweets
@@ -40,7 +40,7 @@ export const useStore = create<StoreTypes>((set, get) => ({
 
     set({ analysisInProgress: true });
 
-    for (const tweet of tweets.slice(0, 1000)) {
+    for (const tweet of tweets) {
       analysisQueue.add(async () => {
         const { setLabel } = get();
         try {
