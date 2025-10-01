@@ -79,9 +79,6 @@ export function Sidebar() {
           Download Included Tweets
         </button> */}
 
-        <span>
-          <a href="https://openrouter.ai/">OpenRouter</a> enabled
-        </span>
         <button
           style={
             tweets
@@ -122,7 +119,7 @@ export function Sidebar() {
           Analyze Tweets ⚡
         </button>
 
-        <button
+        {/* <button
           style={{
             borderRadius: "5px",
             padding: "5px",
@@ -146,7 +143,7 @@ export function Sidebar() {
           }}
         >
           Print labels
-        </button>
+        </button> */}
       </div>
     </div>
   );
