@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { filters } from "./filters";
 import { LinkButton } from "./LinkButton";
 import { useStore } from "./store";
@@ -9,13 +8,9 @@ export function Sidebar() {
     excludedTweets,
     includedTweets,
     tweetsByLabel,
-    openrouterKey,
-    setOpenrouterKey,
     analyzeTweets,
     printLabels,
   } = useStore();
-
-  const [formOpenrouterKey, setFormOpenrouterKey] = useState("");
 
   return (
     <div
@@ -37,7 +32,6 @@ export function Sidebar() {
         <LinkButton to="/excluded-tweets" disabled={!tweets}>
           Excluded 👎 {excludedTweets && `(${excludedTweets.length})`}
         </LinkButton>
-
         <hr
           style={{
             margin: "20px 0",
@@ -45,19 +39,17 @@ export function Sidebar() {
             borderTop: "1px solid #ccc",
           }}
         />
-
         {filters.map((filter, index) => (
           <LinkButton
             key={index}
             to={`/filters/${filter.name}`}
-            disabled={!tweets || (filter.requiresOpenrouter && !openrouterKey)}
+            disabled={!tweets}
           >
             {filter.label}{" "}
             {tweetsByLabel[filter.name] &&
               `(${tweetsByLabel[filter.name].length})`}
           </LinkButton>
         ))}
-
         {/* <hr
           style={{
             margin: "20px 0",
@@ -87,53 +79,49 @@ export function Sidebar() {
           Download Included Tweets
         </button> */}
 
-        {openrouterKey ? (
-          <>
-            <span>
-              <a href="https://openrouter.ai/">OpenRouter</a> enabled
-            </span>
-            <button
-              style={{
-                borderRadius: "5px",
-                padding: "5px",
-                transition: "background-color 0.1s",
-                textDecoration: "none",
-                color: "black",
-                border: "1px solid blue",
-                backgroundColor: "white",
-                cursor: "pointer",
-                marginTop: "10px",
-                marginBottom: "10px",
-              }}
-              onMouseEnter={(e) =>
-                (e.currentTarget.style.backgroundColor = "#f0f0f0")
-              }
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.backgroundColor = "white")
-              }
-              onClick={() => {
-                analyzeTweets();
-              }}
-            >
-              Analyze Tweets ⚡
-            </button>
-          </>
-        ) : (
-          <>
-            Some filters require OpenRouter - enter your API key to enable them:
-            <input
-              value={formOpenrouterKey}
-              onChange={(e) => setFormOpenrouterKey(e.target.value)}
-            />
-            <button
-              onClick={() => {
-                setOpenrouterKey(formOpenrouterKey);
-              }}
-            >
-              Enable OpenRouter
-            </button>
-          </>
-        )}
+        <span>
+          <a href="https://openrouter.ai/">OpenRouter</a> enabled
+        </span>
+        <button
+          style={
+            tweets
+              ? {
+                  borderRadius: "5px",
+                  padding: "5px",
+                  transition: "background-color 0.1s",
+                  textDecoration: "none",
+                  color: "black",
+                  border: "1px solid blue",
+                  backgroundColor: "white",
+                  cursor: "pointer",
+                  marginTop: "10px",
+                  marginBottom: "10px",
+                }
+              : {
+                  borderRadius: "5px",
+                  padding: "5px",
+                  textDecoration: "none",
+                  color: "black",
+                  border: "1px solid blue",
+                  backgroundColor: "#ebebeb",
+                  marginTop: "10px",
+                  marginBottom: "10px",
+                }
+          }
+          onMouseEnter={(e) => {
+            if (tweets) e.currentTarget.style.backgroundColor = "#f0f0f0";
+          }}
+          onMouseLeave={(e) => {
+            if (tweets) e.currentTarget.style.backgroundColor = "white";
+          }}
+          onClick={() => {
+            analyzeTweets();
+          }}
+          disabled={!tweets}
+        >
+          Analyze Tweets ⚡
+        </button>
+
         <button
           style={{
             borderRadius: "5px",

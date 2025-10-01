@@ -1,9 +1,4 @@
-import { JSONParse } from "json-with-bigint";
-import type OpenAI from "openai";
-
-function stripThinkTags(text: string) {
-  return text.replace(/<think>.*?<\/think>/gs, "").trim();
-}
+export const serverUrl = "https://tweet-analysis-worker.bob-wbb.workers.dev";
 
 type ClassificationResult = {
   Offensive: number;
@@ -21,98 +16,34 @@ export const classificationLabels = [
   "NSFW",
 ] as const;
 
-export async function classifyTweet(
-  client: OpenAI,
-  tweet: string,
-  model: string
-): Promise<ClassificationResult | null> {
-  const response = await client.chat.completions.create({
-    model,
-    messages: [
-      {
-        role: "system",
-        content: `You are a tweet classifier.
-Given a tweet, output a JSON object with scores between 0 and 1 (inclusive) for each of the following categories:
-- Offensive: Contains slurs, harassment, or hateful/abusive language.
-- Beef: Targeted negativity or conflict between users, communities, or groups.
-- Dunk: Mocking or ridiculing someone/something, often humorously.
-- Horny: Expresses sexual desire, thirst, or innuendo.
-- NSFW: Explicit sexual or graphic adult content (stronger than “Horny”).
-
-The scores should represent the likelihood that the tweet belongs in each category. A score of 0 means "not at all" and 1 means "definitely."
-
-Format your output strictly as JSON:
-\`
-{
-  "Offensive": 0.0,
-  "Beef": 0.0,
-  "Dunk": 0.0,
-  "Horny": 0.0,
-  "NSFW": 0.0
+function stripThinkTags(text: string) {
+  return text.replace(/<think>.*?<\/think>/gs, "").trim();
 }
 
-\`
-
-Example input: "Tweet: "Lmao this guy can’t even dribble, what a clown.""
-
-\`
-{
-  "Offensive": 0.0,
-  "Beef": 0.2,
-  "Dunk": 0.9,
-  "Horny": 0.0,
-  "NSFW": 0.0
-}
-\`
-
-        `,
-      },
-      {
-        role: "user",
-        content: `Tweet: '${tweet}'`,
-      },
-    ],
-    response_format: {
-      type: "json_schema",
-      max_tokens: 10000,
-      json_schema: {
-        name: "tweet_classification",
-        schema: {
-          type: "object",
-          properties: {
-            Offensive: { type: "number", minimum: 0, maximum: 1 },
-            Beef: { type: "number", minimum: 0, maximum: 1 },
-            Dunk: { type: "number", minimum: 0, maximum: 1 },
-            Horny: { type: "number", minimum: 0, maximum: 1 },
-            NSFW: { type: "number", minimum: 0, maximum: 1 },
-          },
-          required: ["Offensive", "Beef", "Dunk", "Horny", "NSFW"],
-          additionalProperties: false,
-        },
-      },
-    },
+export const getClassification = async (text: string) => {
+  const classificationResponse = await fetch(serverUrl, {
+    method: "POST",
+    body: JSON.stringify({ text }),
+    headers: { "Content-Type": "application/json" },
   });
+  const data = await classificationResponse.json();
 
-  const responseContent = response.choices[0].message.content;
-  if (responseContent === null) {
-    return null;
-  }
+  // try to directly parse result
+  try {
+    const result = JSON.parse(data.choices[0].message.content);
+    return result;
+  } catch (e) {}
 
-  const contentNoThink = stripThinkTags(responseContent);
+  // maybe it has the <think></think> tag, try to remove it then parse again
+
+  const contentNoThink = stripThinkTags(data.choices[0].message.content);
 
   // Parse structured output
   try {
-    return JSONParse(contentNoThink);
+    return JSON.parse(contentNoThink);
   } catch (e) {
     // failed to parse whole response - maybe it includes a thinking part?
   }
 
-  try {
-    const parts = contentNoThink.split("\n");
-    const lastPart = parts[parts.length - 1];
-    return JSONParse(lastPart);
-  } catch (e) {}
-
-  // if we cannot parse the response then don't return anything
   return null;
-}
+};

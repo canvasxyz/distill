@@ -2,15 +2,12 @@ import { create } from "zustand";
 import type { Account, Tweet } from "./types";
 import { filters } from "./filters";
 import PQueue from "p-queue";
-import OpenAI from "openai";
-import { classificationLabels, classifyTweet } from "./openai";
 
-const concurrency = 5;
-const openaiProviderUrl = "https://api.deepinfra.com/v1";
+import { classificationLabels, getClassification } from "./openai";
+
+const concurrency = 10;
 
 type StoreTypes = {
-  openrouterKey: string | null;
-  setOpenrouterKey: (key: string) => void;
   analyzeTweetState: number; // % completed analyzing tweets
   analyzeTweets: () => void;
   analysisQueue: PQueue;
@@ -31,39 +28,27 @@ type StoreTypes = {
 };
 
 export const useStore = create<StoreTypes>((set, get) => ({
-  openrouterKey: null,
-  setOpenrouterKey: (openrouterKey) => set({ openrouterKey }),
   analyzeTweetState: 0,
   analyzeTweets: () => {
-    const { analysisQueue, openrouterKey, tweets } = get();
-    if (!openrouterKey || tweets === null) {
+    const { analysisQueue, tweets } = get();
+    if (tweets === null) {
       // fail
       return;
     }
 
-    const client = new OpenAI({
-      baseURL: openaiProviderUrl,
-      apiKey: openrouterKey,
-      dangerouslyAllowBrowser: true,
-    });
-
-    const model = "mistralai/Mistral-Small-3.2-24B-Instruct-2506";
-
-    for (const tweet of tweets.slice(0, 100)) {
+    for (const tweet of tweets.slice(0, 1000)) {
       analysisQueue.add(async () => {
         const { setLabel } = get();
-        const result = await classifyTweet(client, tweet.full_text, model);
-        console.log(result);
+        try {
+          const classification = await getClassification(tweet.full_text);
 
-        if (result === null) {
-          return;
-        }
-        for (const label of classificationLabels) {
-          // set label
-          if (result[label] > 0.5) {
-            setLabel(tweet, label.toLowerCase());
+          for (const label of classificationLabels) {
+            // set label
+            if (classification[label] > 0.5) {
+              setLabel(tweet, label.toLowerCase());
+            }
           }
-        }
+        } catch (e) {}
       });
     }
     analysisQueue.on("idle", () => {
