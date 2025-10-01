@@ -1,3 +1,4 @@
+import { illegalWordsRegExp } from "./illegal";
 import { offensiveWordsRegExp } from "./offensive";
 import type { Tweet } from "./types";
 
@@ -19,9 +20,9 @@ export const filters = [
   {
     label: "Illegal 🧑‍⚖️",
     name: "illegal",
-    shouldFilter: () => false,
+    shouldFilter: (tweet: Tweet) => illegalWordsRegExp.test(tweet.full_text),
     blurb: "Tweets that make reference to illegal activities or content",
-    requiresOpenrouter: true,
+    // requiresOpenrouter: true,
   },
   {
     label: "Controversial ⁉️",
