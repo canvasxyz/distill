@@ -9,8 +9,11 @@ export function Sidebar() {
     includedTweets,
     tweetsByLabel,
     analyzeTweets,
+    numTweetsAnalyzed,
+    analysisInProgress,
   } = useStore();
 
+  const totalNumTweets = (tweets || []).length;
   return (
     <div
       style={{
@@ -78,45 +81,51 @@ export function Sidebar() {
           Download Included Tweets
         </button> */}
 
-        <button
-          style={
-            tweets
-              ? {
-                  borderRadius: "5px",
-                  padding: "5px",
-                  transition: "background-color 0.1s",
-                  textDecoration: "none",
-                  color: "black",
-                  border: "1px solid blue",
-                  backgroundColor: "white",
-                  cursor: "pointer",
-                  marginTop: "10px",
-                  marginBottom: "10px",
-                }
-              : {
-                  borderRadius: "5px",
-                  padding: "5px",
-                  textDecoration: "none",
-                  color: "black",
-                  border: "1px solid blue",
-                  backgroundColor: "#ebebeb",
-                  marginTop: "10px",
-                  marginBottom: "10px",
-                }
-          }
-          onMouseEnter={(e) => {
-            if (tweets) e.currentTarget.style.backgroundColor = "#f0f0f0";
-          }}
-          onMouseLeave={(e) => {
-            if (tweets) e.currentTarget.style.backgroundColor = "white";
-          }}
-          onClick={() => {
-            analyzeTweets();
-          }}
-          disabled={!tweets}
-        >
-          Analyze Tweets ⚡
-        </button>
+        {analysisInProgress ? (
+          <>
+            {numTweetsAnalyzed}/{totalNumTweets} analyzed
+          </>
+        ) : (
+          <button
+            style={
+              tweets
+                ? {
+                    borderRadius: "5px",
+                    padding: "5px",
+                    transition: "background-color 0.1s",
+                    textDecoration: "none",
+                    color: "black",
+                    border: "1px solid blue",
+                    backgroundColor: "white",
+                    cursor: "pointer",
+                    marginTop: "10px",
+                    marginBottom: "10px",
+                  }
+                : {
+                    borderRadius: "5px",
+                    padding: "5px",
+                    textDecoration: "none",
+                    color: "black",
+                    border: "1px solid blue",
+                    backgroundColor: "#ebebeb",
+                    marginTop: "10px",
+                    marginBottom: "10px",
+                  }
+            }
+            onMouseEnter={(e) => {
+              if (tweets) e.currentTarget.style.backgroundColor = "#f0f0f0";
+            }}
+            onMouseLeave={(e) => {
+              if (tweets) e.currentTarget.style.backgroundColor = "white";
+            }}
+            onClick={() => {
+              analyzeTweets();
+            }}
+            disabled={!tweets}
+          >
+            Analyze Tweets ⚡
+          </button>
+        )}
 
         {/* <button
           style={{

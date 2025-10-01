@@ -10,6 +10,8 @@ const concurrency = 10;
 type StoreTypes = {
   analyzeTweetState: number; // % completed analyzing tweets
   analyzeTweets: () => void;
+  numTweetsAnalyzed: number;
+  analysisInProgress: boolean;
   analysisQueue: PQueue;
   account: Account | null;
   setAccount: (account: Account) => void;
@@ -36,6 +38,8 @@ export const useStore = create<StoreTypes>((set, get) => ({
       return;
     }
 
+    set({ analysisInProgress: true });
+
     for (const tweet of tweets.slice(0, 1000)) {
       analysisQueue.add(async () => {
         const { setLabel } = get();
@@ -51,15 +55,21 @@ export const useStore = create<StoreTypes>((set, get) => ({
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (e) {
           // TODO: handle error?
+        } finally {
+          set(({ numTweetsAnalyzed }) => ({
+            numTweetsAnalyzed: numTweetsAnalyzed + 1,
+          }));
         }
       });
     }
     analysisQueue.on("idle", () => {
-      console.log("done!");
+      set({ numTweetsAnalyzed: 0, analysisInProgress: false });
     });
     // submit the current tweets to OpenRouter (or whatever inference provider)
     // actually using Deep Infra for now
   },
+  numTweetsAnalyzed: 0,
+  analysisInProgress: false,
   account: null,
   setAccount: (account) => set({ account }),
   tweets: null,
