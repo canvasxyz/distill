@@ -24,7 +24,10 @@ export const getClassification = async (text: string) => {
   try {
     const result = JSON.parse(data.choices[0].message.content);
     return result;
-  } catch (e) {}
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (e) {
+    // do nothing
+  }
 
   // maybe it has the <think></think> tag, try to remove it then parse again
 
@@ -33,6 +36,7 @@ export const getClassification = async (text: string) => {
   // Parse structured output
   try {
     return JSON.parse(contentNoThink);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (e) {
     // failed to parse whole response - maybe it includes a thinking part?
   }

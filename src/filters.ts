@@ -3,13 +3,14 @@ import { offensiveWordsRegExp } from "./offensive";
 import type { Tweet } from "./types";
 
 export const filters = [
-  {
-    label: "Embarrassing 🫣",
-    name: "embarrassing",
-    shouldFilter: () => false,
-    blurb: "Tweets that contain embarrassing personal information",
-    requiresOpenrouter: true,
-  },
+  // not yet implemented - use LLM?
+  // {
+  //   label: "Embarrassing 🫣",
+  //   name: "embarrassing",
+  //   shouldFilter: () => false,
+  //   blurb: "Tweets that contain embarrassing personal information",
+  //   requiresOpenrouter: true,
+  // },
   {
     label: "Beef 🐄",
     name: "beef",
@@ -32,14 +33,15 @@ export const filters = [
     blurb: "Tweets that make reference to illegal activities or content",
     // requiresOpenrouter: true,
   },
-  {
-    label: "Controversial ⁉️",
-    name: "controversial",
-    shouldFilter: () => false,
-    blurb:
-      "Tweets that refer to controversial subject areas, e.g. politics and religion",
-    requiresOpenrouter: true,
-  },
+  // not yet implemented - use LLM?
+  // {
+  //   label: "Controversial ⁉️",
+  //   name: "controversial",
+  //   shouldFilter: () => false,
+  //   blurb:
+  //     "Tweets that refer to controversial subject areas, e.g. politics and religion",
+  //   requiresOpenrouter: true,
+  // },
   {
     label: "Horny 😳",
     name: "horny",
