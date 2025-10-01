@@ -6,7 +6,6 @@ export const illegalWords = [
   "mdma",
   "blunt",
   "ketamine",
-  "ket",
   "k hole",
   "heroin",
   "dope",

@@ -2,64 +2,98 @@ import { illegalWordsRegExp } from "./illegal";
 import { offensiveWordsRegExp } from "./offensive";
 import type { Tweet } from "./types";
 
-export const filters = [
+export type FilterMatch =
+  | { filter: false; type: "llm" }
+  | { filter: true; type: "llm" }
+  | { filter: false; type: "regex" }
+  | { filter: true; type: "regex"; matches: RegExpExecArray };
+
+export const filters: {
+  label: string;
+  name: string;
+  evaluateFilter: (tweet: Tweet) => FilterMatch;
+  blurb: string;
+}[] = [
   // not yet implemented - use LLM?
   // {
   //   label: "Embarrassing 🫣",
   //   name: "embarrassing",
-  //   shouldFilter: () => false,
+  // evaluateFilter: () => ({
+  //   filter: false,
+  // }),
   //   blurb: "Tweets that contain embarrassing personal information",
-  //   requiresOpenrouter: true,
   // },
   {
     label: "Beef 🐄",
     name: "beef",
-    shouldFilter: () => false,
+    evaluateFilter: () => ({
+      filter: false,
+      type: "llm",
+    }),
     blurb: "Tweets that involve arguments and disputes with other people",
-    requiresOpenrouter: true,
   },
   {
     label: "Dunk 🤣",
     name: "dunk",
-    shouldFilter: () => false,
+    evaluateFilter: () => ({
+      filter: false,
+      type: "llm",
+    }),
     blurb:
       "Tweets that involve people dunking on other people, criticising, slandering",
-    requiresOpenrouter: true,
   },
   {
     label: "Illegal 🧑‍⚖️",
     name: "illegal",
-    shouldFilter: (tweet: Tweet) => illegalWordsRegExp.test(tweet.full_text),
+    evaluateFilter: (tweet: Tweet) => {
+      const execResult = illegalWordsRegExp.exec(tweet.full_text);
+      if (execResult) {
+        return { filter: true, type: "regex", matches: execResult };
+      } else {
+        return { filter: false, type: "regex" };
+      }
+    },
     blurb: "Tweets that make reference to illegal activities or content",
-    // requiresOpenrouter: true,
   },
   // not yet implemented - use LLM?
   // {
   //   label: "Controversial ⁉️",
   //   name: "controversial",
-  //   shouldFilter: () => false,
+  // evaluateFilter: () => ({
+  //   filter: false,
+  // }),
   //   blurb:
   //     "Tweets that refer to controversial subject areas, e.g. politics and religion",
-  //   requiresOpenrouter: true,
   // },
   {
     label: "Horny 😳",
     name: "horny",
-    shouldFilter: () => false,
-    requiresOpenrouter: true,
+    evaluateFilter: () => ({
+      filter: false,
+      type: "llm",
+    }),
     blurb: "Sexually provocative, flirty tweets",
   },
   {
     label: "Offensive 🤬",
     name: "offensive",
-    shouldFilter: (tweet: Tweet) => offensiveWordsRegExp.test(tweet.full_text),
+    evaluateFilter: (tweet: Tweet) => {
+      const execResult = offensiveWordsRegExp.exec(tweet.full_text);
+      if (execResult) {
+        return { filter: true, type: "regex", matches: execResult };
+      } else {
+        return { filter: false, type: "regex" };
+      }
+    },
     blurb: "Tweets that may be offensive to some users, e.g. profanity",
   },
   {
     label: "NSFW 🔞",
     name: "nsfw",
-    shouldFilter: () => false,
+    evaluateFilter: () => ({
+      filter: false,
+      type: "llm",
+    }),
     blurb: "Tweets that refer to sexually explicit or violent themes",
-    requiresOpenrouter: true,
   },
 ];

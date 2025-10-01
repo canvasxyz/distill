@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import type { Account, Tweet } from "./types";
-import { filters } from "./filters";
+import { filters, type FilterMatch } from "./filters";
 import PQueue from "p-queue";
 
 import { classificationLabels, getClassification } from "./openai";
@@ -16,7 +16,7 @@ type StoreTypes = {
   tweets: Tweet[] | null;
   tweetsById: Record<string, Tweet>;
   setTweets: (tweets: Tweet[]) => void;
-  labelsByTweetId: Record<string, string[]>;
+  labelsByTweetId: Record<string, { name: string; filterMatch: FilterMatch }[]>;
   tweetsByLabel: Record<string, Tweet[]>;
   printLabels: () => void;
   setLabel: (tweet: Tweet, label: string) => void;
@@ -48,7 +48,10 @@ export const useStore = create<StoreTypes>((set, get) => ({
               setLabel(tweet, label.toLowerCase());
             }
           }
-        } catch (e) {}
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (e) {
+          // TODO: handle error?
+        }
       });
     }
     analysisQueue.on("idle", () => {
@@ -64,15 +67,19 @@ export const useStore = create<StoreTypes>((set, get) => ({
   setTweets: (tweets: Tweet[]) => {
     const start = performance.now();
     // apply filters
-    const labelsByTweetId: Record<string, string[]> = {};
+    const labelsByTweetId: Record<
+      string,
+      { name: string; filterMatch: FilterMatch }[]
+    > = {};
     const tweetsByLabel: Record<string, Tweet[]> = {};
     const tweetsById: Record<string, Tweet> = {};
     for (const tweet of tweets || []) {
       tweetsById[tweet.id] = tweet;
       for (const filter of filters) {
-        if (filter.shouldFilter(tweet)) {
+        const filterMatch = filter.evaluateFilter(tweet);
+        if (filterMatch.filter) {
           labelsByTweetId[tweet.id] ||= [];
-          labelsByTweetId[tweet.id].push(filter.name);
+          labelsByTweetId[tweet.id].push({ name: filter.name, filterMatch });
           tweetsByLabel[filter.name] ||= [];
           tweetsByLabel[filter.name].push(tweet);
         }
@@ -96,7 +103,10 @@ export const useStore = create<StoreTypes>((set, get) => ({
     set(({ labelsByTweetId, tweetsByLabel }) => ({
       labelsByTweetId: {
         ...labelsByTweetId,
-        [tweet.id]: [...(labelsByTweetId[tweet.id] || []), label],
+        [tweet.id]: [
+          ...(labelsByTweetId[tweet.id] || []),
+          { name: label, filterMatch: { filter: true, type: "llm" } },
+        ],
       },
       tweetsByLabel: {
         ...tweetsByLabel,

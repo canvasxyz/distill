@@ -1,3 +1,4 @@
+import type { FilterMatch } from "./filters";
 import { useStore } from "./store";
 import type { Tweet } from "./types";
 
@@ -14,7 +15,7 @@ export function TweetEntry({
   onCheckboxChange: (isChecked: boolean) => void;
   checked: boolean;
   isIncluded: boolean;
-  labels: string[];
+  labels: { name: string; filterMatch: FilterMatch }[];
 }) {
   const { account } = useStore();
   const color = isIncluded ? "green" : "red";
@@ -80,7 +81,7 @@ export function TweetEntry({
                 }}
                 key={index}
               >
-                {label}
+                {label.name}
               </div>
             </a>
           ))}
