@@ -10,6 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "json-with-bigint": "^3.4.4",
+    "openai": "^5.23.2",
+    "p-queue": "^8.1.1",
     "prettier": "^3.6.2",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
