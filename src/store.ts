@@ -1,9 +1,8 @@
 import { create } from "zustand";
 import type { Account, Tweet } from "./types";
 import { filters, type FilterMatch } from "./filtering/filters";
+import { classificationLabels, getClassification } from "./filtering/openai";
 import PQueue from "p-queue";
-
-import { classificationLabels, getClassification } from "./filters/openai";
 
 const concurrency = 20;
 
