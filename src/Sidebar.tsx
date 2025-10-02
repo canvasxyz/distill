@@ -7,12 +7,16 @@ export function Sidebar() {
   const {
     tweets,
     excludedTweetIds,
-    includedTweets,
     tweetsByLabel,
     analyzeTweets,
     numTweetsAnalyzed,
     analysisInProgress,
   } = useStore();
+
+  const includedTweets = useMemo(
+    () => (tweets || []).filter((tweet) => excludedTweetIds[tweet.id] != true),
+    [tweets, excludedTweetIds]
+  );
 
   const excludedTweets = useMemo(
     () => (tweets || []).filter((tweet) => excludedTweetIds[tweet.id] == true),
