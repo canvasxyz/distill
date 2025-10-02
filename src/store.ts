@@ -17,7 +17,7 @@ type StoreTypes = {
   tweets: Tweet[] | null;
   setTweets: (tweets: Tweet[]) => void;
   labelsByTweetId: Record<string, { name: string; filterMatch: FilterMatch }[]>;
-  tweetsByLabel: Record<string, Tweet[]>;
+  tweetIdsByLabel: Record<string, string[]>;
   printLabels: () => void;
   setLabel: (tweet: Tweet, label: string) => void;
   excludedTweetIds: Record<string, boolean>;
@@ -87,15 +87,15 @@ export const useStore = create<StoreTypes>((set, get) => ({
       string,
       { name: string; filterMatch: FilterMatch }[]
     > = {};
-    const tweetsByLabel: Record<string, Tweet[]> = {};
+    const tweetIdsByLabel: Record<string, string[]> = {};
     for (const tweet of tweets || []) {
       for (const filter of filters) {
         const filterMatch = filter.evaluateFilter(tweet);
         if (filterMatch.filter) {
           labelsByTweetId[tweet.id] ||= [];
           labelsByTweetId[tweet.id].push({ name: filter.name, filterMatch });
-          tweetsByLabel[filter.name] ||= [];
-          tweetsByLabel[filter.name].push(tweet);
+          tweetIdsByLabel[filter.name] ||= [];
+          tweetIdsByLabel[filter.name].push(tweet.id);
         }
       }
     }
@@ -104,14 +104,14 @@ export const useStore = create<StoreTypes>((set, get) => ({
     set(() => ({
       tweets,
       labelsByTweetId,
-      tweetsByLabel,
+      tweetIdsByLabel,
     }));
   },
   analysisQueue: new PQueue({ concurrency }),
   labelsByTweetId: {},
-  tweetsByLabel: {},
+  tweetIdsByLabel: {},
   setLabel: (tweet, label) =>
-    set(({ labelsByTweetId, tweetsByLabel }) => ({
+    set(({ labelsByTweetId, tweetIdsByLabel }) => ({
       labelsByTweetId: {
         ...labelsByTweetId,
         [tweet.id]: [
@@ -119,15 +119,15 @@ export const useStore = create<StoreTypes>((set, get) => ({
           { name: label, filterMatch: { filter: true, type: "llm" } },
         ],
       },
-      tweetsByLabel: {
-        ...tweetsByLabel,
-        [label]: [...(tweetsByLabel[label] || []), tweet],
+      tweetIdsByLabel: {
+        ...tweetIdsByLabel,
+        [label]: [...(tweetIdsByLabel[label] || []), tweet.id],
       },
     })),
   printLabels: () => {
-    const { labelsByTweetId, tweetsByLabel } = get();
+    const { labelsByTweetId, tweetIdsByLabel } = get();
     console.log(labelsByTweetId);
-    console.log(tweetsByLabel);
+    console.log(tweetIdsByLabel);
   },
   excludedTweetIds: {},
   addExcludedTweets: (tweetIdsToExclude) => {

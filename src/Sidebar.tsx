@@ -7,7 +7,7 @@ export function Sidebar() {
   const {
     tweets,
     excludedTweetIds,
-    tweetsByLabel,
+    tweetIdsByLabel,
     analyzeTweets,
     numTweetsAnalyzed,
     analysisInProgress,
@@ -58,8 +58,8 @@ export function Sidebar() {
             disabled={!tweets}
           >
             {filter.label}{" "}
-            {tweetsByLabel[filter.name] &&
-              `(${tweetsByLabel[filter.name].length})`}
+            {tweetIdsByLabel[filter.name] &&
+              `(${tweetIdsByLabel[filter.name].length})`}
           </LinkButton>
         ))}
         {/* <hr

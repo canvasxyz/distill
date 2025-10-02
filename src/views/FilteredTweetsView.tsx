@@ -6,16 +6,22 @@ import { usePagination } from "../hooks/usePagination";
 
 export function FilteredTweetsView() {
   const params = useParams();
-  const { tweets, tweetsByLabel } = useStore();
+  const { tweets, labelsByTweetId } = useStore();
 
   const filterName = params.filter as string;
+  const filteredTweets = (tweets || []).filter(
+    (tweet) =>
+      labelsByTweetId[tweet.id]
+        .map((result) => result.name)
+        .indexOf(filterName) !== -1
+  );
 
   const {
     itemsToDisplay: paginatedFilteredTweets,
     navigateNext,
     navigatePrevious,
   } = usePagination({
-    items: tweetsByLabel[filterName],
+    items: filteredTweets,
     limit: 20,
   });
 
@@ -27,7 +33,7 @@ export function FilteredTweetsView() {
 
   return (
     <TweetsView
-      allTweets={tweetsByLabel[filterName]}
+      allTweets={filteredTweets}
       title={filter.label}
       blurb={filter.blurb}
       tweetsToDisplay={paginatedFilteredTweets!}
