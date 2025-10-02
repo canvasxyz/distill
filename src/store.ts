@@ -15,7 +15,6 @@ type StoreTypes = {
   account: Account | null;
   setAccount: (account: Account) => void;
   tweets: Tweet[] | null;
-  tweetsById: Record<string, Tweet>;
   setTweets: (tweets: Tweet[]) => void;
   labelsByTweetId: Record<string, { name: string; filterMatch: FilterMatch }[]>;
   tweetsByLabel: Record<string, Tweet[]>;
@@ -81,7 +80,6 @@ export const useStore = create<StoreTypes>((set, get) => ({
   account: null,
   setAccount: (account) => set({ account }),
   tweets: null,
-  tweetsById: {},
   setTweets: (tweets: Tweet[]) => {
     const start = performance.now();
     // apply filters
@@ -90,9 +88,7 @@ export const useStore = create<StoreTypes>((set, get) => ({
       { name: string; filterMatch: FilterMatch }[]
     > = {};
     const tweetsByLabel: Record<string, Tweet[]> = {};
-    const tweetsById: Record<string, Tweet> = {};
     for (const tweet of tweets || []) {
-      tweetsById[tweet.id] = tweet;
       for (const filter of filters) {
         const filterMatch = filter.evaluateFilter(tweet);
         if (filterMatch.filter) {
@@ -107,7 +103,6 @@ export const useStore = create<StoreTypes>((set, get) => ({
     console.log(`Processing filters took ${end - start}ms`);
     set(() => ({
       tweets,
-      tweetsById,
       labelsByTweetId,
       tweetsByLabel,
     }));
