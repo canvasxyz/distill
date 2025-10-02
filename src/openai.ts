@@ -12,10 +12,10 @@ function stripThinkTags(text: string) {
   return text.replace(/<think>.*?<\/think>/gs, "").trim();
 }
 
-export const getClassification = async (text: string) => {
+export const getClassification = async (text: string, model: string) => {
   const classificationResponse = await fetch(serverUrl, {
     method: "POST",
-    body: JSON.stringify({ text }),
+    body: JSON.stringify({ text, model }),
     headers: { "Content-Type": "application/json" },
   });
   const data = await classificationResponse.json();

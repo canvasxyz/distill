@@ -29,6 +29,9 @@ type StoreTypes = {
   removeExcludedTweets: (tweetIdsToInclude: string[]) => void;
 };
 
+// TODO: use multiple models
+const model = "mistralai/Mistral-Small-3.2-24B-Instruct-2506";
+
 export const useStore = create<StoreTypes>((set, get) => ({
   analyzeTweetState: 0,
   analyzeTweets: () => {
@@ -44,7 +47,10 @@ export const useStore = create<StoreTypes>((set, get) => ({
       analysisQueue.add(async () => {
         const { setLabel } = get();
         try {
-          const classification = await getClassification(tweet.full_text);
+          const classification = await getClassification(
+            tweet.full_text,
+            model
+          );
 
           for (const label of classificationLabels) {
             // set label
