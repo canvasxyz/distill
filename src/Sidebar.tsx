@@ -1,4 +1,4 @@
-import { filters } from "./filters";
+import { filters } from "./filters/filters";
 import { LinkButton } from "./LinkButton";
 import { useStore } from "./store";
 

@@ -1,7 +1,7 @@
 import { useStore } from "../store";
 import { TweetsView } from "./TweetsView";
 import { Navigate, useParams } from "react-router";
-import { filters } from "../filters";
+import { filters } from "../filters/filters";
 import { usePagination } from "../hooks/usePagination";
 
 export function FilteredTweetsView() {

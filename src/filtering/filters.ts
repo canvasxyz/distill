@@ -1,6 +1,6 @@
 import { illegalWordsRegExp } from "./illegal";
 import { offensiveWordsRegExp } from "./offensive";
-import type { Tweet } from "./types";
+import type { Tweet } from "../types";
 
 export type FilterMatch =
   | { filter: false; type: "llm" }
