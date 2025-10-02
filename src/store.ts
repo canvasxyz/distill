@@ -29,9 +29,6 @@ type StoreTypes = {
   removeExcludedTweets: (tweetIdsToInclude: string[]) => void;
 };
 
-// TODO: use multiple models
-const model = "mistralai/Mistral-Small-3.2-24B-Instruct-2506";
-
 export const useStore = create<StoreTypes>((set, get) => ({
   analyzeTweetState: 0,
   analyzeTweets: () => {
@@ -47,14 +44,22 @@ export const useStore = create<StoreTypes>((set, get) => ({
       analysisQueue.add(async () => {
         const { setLabel } = get();
         try {
-          const classification = await getClassification(
+          const mistralClassification = await getClassification(
             tweet.full_text,
-            model
+            "mistralai/Mistral-Small-3.2-24B-Instruct-2506"
+          );
+
+          const qwenClassification = await getClassification(
+            tweet.full_text,
+            "Qwen/Qwen3-30B-A3B"
           );
 
           for (const label of classificationLabels) {
             // set label
-            if (classification[label] > 0.5) {
+            if (
+              mistralClassification[label] > 0.5 &&
+              qwenClassification[label] > 0.5
+            ) {
               setLabel(tweet, label.toLowerCase());
             }
           }
