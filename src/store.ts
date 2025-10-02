@@ -23,7 +23,6 @@ type StoreTypes = {
   printLabels: () => void;
   setLabel: (tweet: Tweet, label: string) => void;
   excludedTweetIds: Record<string, boolean>;
-  excludedTweets: Tweet[] | null;
   includedTweets: Tweet[] | null;
   addExcludedTweets: (tweetIdsToExclude: string[]) => void;
   removeExcludedTweets: (tweetIdsToInclude: string[]) => void;
@@ -110,7 +109,6 @@ export const useStore = create<StoreTypes>((set, get) => ({
     console.log(`Processing filters took ${end - start}ms`);
     set(() => ({
       tweets,
-      excludedTweets: [],
       includedTweets: tweets,
       tweetsById,
       labelsByTweetId,
@@ -140,7 +138,6 @@ export const useStore = create<StoreTypes>((set, get) => ({
     console.log(tweetsByLabel);
   },
   excludedTweetIds: {},
-  excludedTweets: null,
   includedTweets: null,
   addExcludedTweets: (tweetIdsToExclude) => {
     set(({ excludedTweetIds: oldExcludedTweets }) => {
@@ -153,7 +150,6 @@ export const useStore = create<StoreTypes>((set, get) => ({
       return {
         excludedTweetIds: newExcludedTweets,
         includedTweets: tweets.filter((tweet) => !newExcludedTweets[tweet.id]),
-        excludedTweets: tweets.filter((tweet) => newExcludedTweets[tweet.id]),
       };
     });
   },
@@ -167,7 +163,6 @@ export const useStore = create<StoreTypes>((set, get) => ({
       return {
         excludedTweetIds: newExcludedTweets,
         includedTweets: tweets.filter((tweet) => !newExcludedTweets[tweet.id]),
-        excludedTweets: tweets.filter((tweet) => newExcludedTweets[tweet.id]),
       };
     });
   },

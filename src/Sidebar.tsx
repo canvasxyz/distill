@@ -1,17 +1,23 @@
-import { filters } from "./filters/filters";
+import { useMemo } from "react";
+import { filters } from "./filtering/filters";
 import { LinkButton } from "./LinkButton";
 import { useStore } from "./store";
 
 export function Sidebar() {
   const {
     tweets,
-    excludedTweets,
+    excludedTweetIds,
     includedTweets,
     tweetsByLabel,
     analyzeTweets,
     numTweetsAnalyzed,
     analysisInProgress,
   } = useStore();
+
+  const excludedTweets = useMemo(
+    () => (tweets || []).filter((tweet) => excludedTweetIds[tweet.id] == true),
+    [tweets, excludedTweetIds]
+  );
 
   const totalNumTweets = (tweets || []).length;
   return (

@@ -2,9 +2,15 @@ import { useStore } from "../store";
 import { TweetsView } from "./TweetsView";
 import { usePagination } from "../hooks/usePagination";
 import { Navigate } from "react-router";
+import { useMemo } from "react";
 
 export function ExcludedTweetsView() {
-  const { excludedTweets, tweets } = useStore();
+  const { excludedTweetIds, tweets } = useStore();
+
+  const excludedTweets = useMemo(
+    () => (tweets || []).filter((tweet) => excludedTweetIds[tweet.id] == true),
+    [tweets, excludedTweetIds]
+  );
 
   const {
     itemsToDisplay: paginatedExcludedTweets,
@@ -21,7 +27,7 @@ export function ExcludedTweetsView() {
 
   return (
     <TweetsView
-      allTweets={excludedTweets!}
+      allTweets={excludedTweets}
       title="Excluded Tweets"
       tweetsToDisplay={paginatedExcludedTweets!}
       navigateNext={navigateNext}

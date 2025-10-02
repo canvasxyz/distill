@@ -1,4 +1,4 @@
-import type { FilterMatch } from "./filters/filters";
+import type { FilterMatch } from "./filtering/filters";
 import { useStore } from "./store";
 import type { Tweet } from "./types";
 
