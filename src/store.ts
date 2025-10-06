@@ -3,10 +3,14 @@ import type { Account, Tweet } from "./types";
 import { filters, type FilterMatch } from "./filtering/filters";
 import { classificationLabels, getClassification } from "./filtering/openai";
 import PQueue from "p-queue";
+import { db } from "./db";
 
 const concurrency = 20;
 
 type StoreTypes = {
+  init: () => Promise<void>;
+  dbHasTweets: boolean;
+  appIsReady: boolean;
   analyzeTweetState: number; // % completed analyzing tweets
   analyzeTweets: () => void;
   numTweetsAnalyzed: number;
@@ -14,8 +18,7 @@ type StoreTypes = {
   analysisQueue: PQueue;
   account: Account | null;
   setAccount: (account: Account) => void;
-  tweets: Tweet[] | null;
-  setTweets: (tweets: Tweet[]) => void;
+  setTweets: (tweets: Tweet[]) => Promise<void>;
   labelsByTweetId: Record<string, { name: string; filterMatch: FilterMatch }[]>;
   tweetIdsByLabel: Record<string, string[]>;
   printLabels: () => void;
@@ -26,13 +29,18 @@ type StoreTypes = {
 };
 
 export const useStore = create<StoreTypes>((set, get) => ({
+  init: async () => {
+    // before anything else is displayed we need to check that the database has tweets in it
+    const numTweets = await db.tweets.limit(1).toArray();
+    const dbHasTweets = !!numTweets;
+    set({ dbHasTweets, appIsReady: true });
+  },
+  dbHasTweets: false,
+  appIsReady: false,
   analyzeTweetState: 0,
-  analyzeTweets: () => {
-    const { analysisQueue, tweets } = get();
-    if (tweets === null) {
-      // fail
-      return;
-    }
+  analyzeTweets: async () => {
+    const { analysisQueue } = get();
+    const tweets = await db.tweets.toArray();
 
     set({ analysisInProgress: true });
 
@@ -79,8 +87,7 @@ export const useStore = create<StoreTypes>((set, get) => ({
   analysisInProgress: false,
   account: null,
   setAccount: (account) => set({ account }),
-  tweets: null,
-  setTweets: (tweets: Tweet[]) => {
+  setTweets: async (tweets: Tweet[]) => {
     const start = performance.now();
     // apply filters
     const labelsByTweetId: Record<
@@ -101,8 +108,10 @@ export const useStore = create<StoreTypes>((set, get) => ({
     }
     const end = performance.now();
     console.log(`Processing filters took ${end - start}ms`);
+
+    await db.tweets.bulkAdd(tweets);
+
     set(() => ({
-      tweets,
       labelsByTweetId,
       tweetIdsByLabel,
     }));

@@ -2,16 +2,19 @@ import { useMemo } from "react";
 import { filters } from "./filtering/filters";
 import { LinkButton } from "./LinkButton";
 import { useStore } from "./store";
+import { useLiveQuery } from "dexie-react-hooks";
+import { db } from "./db";
 
 export function Sidebar() {
   const {
-    tweets,
     excludedTweetIds,
     tweetIdsByLabel,
     analyzeTweets,
     numTweetsAnalyzed,
     analysisInProgress,
   } = useStore();
+
+  const tweets = useLiveQuery(() => db.tweets.toArray());
 
   const includedTweets = useMemo(
     () => (tweets || []).filter((tweet) => excludedTweetIds[tweet.id] != true),

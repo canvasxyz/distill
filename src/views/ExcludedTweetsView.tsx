@@ -1,11 +1,14 @@
 import { useStore } from "../store";
 import { TweetsView } from "./TweetsView";
 import { usePagination } from "../hooks/usePagination";
-import { Navigate } from "react-router";
 import { useMemo } from "react";
+import { db } from "../db";
+import { useLiveQuery } from "dexie-react-hooks";
+import { ShowIfTweetsLoaded } from "./ShowIfTweetsLoaded";
 
-export function ExcludedTweetsView() {
-  const { excludedTweetIds, tweets } = useStore();
+function ExcludedTweetsViewInner() {
+  const { excludedTweetIds } = useStore();
+  const tweets = useLiveQuery(() => db.tweets.toArray());
 
   const excludedTweets = useMemo(
     () => (tweets || []).filter((tweet) => excludedTweetIds[tweet.id] == true),
@@ -21,10 +24,6 @@ export function ExcludedTweetsView() {
     limit: 20,
   });
 
-  if (tweets === null) {
-    return <Navigate to="/upload-tweets" />;
-  }
-
   return (
     <TweetsView
       allTweets={excludedTweets}
@@ -33,5 +32,13 @@ export function ExcludedTweetsView() {
       navigateNext={navigateNext}
       navigatePrevious={navigatePrevious}
     />
+  );
+}
+
+export function ExcludedTweetsView() {
+  return (
+    <ShowIfTweetsLoaded>
+      <ExcludedTweetsViewInner />
+    </ShowIfTweetsLoaded>
   );
 }

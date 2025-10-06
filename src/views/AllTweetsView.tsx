@@ -1,26 +1,31 @@
-import { Navigate } from "react-router";
 import { usePagination } from "../hooks/usePagination";
-import { useStore } from "../store";
 import { TweetsView } from "./TweetsView";
+import { db } from "../db";
+import { useLiveQuery } from "dexie-react-hooks";
+import { ShowIfTweetsLoaded } from "./ShowIfTweetsLoaded";
 
-export function AllTweetsView() {
-  const { tweets } = useStore();
+function AllTweetsViewInner() {
+  const tweets = useLiveQuery(() => db.tweets.toArray());
   const { itemsToDisplay, navigateNext, navigatePrevious } = usePagination({
-    items: tweets,
+    items: tweets || [],
     limit: 20,
   });
-
-  if (tweets === null) {
-    return <Navigate to="upload-tweets" />;
-  }
 
   return (
     <TweetsView
       title="All Tweets"
-      allTweets={tweets}
+      allTweets={tweets || []}
       tweetsToDisplay={itemsToDisplay!}
       navigateNext={navigateNext}
       navigatePrevious={navigatePrevious}
     />
+  );
+}
+
+export function AllTweetsView() {
+  return (
+    <ShowIfTweetsLoaded>
+      <AllTweetsViewInner />
+    </ShowIfTweetsLoaded>
   );
 }

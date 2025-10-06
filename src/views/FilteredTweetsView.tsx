@@ -1,17 +1,21 @@
 import { useStore } from "../store";
 import { TweetsView } from "./TweetsView";
-import { Navigate, useParams } from "react-router";
+import { useParams } from "react-router";
 import { filters } from "../filtering/filters";
 import { usePagination } from "../hooks/usePagination";
+import { useLiveQuery } from "dexie-react-hooks";
+import { db } from "../db";
+import { ShowIfTweetsLoaded } from "./ShowIfTweetsLoaded";
 
-export function FilteredTweetsView() {
+function FilteredTweetsViewInner() {
   const params = useParams();
-  const { tweets, labelsByTweetId } = useStore();
+  const { labelsByTweetId } = useStore();
+  const tweets = useLiveQuery(() => db.tweets.toArray());
 
   const filterName = params.filter as string;
   const filteredTweets = (tweets || []).filter(
     (tweet) =>
-      labelsByTweetId[tweet.id]
+      (labelsByTweetId[tweet.id] || [])
         .map((result) => result.name)
         .indexOf(filterName) !== -1
   );
@@ -25,10 +29,6 @@ export function FilteredTweetsView() {
     limit: 20,
   });
 
-  if (tweets === null) {
-    return <Navigate to="/upload-tweets" />;
-  }
-
   const filter = filters.filter((f) => f.name === filterName)[0];
 
   return (
@@ -40,5 +40,13 @@ export function FilteredTweetsView() {
       navigateNext={navigateNext}
       navigatePrevious={navigatePrevious}
     />
+  );
+}
+
+export function FilteredTweetsView() {
+  return (
+    <ShowIfTweetsLoaded>
+      <FilteredTweetsViewInner />
+    </ShowIfTweetsLoaded>
   );
 }
