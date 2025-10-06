@@ -3,17 +3,17 @@ import type { Tweet, Account } from "./types";
 
 class AppDatabase extends Dexie {
   tweets: Dexie.Table<Tweet, string>;
-  account: Dexie.Table<Account, string>;
+  accounts: Dexie.Table<Account, string>;
 
   constructor() {
     super("TweetArchiveExplorerDB");
     this.version(1).stores({
       tweets: "id,created_at",
-      account: "id",
+      accounts: "accountId",
     });
 
     this.tweets = this.table("tweets");
-    this.account = this.table("account");
+    this.accounts = this.table("accounts");
   }
 }
 

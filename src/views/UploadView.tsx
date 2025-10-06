@@ -75,7 +75,7 @@ export function UploadView() {
     if (file) {
       // Stub method to parse the Twitter archive
       const { account, tweets } = await processTwitterArchive(file);
-      setAccount(account);
+      await setAccount(account);
       await setTweets(tweets);
     }
   };
@@ -121,8 +121,8 @@ export function UploadView() {
           const file = e.dataTransfer.files[0];
           if (file && file.type === "application/zip") {
             const { account, tweets } = await processTwitterArchive(file);
-            setAccount(account);
-            setTweets(tweets);
+            await setAccount(account);
+            await setTweets(tweets);
           }
         }}
         onMouseEnter={(e) =>

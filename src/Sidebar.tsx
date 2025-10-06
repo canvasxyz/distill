@@ -12,6 +12,9 @@ export function Sidebar() {
     analyzeTweets,
     numTweetsAnalyzed,
     analysisInProgress,
+    appIsReady,
+    dbHasTweets,
+    clearDatabase,
   } = useStore();
 
   const tweets = useLiveQuery(() => db.tweets.toArray());
@@ -167,6 +170,47 @@ export function Sidebar() {
             Analyze Tweets ⚡
           </button>
         )}
+
+        <button
+          style={
+            appIsReady && dbHasTweets
+              ? {
+                  borderRadius: "5px",
+                  padding: "5px",
+                  textDecoration: "none",
+                  color: "white",
+                  border: "1px solid #d32f2f",
+                  backgroundColor: "#d32f2f",
+                  cursor: "pointer",
+                  marginTop: "10px",
+                  marginBottom: "10px",
+                }
+              : {
+                  borderRadius: "5px",
+                  padding: "5px",
+                  textDecoration: "none",
+                  color: "white",
+                  border: "1px solid #d32f2f",
+                  backgroundColor: "#f8d7da",
+                  marginTop: "10px",
+                  marginBottom: "10px",
+                }
+          }
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor =
+              appIsReady && dbHasTweets ? "#b71c1c" : "#fff5f6";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor =
+              appIsReady && dbHasTweets ? "#d32f2f" : "#f8d7da";
+          }}
+          onClick={() => {
+            clearDatabase();
+          }}
+          disabled={!tweets}
+        >
+          Clear database
+        </button>
 
         {/* <button
           style={{

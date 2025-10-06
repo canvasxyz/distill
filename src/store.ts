@@ -10,6 +10,7 @@ const concurrency = 20;
 type StoreTypes = {
   init: () => Promise<void>;
   dbHasTweets: boolean;
+  clearDatabase: () => Promise<void>;
   appIsReady: boolean;
   analyzeTweetState: number; // % completed analyzing tweets
   analyzeTweets: () => void;
@@ -17,7 +18,7 @@ type StoreTypes = {
   analysisInProgress: boolean;
   analysisQueue: PQueue;
   account: Account | null;
-  setAccount: (account: Account) => void;
+  setAccount: (account: Account) => Promise<void>;
   setTweets: (tweets: Tweet[]) => Promise<void>;
   labelsByTweetId: Record<string, { name: string; filterMatch: FilterMatch }[]>;
   tweetIdsByLabel: Record<string, string[]>;
@@ -31,11 +32,16 @@ type StoreTypes = {
 export const useStore = create<StoreTypes>((set, get) => ({
   init: async () => {
     // before anything else is displayed we need to check that the database has tweets in it
-    const numTweets = await db.tweets.limit(1).toArray();
-    const dbHasTweets = !!numTweets;
+    const dbHasTweets = (await db.tweets.limit(1).toArray()).length > 0;
     set({ dbHasTweets, appIsReady: true });
   },
   dbHasTweets: false,
+  clearDatabase: async () => {
+    await db.delete();
+    // refresh page
+    location.reload();
+  },
+
   appIsReady: false,
   analyzeTweetState: 0,
   analyzeTweets: async () => {
@@ -86,7 +92,13 @@ export const useStore = create<StoreTypes>((set, get) => ({
   numTweetsAnalyzed: 0,
   analysisInProgress: false,
   account: null,
-  setAccount: (account) => set({ account }),
+  setAccount: async (account) => {
+    await db.accounts.clear();
+    console.log(account);
+    await db.accounts.add(account);
+
+    set({ account });
+  },
   setTweets: async (tweets: Tweet[]) => {
     const start = performance.now();
     // apply filters
@@ -112,6 +124,7 @@ export const useStore = create<StoreTypes>((set, get) => ({
     await db.tweets.bulkAdd(tweets);
 
     set(() => ({
+      dbHasTweets: true,
       labelsByTweetId,
       tweetIdsByLabel,
     }));

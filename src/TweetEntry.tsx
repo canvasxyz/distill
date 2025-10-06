@@ -1,6 +1,7 @@
+import { useLiveQuery } from "dexie-react-hooks";
 import type { FilterMatch } from "./filtering/filters";
-import { useStore } from "./store";
 import type { Tweet } from "./types";
+import { db } from "./db";
 
 export function TweetEntry({
   isFirst,
@@ -17,7 +18,8 @@ export function TweetEntry({
   isIncluded: boolean;
   labels: { name: string; filterMatch: FilterMatch }[];
 }) {
-  const { account } = useStore();
+  const accounts = useLiveQuery(() => db.accounts.toArray());
+  const account = accounts ? accounts[0] : null;
   const color = isIncluded ? "green" : "red";
 
   // Find all regex matches from labels
