@@ -1,4 +1,3 @@
-import { useStore } from "../store";
 import { TweetsView } from "./TweetsView";
 import { usePagination } from "../hooks/usePagination";
 import { useMemo } from "react";
@@ -7,12 +6,17 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { ShowIfTweetsLoaded } from "./ShowIfTweetsLoaded";
 
 function ExcludedTweetsViewInner() {
-  const { excludedTweetIds } = useStore();
   const tweets = useLiveQuery(() => db.tweets.toArray());
 
+  const excludedTweetIds = useLiveQuery(() => db.excludedTweetIds.toArray());
+  const excludedTweetIdsSet = useMemo(
+    () => new Set((excludedTweetIds || []).map((entry) => entry.id)),
+    [excludedTweetIds]
+  );
+
   const excludedTweets = useMemo(
-    () => (tweets || []).filter((tweet) => excludedTweetIds[tweet.id] == true),
-    [tweets, excludedTweetIds]
+    () => (tweets || []).filter((tweet) => excludedTweetIdsSet.has(tweet.id)),
+    [tweets, excludedTweetIdsSet]
   );
 
   const {

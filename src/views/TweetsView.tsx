@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { TweetEntry } from "../TweetEntry";
 
 import { useStore } from "../store";
 import { UploadView } from "./UploadView";
 import type { Tweet } from "../types";
 import { PseudoLink } from "../PseudoLink";
+import { useLiveQuery } from "dexie-react-hooks";
+import { db } from "../db";
 
 export function TweetsView({
   allTweets,
@@ -21,12 +23,14 @@ export function TweetsView({
   navigateNext?: () => void;
   navigatePrevious?: () => void;
 }) {
-  const {
-    labelsByTweetId,
-    addExcludedTweets,
-    removeExcludedTweets,
-    excludedTweetIds,
-  } = useStore();
+  const { labelsByTweetId, addExcludedTweets, removeExcludedTweets } =
+    useStore();
+
+  const excludedTweetIds = useLiveQuery(() => db.excludedTweetIds.toArray());
+  const excludedTweetIdsSet = useMemo(
+    () => new Set((excludedTweetIds || []).map((entry) => entry.id)),
+    [excludedTweetIds]
+  );
 
   const [checkedTweets, setCheckedTweets] = useState<{
     [id: string]: boolean;
@@ -164,7 +168,7 @@ export function TweetsView({
             isFirst={index === 0}
             tweet={tweet}
             checked={checkedTweets[tweet.id] || false}
-            isIncluded={!excludedTweetIds[tweet.id]}
+            isIncluded={!excludedTweetIdsSet.has(tweet.id)}
             key={index}
             onCheckboxChange={(isChecked) => {
               if (isChecked) {

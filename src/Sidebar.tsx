@@ -7,7 +7,6 @@ import { db } from "./db";
 
 export function Sidebar() {
   const {
-    excludedTweetIds,
     tweetIdsByLabel,
     analyzeTweets,
     numTweetsAnalyzed,
@@ -18,15 +17,20 @@ export function Sidebar() {
   } = useStore();
 
   const tweets = useLiveQuery(() => db.tweets.toArray());
+  const excludedTweetIds = useLiveQuery(() => db.excludedTweetIds.toArray());
+  const excludedTweetIdsSet = useMemo(
+    () => new Set((excludedTweetIds || []).map((entry) => entry.id)),
+    [excludedTweetIds]
+  );
 
   const includedTweets = useMemo(
-    () => (tweets || []).filter((tweet) => excludedTweetIds[tweet.id] != true),
-    [tweets, excludedTweetIds]
+    () => (tweets || []).filter((tweet) => !excludedTweetIdsSet.has(tweet.id)),
+    [tweets, excludedTweetIdsSet]
   );
 
   const excludedTweets = useMemo(
-    () => (tweets || []).filter((tweet) => excludedTweetIds[tweet.id] == true),
-    [tweets, excludedTweetIds]
+    () => (tweets || []).filter((tweet) => excludedTweetIdsSet.has(tweet.id)),
+    [tweets, excludedTweetIdsSet]
   );
 
   const totalNumTweets = (tweets || []).length;
@@ -205,7 +209,7 @@ export function Sidebar() {
               appIsReady && dbHasTweets ? "#d32f2f" : "#f8d7da";
           }}
           onClick={() => {
-            clearDatabase();
+            if (appIsReady && dbHasTweets) clearDatabase();
           }}
           disabled={!tweets}
         >
