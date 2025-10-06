@@ -9,14 +9,14 @@ import { ShowIfTweetsLoaded } from "./ShowIfTweetsLoaded";
 
 function FilteredTweetsViewInner() {
   const params = useParams();
-  const { labelsByTweetId } = useStore();
+  const { filterMatchesByTweetId } = useStore();
   const tweets = useLiveQuery(() => db.tweets.toArray());
 
   const filterName = params.filter as string;
   const filteredTweets = (tweets || []).filter(
     (tweet) =>
-      (labelsByTweetId[tweet.id] || [])
-        .map((result) => result.name)
+      (filterMatchesByTweetId[tweet.id] || [])
+        .map((result) => result.filterName)
         .indexOf(filterName) !== -1
   );
 

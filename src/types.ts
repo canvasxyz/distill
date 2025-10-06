@@ -26,3 +26,10 @@ export type Tweet = {
   source: string;
   raw_json: string;
 };
+
+export type FilterMatch = {
+  id: string;
+  filterName: string;
+  type: "llm" | "regex";
+  regexMatch?: RegExpExecArray;
+};

@@ -1,12 +1,10 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { TweetEntry } from "../TweetEntry";
 
 import { useStore } from "../store";
 import { UploadView } from "./UploadView";
 import type { Tweet } from "../types";
 import { PseudoLink } from "../PseudoLink";
-import { useLiveQuery } from "dexie-react-hooks";
-import { db } from "../db";
 
 export function TweetsView({
   allTweets,
@@ -23,14 +21,12 @@ export function TweetsView({
   navigateNext?: () => void;
   navigatePrevious?: () => void;
 }) {
-  const { labelsByTweetId, addExcludedTweets, removeExcludedTweets } =
-    useStore();
-
-  const excludedTweetIds = useLiveQuery(() => db.excludedTweetIds.toArray());
-  const excludedTweetIdsSet = useMemo(
-    () => new Set((excludedTweetIds || []).map((entry) => entry.id)),
-    [excludedTweetIds]
-  );
+  const {
+    addExcludedTweets,
+    removeExcludedTweets,
+    excludedTweetIdsSet,
+    filterMatchesByTweetId,
+  } = useStore();
 
   const [checkedTweets, setCheckedTweets] = useState<{
     [id: string]: boolean;
@@ -180,7 +176,7 @@ export function TweetsView({
                 setCheckedTweets(newCheckedTweets);
               }
             }}
-            labels={labelsByTweetId[tweet.id] || []}
+            filterMatches={filterMatchesByTweetId[tweet.id] || []}
           />
         ))}
       </div>

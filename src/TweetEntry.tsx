@@ -1,6 +1,5 @@
 import { useLiveQuery } from "dexie-react-hooks";
-import type { FilterMatch } from "./filtering/filters";
-import type { Tweet } from "./types";
+import type { FilterMatch, Tweet } from "./types";
 import { db } from "./db";
 
 export function TweetEntry({
@@ -9,14 +8,14 @@ export function TweetEntry({
   onCheckboxChange,
   checked,
   isIncluded,
-  labels,
+  filterMatches,
 }: {
   isFirst: boolean;
   tweet: Tweet;
   onCheckboxChange: (isChecked: boolean) => void;
   checked: boolean;
   isIncluded: boolean;
-  labels: { name: string; filterMatch: FilterMatch }[];
+  filterMatches: FilterMatch[];
 }) {
   const accounts = useLiveQuery(() => db.accounts.toArray());
   const account = accounts ? accounts[0] : null;
@@ -27,16 +26,16 @@ export function TweetEntry({
   type MatchRange = { start: number; end: number };
   const matchRanges: MatchRange[] = [];
 
-  labels.forEach((label) => {
+  filterMatches.forEach((filterMatch) => {
     if (
-      label.filterMatch &&
-      label.filterMatch.type === "regex" &&
-      label.filterMatch.filter &&
-      label.filterMatch.matches &&
-      typeof label.filterMatch.matches.index === "number"
+      filterMatch &&
+      filterMatch.type === "regex" &&
+      filterMatch.filterName &&
+      filterMatch.regexMatch &&
+      typeof filterMatch.regexMatch.index === "number"
     ) {
-      const matchText = label.filterMatch.matches[0];
-      const start = label.filterMatch.matches.index;
+      const matchText = filterMatch.regexMatch[0];
+      const start = filterMatch.regexMatch.index;
       if (typeof start === "number" && matchText) {
         matchRanges.push({ start, end: start + matchText.length });
       }
@@ -145,8 +144,8 @@ export function TweetEntry({
         <div style={{ display: "flex", gap: "10px" }}>
           <span>⭐ {tweet.favorite_count}</span>
           <span>🔁 {tweet.retweet_count}</span>
-          {labels.map((label, index) => (
-            <a href={`#/filters/${label.name}`} key={index}>
+          {filterMatches.map((label, index) => (
+            <a href={`#/filters/${label.filterName}`} key={index}>
               <div
                 style={{
                   backgroundColor: "white",
@@ -160,7 +159,7 @@ export function TweetEntry({
                   color: "#333",
                 }}
               >
-                {label.name}
+                {label.filterName}
               </div>
             </a>
           ))}

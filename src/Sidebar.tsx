@@ -1,39 +1,23 @@
-import { useMemo } from "react";
 import { filters } from "./filtering/filters";
 import { LinkButton } from "./LinkButton";
 import { useStore } from "./store";
-import { useLiveQuery } from "dexie-react-hooks";
-import { db } from "./db";
 
 export function Sidebar() {
   const {
-    tweetIdsByLabel,
     analyzeTweets,
     numTweetsAnalyzed,
     analysisInProgress,
     appIsReady,
     dbHasTweets,
     clearDatabase,
+    allTweets,
+    includedTweets,
+    excludedTweets,
+    tweetsByFilterName,
   } = useStore();
+  console.log(tweetsByFilterName);
 
-  const tweets = useLiveQuery(() => db.tweets.toArray());
-  const excludedTweetIds = useLiveQuery(() => db.excludedTweetIds.toArray());
-  const excludedTweetIdsSet = useMemo(
-    () => new Set((excludedTweetIds || []).map((entry) => entry.id)),
-    [excludedTweetIds]
-  );
-
-  const includedTweets = useMemo(
-    () => (tweets || []).filter((tweet) => !excludedTweetIdsSet.has(tweet.id)),
-    [tweets, excludedTweetIdsSet]
-  );
-
-  const excludedTweets = useMemo(
-    () => (tweets || []).filter((tweet) => excludedTweetIdsSet.has(tweet.id)),
-    [tweets, excludedTweetIdsSet]
-  );
-
-  const totalNumTweets = (tweets || []).length;
+  const totalNumTweets = (allTweets || []).length;
   return (
     <div
       style={{
@@ -45,13 +29,13 @@ export function Sidebar() {
     >
       <h1 style={{ fontSize: "22px" }}>Tweet Archive Explorer</h1>
       <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-        <LinkButton to="/" disabled={!tweets}>
-          All tweets {tweets && `(${tweets.length})`}
+        <LinkButton to="/" disabled={!allTweets}>
+          All tweets {allTweets && `(${allTweets.length})`}
         </LinkButton>
-        <LinkButton to="/included-tweets" disabled={!tweets}>
+        <LinkButton to="/included-tweets" disabled={!allTweets}>
           Included 👍 {includedTweets && `(${includedTweets.length})`}
         </LinkButton>
-        <LinkButton to="/excluded-tweets" disabled={!tweets}>
+        <LinkButton to="/excluded-tweets" disabled={!allTweets}>
           Excluded 👎 {excludedTweets && `(${excludedTweets.length})`}
         </LinkButton>
         <hr
@@ -65,11 +49,11 @@ export function Sidebar() {
           <LinkButton
             key={index}
             to={`/filters/${filter.name}`}
-            disabled={!tweets}
+            disabled={!allTweets}
           >
             {filter.label}{" "}
-            {tweetIdsByLabel[filter.name] &&
-              `(${tweetIdsByLabel[filter.name].length})`}
+            {tweetsByFilterName[filter.name] &&
+              `(${tweetsByFilterName[filter.name].length})`}
           </LinkButton>
         ))}
         {/* <hr
@@ -136,7 +120,7 @@ export function Sidebar() {
         ) : (
           <button
             style={
-              tweets
+              allTweets
                 ? {
                     borderRadius: "5px",
                     padding: "5px",
@@ -161,15 +145,15 @@ export function Sidebar() {
                   }
             }
             onMouseEnter={(e) => {
-              if (tweets) e.currentTarget.style.backgroundColor = "#f0f0f0";
+              if (allTweets) e.currentTarget.style.backgroundColor = "#f0f0f0";
             }}
             onMouseLeave={(e) => {
-              if (tweets) e.currentTarget.style.backgroundColor = "white";
+              if (allTweets) e.currentTarget.style.backgroundColor = "white";
             }}
             onClick={() => {
               analyzeTweets();
             }}
-            disabled={!tweets}
+            disabled={!allTweets}
           >
             Analyze Tweets ⚡
           </button>
@@ -209,9 +193,10 @@ export function Sidebar() {
               appIsReady && dbHasTweets ? "#d32f2f" : "#f8d7da";
           }}
           onClick={() => {
-            if (appIsReady && dbHasTweets) clearDatabase();
+            // if (appIsReady && dbHasTweets)
+            clearDatabase();
           }}
-          disabled={!tweets}
+          // disabled={!allTweets}
         >
           Clear database
         </button>

@@ -1,14 +1,30 @@
 import { create } from "zustand";
-import type { Account, Tweet } from "./types";
-import { filters, type FilterMatch } from "./filtering/filters";
+import type { Account, FilterMatch, Tweet } from "./types";
 import { classificationLabels, getClassification } from "./filtering/openai";
 import PQueue from "p-queue";
 import { db } from "./db";
+import { liveQuery, type Subscription } from "dexie";
+import { createRef, type RefObject } from "react";
+import {
+  allTweetsObservable,
+  excludedTweetsObservable,
+  filterTweetsObservable,
+  includedTweetsObservable,
+} from "./observables";
+import { filters } from "./filtering/filters";
 
 const concurrency = 20;
 
 type StoreTypes = {
   init: () => Promise<void>;
+  subscriptions: RefObject<Subscription[]>;
+  subscribe: () => void;
+  unsubscribe: () => void;
+  allTweets: Tweet[];
+  includedTweets: Tweet[];
+  excludedTweets: Tweet[];
+  tweetsByFilterName: Record<string, Tweet[]>;
+  filterMatchesByTweetId: Record<string, FilterMatch[]>;
   dbHasTweets: boolean;
   clearDatabase: () => Promise<void>;
   appIsReady: boolean;
@@ -20,13 +36,12 @@ type StoreTypes = {
   account: Account | null;
   setAccount: (account: Account) => Promise<void>;
   setTweets: (tweets: Tweet[]) => Promise<void>;
-  labelsByTweetId: Record<string, { name: string; filterMatch: FilterMatch }[]>;
-  tweetIdsByLabel: Record<string, string[]>;
-  printLabels: () => void;
-  setLabel: (tweet: Tweet, label: string) => void;
+  excludedTweetIdsSet: Set<string>;
   addExcludedTweets: (tweetIdsToExclude: string[]) => void;
   removeExcludedTweets: (tweetIdsToInclude: string[]) => void;
 };
+
+const subscriptions = createRef<Subscription[]>() as RefObject<Subscription[]>;
 
 export const useStore = create<StoreTypes>((set, get) => ({
   init: async () => {
@@ -34,6 +49,62 @@ export const useStore = create<StoreTypes>((set, get) => ({
     const dbHasTweets = (await db.tweets.limit(1).toArray()).length > 0;
     set({ dbHasTweets, appIsReady: true });
   },
+  subscriptions,
+  subscribe: () => {
+    const { subscriptions } = get();
+
+    const allTweetsSubscription = liveQuery(allTweetsObservable).subscribe({
+      next: (newAllTweets) => set({ allTweets: newAllTweets }),
+      error: (error) => console.error(error),
+    });
+
+    const includedTweetsSubscription = liveQuery(
+      includedTweetsObservable
+    ).subscribe({
+      next: (newIncludedTweets) => set({ includedTweets: newIncludedTweets }),
+      error: (error) => console.error(error),
+    });
+
+    const excludedTweetsSubscription = liveQuery(
+      excludedTweetsObservable
+    ).subscribe({
+      next: (newExcludedTweets) =>
+        set({
+          excludedTweets: newExcludedTweets,
+          excludedTweetIdsSet: new Set(
+            newExcludedTweets.map((tweet) => tweet.id)
+          ),
+        }),
+      error: (error) => console.error(error),
+    });
+
+    const filterTweetsSubscription = liveQuery(
+      filterTweetsObservable
+    ).subscribe({
+      next: ({ tweetsByFilterName, filterMatchesByTweetId }) =>
+        set({ tweetsByFilterName, filterMatchesByTweetId }),
+      error: (error) => console.error(error),
+    });
+
+    subscriptions.current = [
+      allTweetsSubscription,
+      includedTweetsSubscription,
+      excludedTweetsSubscription,
+      filterTweetsSubscription,
+    ];
+  },
+  unsubscribe: () => {
+    const { subscriptions } = get();
+    for (const subscription of subscriptions.current) {
+      subscription.unsubscribe();
+    }
+    subscriptions.current = [];
+  },
+  allTweets: [],
+  includedTweets: [],
+  excludedTweets: [],
+  tweetsByFilterName: {},
+  filterMatchesByTweetId: {},
   dbHasTweets: false,
   clearDatabase: async () => {
     await db.delete();
@@ -51,7 +122,6 @@ export const useStore = create<StoreTypes>((set, get) => ({
 
     for (const tweet of tweets) {
       analysisQueue.add(async () => {
-        const { setLabel } = get();
         try {
           const mistralClassification = await getClassification(
             tweet.full_text,
@@ -69,7 +139,11 @@ export const useStore = create<StoreTypes>((set, get) => ({
               mistralClassification[label] > 0.5 &&
               qwenClassification[label] > 0.5
             ) {
-              setLabel(tweet, label.toLowerCase());
+              await db.filterTweetIds.add({
+                id: tweet.id,
+                filterName: label.toLowerCase(),
+                type: "llm",
+              });
             }
           }
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -99,57 +173,28 @@ export const useStore = create<StoreTypes>((set, get) => ({
     set({ account });
   },
   setTweets: async (tweets: Tweet[]) => {
-    const start = performance.now();
+    await db.tweets.bulkAdd(tweets);
+
     // apply filters
-    const labelsByTweetId: Record<
-      string,
-      { name: string; filterMatch: FilterMatch }[]
-    > = {};
-    const tweetIdsByLabel: Record<string, string[]> = {};
+    const filterMatchesToAdd = [];
     for (const tweet of tweets || []) {
       for (const filter of filters) {
         const filterMatch = filter.evaluateFilter(tweet);
-        if (filterMatch.filter) {
-          labelsByTweetId[tweet.id] ||= [];
-          labelsByTweetId[tweet.id].push({ name: filter.name, filterMatch });
-          tweetIdsByLabel[filter.name] ||= [];
-          tweetIdsByLabel[filter.name].push(tweet.id);
+
+        if (filterMatch) {
+          filterMatchesToAdd.push(filterMatch);
         }
       }
     }
-    const end = performance.now();
-    console.log(`Processing filters took ${end - start}ms`);
-
-    await db.tweets.bulkAdd(tweets);
+    await db.filterTweetIds.bulkAdd(filterMatchesToAdd);
 
     set(() => ({
       dbHasTweets: true,
-      labelsByTweetId,
-      tweetIdsByLabel,
     }));
   },
+  excludedTweetIdsSet: new Set(),
   analysisQueue: new PQueue({ concurrency }),
-  labelsByTweetId: {},
-  tweetIdsByLabel: {},
-  setLabel: (tweet, label) =>
-    set(({ labelsByTweetId, tweetIdsByLabel }) => ({
-      labelsByTweetId: {
-        ...labelsByTweetId,
-        [tweet.id]: [
-          ...(labelsByTweetId[tweet.id] || []),
-          { name: label, filterMatch: { filter: true, type: "llm" } },
-        ],
-      },
-      tweetIdsByLabel: {
-        ...tweetIdsByLabel,
-        [label]: [...(tweetIdsByLabel[label] || []), tweet.id],
-      },
-    })),
-  printLabels: () => {
-    const { labelsByTweetId, tweetIdsByLabel } = get();
-    console.log(labelsByTweetId);
-    console.log(tweetIdsByLabel);
-  },
+
   addExcludedTweets: async (tweetIdsToExclude) => {
     for (const tweetId of tweetIdsToExclude) {
       await db.excludedTweetIds.add({ id: tweetId }, tweetId);

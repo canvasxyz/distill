@@ -1,23 +1,10 @@
 import { TweetsView } from "./TweetsView";
 import { usePagination } from "../hooks/usePagination";
-import { useMemo } from "react";
-import { useLiveQuery } from "dexie-react-hooks";
-import { db } from "../db";
 import { ShowIfTweetsLoaded } from "./ShowIfTweetsLoaded";
+import { useStore } from "../store";
 
 function IncludedTweetsViewInner() {
-  const tweets = useLiveQuery(() => db.tweets.toArray());
-
-  const excludedTweetIds = useLiveQuery(() => db.excludedTweetIds.toArray());
-  const excludedTweetIdsSet = useMemo(
-    () => new Set((excludedTweetIds || []).map((entry) => entry.id)),
-    [excludedTweetIds]
-  );
-
-  const includedTweets = useMemo(
-    () => (tweets || []).filter((tweet) => !excludedTweetIdsSet.has(tweet.id)),
-    [tweets, excludedTweetIdsSet]
-  );
+  const { includedTweets } = useStore();
 
   const {
     itemsToDisplay: paginatedIncludedTweets,

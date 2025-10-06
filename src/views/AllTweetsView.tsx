@@ -1,20 +1,19 @@
 import { usePagination } from "../hooks/usePagination";
 import { TweetsView } from "./TweetsView";
-import { db } from "../db";
-import { useLiveQuery } from "dexie-react-hooks";
 import { ShowIfTweetsLoaded } from "./ShowIfTweetsLoaded";
+import { useStore } from "../store";
 
 function AllTweetsViewInner() {
-  const tweets = useLiveQuery(() => db.tweets.toArray());
+  const { allTweets } = useStore();
   const { itemsToDisplay, navigateNext, navigatePrevious } = usePagination({
-    items: tweets || [],
+    items: allTweets || [],
     limit: 20,
   });
 
   return (
     <TweetsView
       title="All Tweets"
-      allTweets={tweets || []}
+      allTweets={allTweets || []}
       tweetsToDisplay={itemsToDisplay!}
       navigateNext={navigateNext}
       navigatePrevious={navigatePrevious}

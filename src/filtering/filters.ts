@@ -1,17 +1,11 @@
 import { illegalWordsRegExp } from "./illegal";
 import { offensiveWordsRegExp } from "./offensive";
-import type { Tweet } from "../types";
-
-export type FilterMatch =
-  | { filter: false; type: "llm" }
-  | { filter: true; type: "llm" }
-  | { filter: false; type: "regex" }
-  | { filter: true; type: "regex"; matches: RegExpExecArray };
+import type { FilterMatch, Tweet } from "../types";
 
 export const filters: {
   label: string;
   name: string;
-  evaluateFilter: (tweet: Tweet) => FilterMatch;
+  evaluateFilter: (tweet: Tweet) => FilterMatch | null;
   blurb: string;
 }[] = [
   // not yet implemented - use LLM?
@@ -26,19 +20,13 @@ export const filters: {
   {
     label: "Beef 🐄",
     name: "beef",
-    evaluateFilter: () => ({
-      filter: false,
-      type: "llm",
-    }),
+    evaluateFilter: () => null,
     blurb: "Tweets that involve arguments and disputes with other people",
   },
   {
     label: "Dunk 🤣",
     name: "dunk",
-    evaluateFilter: () => ({
-      filter: false,
-      type: "llm",
-    }),
+    evaluateFilter: () => null,
     blurb:
       "Tweets that involve people dunking on other people, criticising, slandering",
   },
@@ -48,9 +36,14 @@ export const filters: {
     evaluateFilter: (tweet: Tweet) => {
       const execResult = illegalWordsRegExp.exec(tweet.full_text);
       if (execResult) {
-        return { filter: true, type: "regex", matches: execResult };
+        return {
+          id: tweet.id,
+          filterName: "illegal",
+          type: "regex",
+          regexMatch: execResult,
+        };
       } else {
-        return { filter: false, type: "regex" };
+        return null;
       }
     },
     blurb: "Tweets that make reference to illegal activities or content",
@@ -68,10 +61,7 @@ export const filters: {
   {
     label: "Horny 😳",
     name: "horny",
-    evaluateFilter: () => ({
-      filter: false,
-      type: "llm",
-    }),
+    evaluateFilter: () => null,
     blurb: "Sexually provocative, flirty tweets",
   },
   {
@@ -80,9 +70,14 @@ export const filters: {
     evaluateFilter: (tweet: Tweet) => {
       const execResult = offensiveWordsRegExp.exec(tweet.full_text);
       if (execResult) {
-        return { filter: true, type: "regex", matches: execResult };
+        return {
+          id: tweet.id,
+          filterName: "offensive",
+          type: "regex",
+          regexMatch: execResult,
+        };
       } else {
-        return { filter: false, type: "regex" };
+        return null;
       }
     },
     blurb: "Tweets that may be offensive to some users, e.g. profanity",
@@ -90,10 +85,7 @@ export const filters: {
   {
     label: "NSFW 🔞",
     name: "nsfw",
-    evaluateFilter: () => ({
-      filter: false,
-      type: "llm",
-    }),
+    evaluateFilter: () => null,
     blurb: "Tweets that refer to sexually explicit or violent themes",
   },
 ];
