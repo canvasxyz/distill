@@ -15,7 +15,6 @@ export function Sidebar() {
     excludedTweets,
     tweetsByFilterName,
   } = useStore();
-  console.log(tweetsByFilterName);
 
   const totalNumTweets = (allTweets || []).length;
   return (

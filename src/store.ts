@@ -94,11 +94,14 @@ export const useStore = create<StoreTypes>((set, get) => ({
     ];
   },
   unsubscribe: () => {
-    const { subscriptions } = get();
+    const { subscriptions, analysisQueue } = get();
     for (const subscription of subscriptions.current) {
       subscription.unsubscribe();
     }
     subscriptions.current = [];
+
+    // clear any in-progress jobs if the page hot reloads
+    analysisQueue.clear();
   },
   allTweets: [],
   includedTweets: [],
@@ -167,7 +170,6 @@ export const useStore = create<StoreTypes>((set, get) => ({
   account: null,
   setAccount: async (account) => {
     await db.accounts.clear();
-    console.log(account);
     await db.accounts.add(account);
 
     set({ account });
