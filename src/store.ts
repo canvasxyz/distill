@@ -13,7 +13,7 @@ import {
 } from "./observables";
 import { filters } from "./filtering/filters";
 
-const concurrency = 20;
+const concurrency = 40;
 
 type StoreTypes = {
   init: () => Promise<void>;
