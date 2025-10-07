@@ -199,7 +199,6 @@ export function Sidebar() {
         >
           Clear database
         </button>
-
         {/* <button
           style={{
             borderRadius: "5px",
@@ -225,6 +224,11 @@ export function Sidebar() {
         >
           Print labels
         </button> */}
+
+        <span style={{ fontSize: "0.75em", fontStyle: "italic" }}>
+          Note: Tweet Archive Explorer analyzes the text content of tweets, not
+          the images or any other linked data (e.g. quoted tweets).
+        </span>
       </div>
     </div>
   );
