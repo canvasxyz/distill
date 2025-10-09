@@ -1,6 +1,10 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useStore } from "../store";
 import { ShowIfTweetsLoaded } from "./ShowIfTweetsLoaded";
+import { db } from "../db";
+
+const systemPrompt =
+  "You will be given a prompt, followed by a list of tweets. Review the tweets and provide an answer to the prompt.";
 
 const queries = [
   { prompt: "What kinds of topics does {account} post about?" },
@@ -44,7 +48,40 @@ function RunQueryButton({ onClick }: { onClick: () => void }) {
 
 function ModelQueryViewInner() {
   const [queryResult, setQueryResult] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
   const { account } = useStore();
+
+  const submitQuery = useCallback(
+    async (query: (typeof queries)[0]) => {
+      if (!account) return;
+
+      setIsProcessing(true);
+
+      // get a sample of the latest tweets
+      const tweetsSample = await db.tweets.limit(1000).toArray();
+
+      const messages = [
+        {
+          role: "system",
+          content: `${systemPrompt}
+
+        ${replaceAccountName(query.prompt, account.username)}`,
+        },
+        {
+          role: "user",
+          content: tweetsSample
+            .map((tweet) => `<Tweet>${tweet.full_text}</Tweet>`)
+            .join("\n"),
+        },
+      ];
+
+      console.log(messages);
+
+      setIsProcessing(false);
+    },
+    [account]
+  );
+
   if (!account) return <></>;
 
   return (
@@ -85,11 +122,7 @@ function ModelQueryViewInner() {
             }}
           >
             <span>{replaceAccountName(query.prompt, account.username)}</span>
-            <RunQueryButton
-              onClick={() => {
-                console.log("running query ", query);
-              }}
-            />
+            <RunQueryButton onClick={() => submitQuery(query)} />
           </div>
         ))}
       </div>
@@ -103,7 +136,41 @@ function ModelQueryViewInner() {
           background: "#f5f5f5",
         }}
       >
-        {queryResult ? queryResult : "Query result will appear here."}
+        {isProcessing ? (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              minHeight: "40px",
+            }}
+          >
+            <span
+              className="spinner"
+              style={{
+                width: "24px",
+                height: "24px",
+                border: "4px solid #ccc",
+                borderTop: "4px solid #333",
+                borderRadius: "50%",
+                display: "inline-block",
+                animation: "spin 1s linear infinite",
+              }}
+            />
+            <style>
+              {`
+                @keyframes spin {
+                  0% { transform: rotate(0deg);}
+                  100% { transform: rotate(360deg);}
+                }
+              `}
+            </style>
+          </div>
+        ) : queryResult ? (
+          queryResult
+        ) : (
+          "Query result will appear here."
+        )}
       </div>
     </div>
   );
