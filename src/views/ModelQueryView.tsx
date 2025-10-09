@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useStore } from "../store";
 import { ShowIfTweetsLoaded } from "./ShowIfTweetsLoaded";
 
@@ -42,6 +43,7 @@ function RunQueryButton({ onClick }: { onClick: () => void }) {
 }
 
 function ModelQueryViewInner() {
+  const [queryResult, setQueryResult] = useState("");
   const { account } = useStore();
   if (!account) return <></>;
 
@@ -101,16 +103,7 @@ function ModelQueryViewInner() {
           background: "#f5f5f5",
         }}
       >
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed euismod,
-        urna eu tincidunt consectetur, nisi nisl aliquam enim, nec dictum nisi
-        nisl euismod enim. Pellentesque habitant morbi tristique senectus et
-        netus et malesuada fames ac turpis egestas. Vestibulum ante ipsum primis
-        in faucibus orci luctus et ultrices posuere cubilia curae; Integer ac
-        sem nec urna cursus faucibus. Etiam euismod, justo at facilisis cursus,
-        enim erat dictum enim, nec dictum nisi nisl euismod enim. Suspendisse
-        potenti. Mauris euismod, nisi eu tincidunt consectetur, nisi nisl
-        aliquam enim, nec dictum nisi nisl euismod enim. Pellentesque habitant
-        morbi tristique senectus et netus et malesuada fames ac turpis egestas.
+        {queryResult ? queryResult : "Query result will appear here."}
       </div>
     </div>
   );
