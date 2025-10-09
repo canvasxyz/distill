@@ -19,7 +19,13 @@ export function CustomQuery() {
     setIsProcessing(true);
 
     // get a sample of the latest tweets
-    const tweetsSample = await db.tweets.limit(1000).toArray();
+    const tweetsSample = await db.tweets
+      .filter(
+        (tweet) =>
+          !tweet.in_reply_to_status_id && !tweet.full_text.startsWith("RT")
+      )
+      .limit(1000)
+      .toArray();
 
     const query = {
       systemPrompt: systemPrompt,

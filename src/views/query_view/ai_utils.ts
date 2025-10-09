@@ -1,4 +1,3 @@
-import OpenAI from "openai";
 import type { Account, Tweet } from "../../types";
 
 export type Query = { prompt: string; systemPrompt?: string };
@@ -31,24 +30,26 @@ export function makePromptMessages(
   ];
 }
 
+export const serverUrl = "https://tweet-analysis-worker.bob-wbb.workers.dev";
+
 export async function submitQuery(
   tweetsSample: Tweet[],
   query: Query,
   account: Account
 ) {
-  const openai = new OpenAI({
-    baseURL: "https://api.deepinfra.com/v1",
-    apiKey: import.meta.env.VITE_DEEPINFRA_KEY,
-    dangerouslyAllowBrowser: true,
-  });
+  const model = "Qwen/Qwen3-Next-80B-A3B-Instruct";
 
-  // something with a big context window that doesn't cost too much
-  const model = "Qwen/Qwen2.5-72B-Instruct";
-
-  const response = await openai.chat.completions.create({
+  const aiParams = {
     model,
     messages: makePromptMessages(tweetsSample, query, account),
-  });
+  };
 
-  return response.choices[0].message.content;
+  const classificationResponse = await fetch(serverUrl, {
+    method: "POST",
+    body: JSON.stringify({ params: aiParams }),
+    headers: { "Content-Type": "application/json" },
+  });
+  const data = await classificationResponse.json();
+
+  return data.choices[0].message.content;
 }
