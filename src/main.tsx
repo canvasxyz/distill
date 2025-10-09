@@ -9,7 +9,7 @@ import { ExcludedTweetsView } from "./views/ExcludedTweetsView.tsx";
 import { FilteredTweetsView } from "./views/FilteredTweetsView.tsx";
 import { AllTweetsView } from "./views/AllTweetsView.tsx";
 import { UploadView } from "./views/UploadView.tsx";
-import { ModelQueryView } from "./views/ModelQueryView.tsx";
+import { ModelQueryView } from "./views/query_view/ModelQueryView.tsx";
 
 const router = createHashRouter([
   {
