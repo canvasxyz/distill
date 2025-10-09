@@ -155,41 +155,10 @@ export function Sidebar() {
         )}
         <HorizontalRule />
 
-        <button
-          style={
-            allTweets
-              ? {
-                  borderRadius: "5px",
-                  padding: "5px",
-                  transition: "background-color 0.1s",
-                  textDecoration: "none",
-                  color: "black",
-                  border: "1px solid blue",
-                  backgroundColor: "white",
-                  cursor: "pointer",
-                }
-              : {
-                  borderRadius: "5px",
-                  padding: "5px",
-                  textDecoration: "none",
-                  color: "black",
-                  border: "1px solid blue",
-                  backgroundColor: "#ebebeb",
-                }
-          }
-          onMouseEnter={(e) => {
-            if (allTweets) e.currentTarget.style.backgroundColor = "#f0f0f0";
-          }}
-          onMouseLeave={(e) => {
-            if (allTweets) e.currentTarget.style.backgroundColor = "white";
-          }}
-          onClick={() => {
-            // link to model query page
-          }}
-          disabled={!allTweets}
-        >
-          Model Query
-        </button>
+        <LinkButton to="/model-query" disabled={!allTweets}>
+          Model Query ✨
+        </LinkButton>
+
         <HorizontalRule />
 
         <button
