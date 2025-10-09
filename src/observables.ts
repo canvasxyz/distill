@@ -1,6 +1,8 @@
 import { db } from "./db";
 import type { FilterMatch } from "./types";
 
+export const accountObservable = () => db.accounts.toArray();
+
 export const allTweetsObservable = () => db.tweets.toArray();
 export const includedTweetsObservable = async () => {
   const allTweets = await db.tweets.toArray();

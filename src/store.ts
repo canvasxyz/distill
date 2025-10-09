@@ -6,6 +6,7 @@ import { db } from "./db";
 import { liveQuery, type Subscription } from "dexie";
 import { createRef, type RefObject } from "react";
 import {
+  accountObservable,
   allTweetsObservable,
   excludedTweetsObservable,
   filterTweetsObservable,
@@ -53,6 +54,11 @@ export const useStore = create<StoreTypes>((set, get) => ({
   subscribe: () => {
     const { subscriptions } = get();
 
+    const accountSubscription = liveQuery(accountObservable).subscribe({
+      next: (newAccount) => set({ account: newAccount[0] || null }),
+      error: (error) => console.error(error),
+    });
+
     const allTweetsSubscription = liveQuery(allTweetsObservable).subscribe({
       next: (newAllTweets) => set({ allTweets: newAllTweets }),
       error: (error) => console.error(error),
@@ -87,6 +93,7 @@ export const useStore = create<StoreTypes>((set, get) => ({
     });
 
     subscriptions.current = [
+      accountSubscription,
       allTweetsSubscription,
       includedTweetsSubscription,
       excludedTweetsSubscription,
@@ -171,8 +178,6 @@ export const useStore = create<StoreTypes>((set, get) => ({
   setAccount: async (account) => {
     await db.accounts.clear();
     await db.accounts.add(account);
-
-    set({ account });
   },
   setTweets: async (tweets: Tweet[]) => {
     await db.tweets.bulkAdd(tweets);
