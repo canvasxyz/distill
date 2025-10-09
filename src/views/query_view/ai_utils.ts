@@ -25,7 +25,7 @@ export function makePromptMessages(
     {
       role: "user" as const,
       content: tweetsSample
-        .map((tweet) => `<Tweet>${tweet.full_text}</Tweet>`)
+        .map((tweet) => `<Post>${tweet.full_text}</Post>`)
         .join("\n"),
     },
   ];
