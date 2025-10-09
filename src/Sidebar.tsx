@@ -2,6 +2,18 @@ import { filters } from "./filtering/filters";
 import { LinkButton } from "./LinkButton";
 import { useStore } from "./store";
 
+function HorizontalRule() {
+  return (
+    <hr
+      style={{
+        margin: "0 0",
+        border: "none",
+        borderTop: "1px solid #ccc",
+      }}
+    />
+  );
+}
+
 export function Sidebar() {
   const {
     analyzeTweets,
@@ -37,13 +49,7 @@ export function Sidebar() {
         <LinkButton to="/excluded-tweets" disabled={!allTweets}>
           Excluded 👎 {excludedTweets && `(${excludedTweets.length})`}
         </LinkButton>
-        <hr
-          style={{
-            margin: "20px 0",
-            border: "none",
-            borderTop: "1px solid #ccc",
-          }}
-        />
+        <HorizontalRule />
         {filters.map((filter, index) => (
           <LinkButton
             key={index}
@@ -55,13 +61,7 @@ export function Sidebar() {
               `(${tweetsByFilterName[filter.name].length})`}
           </LinkButton>
         ))}
-        {/* <hr
-          style={{
-            margin: "20px 0",
-            border: "none",
-            borderTop: "1px solid #ccc",
-          }}
-        />
+        {/* <HorizontalRule/>
 
         <button
           style={{
@@ -129,8 +129,6 @@ export function Sidebar() {
                     border: "1px solid blue",
                     backgroundColor: "white",
                     cursor: "pointer",
-                    marginTop: "10px",
-                    marginBottom: "10px",
                   }
                 : {
                     borderRadius: "5px",
@@ -139,8 +137,6 @@ export function Sidebar() {
                     color: "black",
                     border: "1px solid blue",
                     backgroundColor: "#ebebeb",
-                    marginTop: "10px",
-                    marginBottom: "10px",
                   }
             }
             onMouseEnter={(e) => {
@@ -157,6 +153,44 @@ export function Sidebar() {
             Analyze Tweets ⚡
           </button>
         )}
+        <HorizontalRule />
+
+        <button
+          style={
+            allTweets
+              ? {
+                  borderRadius: "5px",
+                  padding: "5px",
+                  transition: "background-color 0.1s",
+                  textDecoration: "none",
+                  color: "black",
+                  border: "1px solid blue",
+                  backgroundColor: "white",
+                  cursor: "pointer",
+                }
+              : {
+                  borderRadius: "5px",
+                  padding: "5px",
+                  textDecoration: "none",
+                  color: "black",
+                  border: "1px solid blue",
+                  backgroundColor: "#ebebeb",
+                }
+          }
+          onMouseEnter={(e) => {
+            if (allTweets) e.currentTarget.style.backgroundColor = "#f0f0f0";
+          }}
+          onMouseLeave={(e) => {
+            if (allTweets) e.currentTarget.style.backgroundColor = "white";
+          }}
+          onClick={() => {
+            // link to model query page
+          }}
+          disabled={!allTweets}
+        >
+          Model Query
+        </button>
+        <HorizontalRule />
 
         <button
           style={
@@ -169,8 +203,6 @@ export function Sidebar() {
                   border: "1px solid #d32f2f",
                   backgroundColor: "#d32f2f",
                   cursor: "pointer",
-                  marginTop: "10px",
-                  marginBottom: "10px",
                 }
               : {
                   borderRadius: "5px",
@@ -179,8 +211,6 @@ export function Sidebar() {
                   color: "white",
                   border: "1px solid #d32f2f",
                   backgroundColor: "#f8d7da",
-                  marginTop: "10px",
-                  marginBottom: "10px",
                 }
           }
           onMouseEnter={(e) => {
