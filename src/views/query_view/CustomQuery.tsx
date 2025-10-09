@@ -123,13 +123,13 @@ function TweetFrequencyGraph({
   const graphHeight = 120;
   const graphWidth = 600;
 
-  const handleMouseDown = (e: React.MouseEvent, index: number) => {
+  const handleMouseDown = (_e: React.MouseEvent, index: number) => {
     setIsDragging(true);
     setDragStart(index);
     setDragEnd(index);
   };
 
-  const handleMouseMove = (e: React.MouseEvent, index: number) => {
+  const handleMouseMove = (_e: React.MouseEvent, index: number) => {
     if (isDragging && dragStart !== null) {
       setDragEnd(index);
     }
@@ -260,7 +260,7 @@ export function CustomQuery() {
           .filter(
             (tweet) =>
               // !tweet.in_reply_to_status_id &&
-              !tweet.full_text.startsWith("RT") && tweet.created_at
+              !tweet.full_text.startsWith("RT")
           )
           .toArray();
 
@@ -318,7 +318,7 @@ export function CustomQuery() {
     };
 
     loadTweetFrequency();
-  }, [account]);
+  }, [account, startDate, endDate]);
 
   // Get date bounds for date picker
   const dateBounds = useMemo(() => {
