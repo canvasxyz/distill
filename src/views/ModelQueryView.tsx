@@ -2,6 +2,8 @@ import { useCallback, useState } from "react";
 import { useStore } from "../store";
 import { ShowIfTweetsLoaded } from "./ShowIfTweetsLoaded";
 import { db } from "../db";
+import { OpenAI } from "openai";
+import Markdown from "react-markdown";
 
 const systemPrompt =
   "You will be given a prompt, followed by a list of tweets. Review the tweets and provide an answer to the prompt.";
@@ -60,22 +62,36 @@ function ModelQueryViewInner() {
       // get a sample of the latest tweets
       const tweetsSample = await db.tweets.limit(1000).toArray();
 
-      const messages = [
-        {
-          role: "system",
-          content: `${systemPrompt}
+      const openai = new OpenAI({
+        baseURL: "https://api.deepinfra.com/v1",
+        apiKey: import.meta.env.VITE_DEEPINFRA_KEY,
+        dangerouslyAllowBrowser: true,
+      });
 
-        ${replaceAccountName(query.prompt, account.username)}`,
-        },
-        {
-          role: "user",
-          content: tweetsSample
-            .map((tweet) => `<Tweet>${tweet.full_text}</Tweet>`)
-            .join("\n"),
-        },
-      ];
+      // something with a big context window that doesn't cost too much
+      const model = "Qwen/Qwen2.5-72B-Instruct";
 
-      console.log(messages);
+      const response = await openai.chat.completions.create({
+        model,
+        messages: [
+          {
+            role: "system",
+            content: `${systemPrompt}
+
+          ${replaceAccountName(query.prompt, account.username)}`,
+          },
+          {
+            role: "user",
+            content: tweetsSample
+              .map((tweet) => `<Tweet>${tweet.full_text}</Tweet>`)
+              .join("\n"),
+          },
+        ],
+      });
+
+      setQueryResult(response.choices[0].message.content!);
+
+      console.log(JSON.stringify(response, undefined, 4));
 
       setIsProcessing(false);
     },
@@ -167,7 +183,7 @@ function ModelQueryViewInner() {
             </style>
           </div>
         ) : queryResult ? (
-          queryResult
+          <Markdown>{queryResult}</Markdown>
         ) : (
           "Query result will appear here."
         )}
