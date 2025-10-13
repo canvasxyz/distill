@@ -4,6 +4,7 @@ import { db } from "../../db";
 import { useStore } from "../../store";
 import { RunQueryButton } from "./RunQueryButton";
 import { ResultsBox } from "./ResultsBox";
+import type { Tweet } from "../../types";
 
 const PRESET_QUERIES = [
   { prompt: "What kinds of topics does {account} post about?" },
@@ -29,10 +30,47 @@ export function RunQueries() {
       setIsProcessing(true);
 
       // get a sample of the latest tweets
-      const tweetsSample = await db.tweets.limit(1000).toArray();
+      // Query all tweets in db.tweets in batches of `batchSize`
+      const batches = [];
+      let offset = 0;
+      let batch = [];
+      const batchSize = 1000;
+      let i = 0;
+      do {
+        batch = await db.tweets.offset(offset).limit(batchSize).toArray();
+        batches.push(batch);
+        offset += batchSize;
+        i++;
+      } while (batch.length === batchSize && i < 5);
 
-      const result = await submitQuery(tweetsSample, query, account);
-      setQueryResult(result!);
+      // TODO: progress indicator
+      const allTweetTexts: string[] = [];
+      for (const batch of batches) {
+        const result = await submitQuery(batch, query, account);
+        const tweetMatches = result.match(/<Tweet>([\s\S]*?)<\/Tweet>/g) || [];
+        const tweetTexts = tweetMatches.map((m) =>
+          m
+            .replace(/^<Tweet>/, "")
+            .replace(/<\/Tweet>$/, "")
+            .trim()
+        );
+
+        for (const tweetText of tweetTexts) {
+          allTweetTexts.push(tweetText);
+        }
+      }
+
+      // submit query to create the final result based on the collected texts
+      const systemPrompt =
+        "You will be given a prompt, followed by a list of tweets. Review the tweets and provide an answer to the prompt.";
+
+      const result = await submitQuery(
+        allTweetTexts.map((tweetText) => ({ full_text: tweetText })),
+        { systemPrompt, prompt: query.prompt },
+        account
+      );
+
+      setQueryResult(result);
       setIsProcessing(false);
     },
     [account]

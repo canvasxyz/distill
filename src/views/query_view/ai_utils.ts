@@ -1,15 +1,16 @@
-import type { Account, Tweet } from "../../types";
+import type { Account } from "../../types";
+import OpenAI from "openai";
 
 export type Query = { prompt: string; systemPrompt?: string };
 
 export const defaultSystemPrompt =
-  "You will be given a prompt, followed by a list of tweets. Review the tweets and provide an answer to the prompt.";
+  "You are a researcher who is looking through an archive of a user's tweets trying to answer a question (given in the user prompt). You are trying to collect together all of the tweets that might provide a way to answer that question. Give your reasoning in <Reasoning>...</Reasoning> tags and then return a list of the tweets that you used as evidence with each tweet text wrapped in a <Tweet>...</Tweet> tag.";
 
 export function replaceAccountName(text: string, accountName: string) {
   return text.replace("{account}", `@${accountName}`);
 }
 export function makePromptMessages(
-  tweetsSample: Tweet[],
+  tweetsSample: { full_text: string }[],
   query: Query,
   account: Account
 ) {
@@ -33,16 +34,17 @@ export function makePromptMessages(
 export const serverUrl = "https://tweet-analysis-worker.bob-wbb.workers.dev";
 
 export async function submitQuery(
-  tweetsSample: Tweet[],
+  tweetsSample: { full_text: string }[],
   query: Query,
   account: Account
 ) {
   const model = "Qwen/Qwen3-Next-80B-A3B-Instruct";
 
-  const aiParams = {
-    model,
-    messages: makePromptMessages(tweetsSample, query, account),
-  };
+  const aiParams: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming =
+    {
+      model,
+      messages: makePromptMessages(tweetsSample, query, account),
+    };
 
   const classificationResponse = await fetch(serverUrl, {
     method: "POST",
@@ -51,5 +53,5 @@ export async function submitQuery(
   });
   const data = await classificationResponse.json();
 
-  return data.choices[0].message.content;
+  return data.choices[0].message.content as string;
 }
