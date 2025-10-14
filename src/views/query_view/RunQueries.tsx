@@ -24,6 +24,8 @@ const PRESET_QUERIES = [
 ];
 
 export function RunQueries() {
+  const [includeReplies, setIncludeReplies] = useState(true);
+  const [includeRetweets, setIncludeRetweets] = useState(true);
   const [queryResult, setQueryResult] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const { account } = useStore();
@@ -36,13 +38,25 @@ export function RunQueries() {
 
       // get a sample of the latest tweets
       // Query all tweets in db.tweets in batches of `batchSize`
+      const tweetsToAnalyse = await db.tweets
+        .filter((tweet) => {
+          if (!includeReplies && tweet.in_reply_to_user_id) {
+            return false;
+          }
+          if (!includeRetweets && tweet.full_text.startsWith("RT ")) {
+            return false;
+          }
+          return true;
+        })
+        .toArray();
+
       const batches = [];
       let offset = 0;
       let batch = [];
       const batchSize = 1000;
       let i = 0;
       do {
-        batch = await db.tweets.offset(offset).limit(batchSize).toArray();
+        batch = tweetsToAnalyse.slice(offset, offset + batchSize);
         batches.push(batch);
         offset += batchSize;
         i++;
@@ -79,7 +93,7 @@ export function RunQueries() {
       setQueryResult(result);
       setIsProcessing(false);
     },
-    [account]
+    [account, includeReplies, includeRetweets]
   );
 
   if (!account) return <></>;
@@ -93,6 +107,25 @@ export function RunQueries() {
         paddingBottom: "20px",
       }}
     >
+      {/* Checkboxes for includeReplies and includeRetweets */}
+      <div style={{ display: "flex", gap: "24px", marginTop: "24px" }}>
+        <label style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+          <input
+            type="checkbox"
+            checked={includeReplies}
+            onChange={(e) => setIncludeReplies(e.target.checked)}
+          />
+          Include replies
+        </label>
+        <label style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+          <input
+            type="checkbox"
+            checked={includeRetweets}
+            onChange={(e) => setIncludeRetweets(e.target.checked)}
+          />
+          Include retweets
+        </label>
+      </div>
       <div
         style={{
           display: "flex",
