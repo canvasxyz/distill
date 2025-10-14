@@ -64,6 +64,24 @@ type BatchStatus =
   | { status: "pending" }
   | { status: "queued" };
 
+async function getBatches(tweetsToAnalyse: Tweet[], batchSize: number) {
+  let offset = 0;
+
+  let i = 0;
+  const batches = [];
+  let batch: Tweet[];
+  do {
+    batch = tweetsToAnalyse.slice(offset, offset + batchSize);
+
+    batches.push(batch);
+
+    offset += batchSize;
+    i++;
+  } while (batch.length === batchSize);
+
+  return batches;
+}
+
 export function RunQueries() {
   const [includeReplies, setIncludeReplies] = useState(true);
   const [includeRetweets, setIncludeRetweets] = useState(true);
@@ -104,21 +122,12 @@ export function RunQueries() {
       const concurrency = 30;
       const queue = new PQueue({ concurrency });
 
-      let offset = 0;
       const batchSize = 1000;
-      let i = 0;
-      const batches = [];
-      let batch: Tweet[];
-      const initialBatchStatuses: Record<string, BatchStatus> = {};
-      do {
-        initialBatchStatuses[`${i}`] = { status: "queued" };
-        batch = tweetsToAnalyse.slice(offset, offset + batchSize);
+      const batches = await getBatches(tweetsToAnalyse, batchSize);
 
-        batches.push(batch);
-
-        offset += batchSize;
-        i++;
-      } while (batch.length === batchSize);
+      const initialBatchStatuses = Object.fromEntries(
+        batches.map((_tweets, idx) => [idx, { status: "queued" as const }])
+      );
 
       setBatchStatuses(initialBatchStatuses);
       setCurrentRunningQuery(query);
@@ -129,11 +138,14 @@ export function RunQueries() {
       console.log(`Prompt: "${query}"`);
 
       for (let i = 0; i < batches.length; i++) {
+        const batchId = i;
+        const batch = batches[batchId];
+
         queue.add(async () => {
           // console.log(`Processing batch ${i}`);
           setBatchStatuses((oldBatchStatuses) => ({
             ...oldBatchStatuses,
-            [i]: { status: "pending" },
+            [batchId]: { status: "pending" },
           }));
 
           // const batchStartTime = performance.now();
@@ -157,7 +169,7 @@ export function RunQueries() {
           // );
           setBatchStatuses((oldBatchStatuses) => ({
             ...oldBatchStatuses,
-            [i]: { status: "done", result: tweetTexts },
+            [batchId]: { status: "done", result: tweetTexts },
           }));
         });
       }
