@@ -207,6 +207,7 @@ export function CustomQuery() {
       <div>
         <h3>Results</h3>
         <ResultsBox
+          title={""}
           isProcessing={isProcessing}
           queryResult={queryResult}
           currentProgress={0}
