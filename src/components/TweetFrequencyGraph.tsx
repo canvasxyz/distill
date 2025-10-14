@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { sumNumbers } from "../utils";
 
 // Helper component to show tweet count in a range
 export function SelectedTweetCount({
@@ -11,15 +12,17 @@ export function SelectedTweetCount({
   endDate: string;
 }) {
   // Filter tweetCounts to only those within the selected date range (inclusive)
-  const totalTweets = tweetCounts.reduce((sum, data) => {
-    const date = new Date(data.date);
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    if (date >= start && date <= end) {
-      return sum + data.count;
-    }
-    return sum;
-  }, 0);
+  const startDateObj = new Date(startDate);
+  const endDateObj = new Date(endDate);
+
+  const totalTweets = sumNumbers(
+    tweetCounts
+      .filter((entry) => {
+        const entryDateObj = new Date(entry.date);
+        return entryDateObj >= startDateObj && entryDateObj <= endDateObj;
+      })
+      .map((entry) => entry.count)
+  );
 
   if (totalTweets === 0) return null;
   return (
