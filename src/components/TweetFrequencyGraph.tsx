@@ -26,7 +26,7 @@ export function SelectedTweetCount({
 
   if (totalTweets === 0) return null;
   return (
-    <div style={{ marginBottom: "8px", color: "#555", fontSize: "14px" }}>
+    <div style={{ color: "#555", fontSize: "12px" }}>
       {totalTweets} tweet{totalTweets !== 1 ? "s" : ""} selected in range.
     </div>
   );
@@ -86,7 +86,13 @@ export function TweetFrequencyGraph({
     return index >= start && index <= end;
   };
 
-  console.log(tweetCounts);
+  const endDateObj = new Date(endDate);
+  const endDateLastDayOfMonth = new Date(
+    endDateObj.getFullYear(),
+    endDateObj.getMonth() + 1,
+    0
+  );
+
   return (
     <div style={{ marginBottom: "20px" }}>
       <h4 style={{ marginBottom: "10px" }}>Tweet Frequency Over Time</h4>
@@ -148,11 +154,10 @@ export function TweetFrequencyGraph({
           );
         })}
       </svg>
-      <div style={{ fontSize: "12px", color: "#666", marginTop: "5px" }}>
-        Selected range:{" "}
-        {tweetCounts.length > 0
-          ? `${new Date(startDate).toLocaleDateString()} - ${new Date(endDate).toLocaleDateString()}`
-          : "No data"}
+      <div style={{ fontSize: "12px", color: "#666" }}>
+        {tweetCounts.length > 0 && startDate && endDate
+          ? `Selected date range: ${new Date(startDate).toLocaleDateString()} - ${endDateLastDayOfMonth.toLocaleDateString()}`
+          : "No date range selected"}
       </div>
       <SelectedTweetCount
         tweetCounts={tweetCounts}

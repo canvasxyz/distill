@@ -6,7 +6,6 @@ import { db } from "../../db";
 import { finalSystemPrompt, submitQuery } from "./ai_utils";
 import { useLiveQuery } from "dexie-react-hooks";
 import { TweetFrequencyGraph } from "../../components/TweetFrequencyGraph";
-import { DateRangePicker } from "../../components/DateRangePicker";
 
 export function CustomQuery() {
   const [queryResult, setQueryResult] = useState("");
@@ -149,14 +148,6 @@ export function CustomQuery() {
               startDate={startDate}
               endDate={endDate}
               onRangeSelect={handleRangeSelect}
-            />
-            <DateRangePicker
-              startDate={startDate}
-              endDate={endDate}
-              onStartDateChange={setStartDate}
-              onEndDateChange={setEndDate}
-              minDate={dateBounds.min}
-              maxDate={dateBounds.max}
             />
           </>
         ) : (
