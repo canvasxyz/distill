@@ -5,11 +5,13 @@ import {
   submitQuery,
   type Query,
 } from "./ai_utils";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { db } from "../../db";
 import { useStore } from "../../store";
 import { RunQueryButton } from "./RunQueryButton";
 import { ResultsBox } from "./ResultsBox";
+import PQueue from "p-queue";
+import type { Tweet } from "../../types";
 
 const PRESET_QUERIES = [
   { prompt: "What kinds of topics does {account} post about?" },
@@ -22,12 +24,26 @@ const PRESET_QUERIES = [
       "Based on these tweets, what MBTI is {account}? If you're unsure, list multiple options.",
   },
 ];
+
+type BatchStatus =
+  | { status: "done"; result: string[] }
+  | { status: "pending" }
+  | { status: "queued" };
+
 export function RunQueries() {
   const [includeReplies, setIncludeReplies] = useState(true);
   const [includeRetweets, setIncludeRetweets] = useState(true);
   const [queryResult, setQueryResult] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
-  const [progress, setProgress] = useState({ current: 0, total: 0 });
+
+  const [currentRunningQuery, setCurrentRunningQuery] = useState<Query | null>(
+    null
+  );
+  const [batchStatuses, setBatchStatuses] = useState<Record<
+    string,
+    BatchStatus
+  > | null>(null);
+
   const { account } = useStore();
 
   const clickSubmitQuery = useCallback(
@@ -35,7 +51,6 @@ export function RunQueries() {
       if (!account) return;
 
       setIsProcessing(true);
-      setProgress({ current: 0, total: 1 });
 
       // get a sample of the latest tweets
       // Query all tweets in db.tweets in batches of `batchSize`
@@ -51,59 +66,94 @@ export function RunQueries() {
         })
         .toArray();
 
-      const batches = [];
+      // make a pqueue
+      const queue = new PQueue({ concurrency: 10 });
+
       let offset = 0;
-      let batch = [];
       const batchSize = 1000;
       let i = 0;
+      const batches = [];
+      let batch: Tweet[];
+      const initialBatchStatuses: Record<string, BatchStatus> = {};
       do {
+        initialBatchStatuses[`${i}`] = { status: "queued" };
         batch = tweetsToAnalyse.slice(offset, offset + batchSize);
+
         batches.push(batch);
+
         offset += batchSize;
         i++;
-      } while (batch.length === batchSize && i < 5);
+      } while (batch.length === batchSize);
 
-      // Set total batches for progress tracking
-      setProgress({ current: 0, total: batches.length + 1 });
+      setBatchStatuses(initialBatchStatuses);
+      setCurrentRunningQuery(query);
 
-      const allTweetTexts: string[] = [];
-      for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
-        const batch = batches[batchIndex];
+      for (let i = 0; i < batches.length; i++) {
+        queue.add(async () => {
+          setBatchStatuses((oldBatchStatuses) => ({
+            ...oldBatchStatuses,
+            [i]: { status: "pending" },
+          }));
 
-        const result = await submitQuery(
-          batch,
-          { systemPrompt: batchSystemPrompt, prompt: query.prompt },
-          account
-        );
-        const tweetMatches = result.match(/<Tweet>([\s\S]*?)<\/Tweet>/g) || [];
-        const tweetTexts = tweetMatches.map((m) =>
-          m
-            .replace(/^<Tweet>/, "")
-            .replace(/<\/Tweet>$/, "")
-            .trim()
-        );
+          const result = await submitQuery(
+            batch,
+            { systemPrompt: batchSystemPrompt, prompt: query.prompt },
+            account
+          );
+          const tweetMatches =
+            result.match(/<Tweet>([\s\S]*?)<\/Tweet>/g) || [];
+          const tweetTexts = tweetMatches.map((m) =>
+            m
+              .replace(/^<Tweet>/, "")
+              .replace(/<\/Tweet>$/, "")
+              .trim()
+          );
 
-        for (const tweetText of tweetTexts) {
-          allTweetTexts.push(tweetText);
-        }
-
-        // Update progress
-        setProgress({ current: batchIndex + 1, total: batches.length + 1 });
+          setBatchStatuses((oldBatchStatuses) => ({
+            ...oldBatchStatuses,
+            [i]: { status: "done", result: tweetTexts },
+          }));
+        });
       }
-
-      // submit query to create the final result based on the collected texts
-      const result = await submitQuery(
-        allTweetTexts.map((tweetText) => ({ full_text: tweetText })),
-        { systemPrompt: finalSystemPrompt, prompt: query.prompt },
-        account
-      );
-
-      setQueryResult(result);
-      setIsProcessing(false);
-      setProgress({ current: 0, total: 0 });
     },
     [account, includeReplies, includeRetweets]
   );
+
+  useEffect(() => {
+    if (batchStatuses === null) return;
+    if (!account) return;
+    if (!currentRunningQuery) return;
+
+    for (const batchStatus of Object.values(batchStatuses)) {
+      if (batchStatus.status !== "done") return;
+    }
+
+    const allTweetTexts = Object.values(
+      batchStatuses as unknown as { result: string }[]
+    )
+      .map((batchStatus) => batchStatus.result)
+      .flat();
+
+    // submit query to create the final result based on the collected texts
+    submitQuery(
+      allTweetTexts.map((tweetText) => ({ full_text: tweetText })),
+      { systemPrompt: finalSystemPrompt, prompt: currentRunningQuery.prompt },
+      account
+    ).then((result) => {
+      setQueryResult(result);
+      setIsProcessing(false);
+      setBatchStatuses(null);
+    });
+  }, [batchStatuses, account, currentRunningQuery]);
+
+  const [currentProgress, totalProgress] = useMemo(() => {
+    if (batchStatuses === null) return [0, 1];
+    const currentProgress = Object.values(batchStatuses).filter(
+      (status) => status.status === "done"
+    ).length;
+    const totalProgress = Object.values(batchStatuses).length;
+    return [currentProgress, totalProgress];
+  }, [batchStatuses]);
 
   if (!account) return <></>;
 
@@ -165,8 +215,8 @@ export function RunQueries() {
       <ResultsBox
         isProcessing={isProcessing}
         queryResult={queryResult}
-        currentProgress={progress.current}
-        totalProgress={progress.total}
+        currentProgress={currentProgress}
+        totalProgress={totalProgress}
       />
     </div>
   );
