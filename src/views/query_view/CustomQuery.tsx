@@ -1,9 +1,10 @@
-import { useCallback, useState, useEffect, useMemo } from "react";
+import { useCallback, useState, useMemo } from "react";
 import { RunQueryButton } from "./RunQueryButton";
 import { ResultsBox } from "./ResultsBox";
 import { useStore } from "../../store";
 import { db } from "../../db";
-import { defaultSystemPrompt, submitQuery } from "./ai_utils";
+import { finalSystemPrompt, submitQuery } from "./ai_utils";
+import { useLiveQuery } from "dexie-react-hooks";
 
 // Helper component to show tweet count in a range
 export function SelectedTweetCount({
@@ -237,88 +238,61 @@ function TweetFrequencyGraph({
 export function CustomQuery() {
   const [queryResult, setQueryResult] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
-  const [systemPrompt, setSystemPrompt] = useState(defaultSystemPrompt);
+  const [systemPrompt, setSystemPrompt] = useState(finalSystemPrompt);
   const [commandPrompt, setCommandPrompt] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [tweetCounts, setTweetCounts] = useState<
-    { date: string; count: number }[]
-  >([]);
-  const [isLoadingGraph, setIsLoadingGraph] = useState(true);
+
+  const allTweets = useLiveQuery(() =>
+    db.tweets
+      .filter(
+        (tweet) =>
+          // !tweet.in_reply_to_status_id &&
+          !tweet.full_text.startsWith("RT")
+      )
+      .toArray()
+  );
+
+  const isLoadingGraph = !allTweets;
 
   const { account } = useStore();
 
-  // Load tweet frequency data for the graph
-  useEffect(() => {
-    const loadTweetFrequency = async () => {
-      if (!account) return;
+  const tweetCounts = useMemo(() => {
+    if (!allTweets) return [];
 
-      setIsLoadingGraph(true);
-      try {
-        // Get all tweets to calculate frequency
-        const allTweets = await db.tweets
-          .filter(
-            (tweet) =>
-              // !tweet.in_reply_to_status_id &&
-              !tweet.full_text.startsWith("RT")
-          )
-          .toArray();
+    // Group tweets by month
+    const monthCounts = new Map<string, number>();
+    let minDate = new Date();
+    let maxDate = new Date(0);
 
-        // Group tweets by month
-        const monthCounts = new Map<string, number>();
-        let minDate = new Date();
-        let maxDate = new Date(0);
+    allTweets.forEach((tweet) => {
+      const date = new Date(tweet.created_at);
+      if (date < minDate) minDate = date;
+      if (date > maxDate) maxDate = date;
 
-        allTweets.forEach((tweet) => {
-          const date = new Date(tweet.created_at);
-          if (date < minDate) minDate = date;
-          if (date > maxDate) maxDate = date;
+      // Group by month (YYYY-MM format)
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+      monthCounts.set(monthKey, (monthCounts.get(monthKey) || 0) + 1);
+    });
 
-          // Group by month (YYYY-MM format)
-          const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
-          monthCounts.set(monthKey, (monthCounts.get(monthKey) || 0) + 1);
+    // Create array of all months in range
+    const counts: { date: string; count: number }[] = [];
+    if (allTweets.length > 0) {
+      const current = new Date(minDate.getFullYear(), minDate.getMonth(), 1);
+      const end = new Date(maxDate.getFullYear(), maxDate.getMonth(), 1);
+
+      while (current <= end) {
+        const monthKey = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, "0")}`;
+        counts.push({
+          date: `${monthKey}-01`, // Use first day of month for date input compatibility
+          count: monthCounts.get(monthKey) || 0,
         });
-
-        // Create array of all months in range
-        const counts: { date: string; count: number }[] = [];
-        if (allTweets.length > 0) {
-          const current = new Date(
-            minDate.getFullYear(),
-            minDate.getMonth(),
-            1
-          );
-          const end = new Date(maxDate.getFullYear(), maxDate.getMonth(), 1);
-
-          while (current <= end) {
-            const monthKey = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, "0")}`;
-            counts.push({
-              date: `${monthKey}-01`, // Use first day of month for date input compatibility
-              count: monthCounts.get(monthKey) || 0,
-            });
-            current.setMonth(current.getMonth() + 1);
-          }
-
-          // Set default date range to last 6 months or all data if less
-          const defaultStart =
-            counts.length > 6
-              ? counts[counts.length - 6].date
-              : counts[0]?.date || "";
-          const defaultEnd = counts[counts.length - 1]?.date || "";
-
-          if (!startDate) setStartDate(defaultStart);
-          if (!endDate) setEndDate(defaultEnd);
-        }
-
-        setTweetCounts(counts);
-      } catch (error) {
-        console.error("Error loading tweet frequency:", error);
-      } finally {
-        setIsLoadingGraph(false);
+        current.setMonth(current.getMonth() + 1);
       }
-    };
+    }
 
-    loadTweetFrequency();
-  }, [account, startDate, endDate]);
+    return counts;
+  }, [allTweets]);
 
   // Get date bounds for date picker
   const dateBounds = useMemo(() => {
@@ -351,12 +325,14 @@ export function CustomQuery() {
         })
         .toArray();
 
-      const query = {
-        systemPrompt: systemPrompt,
-        prompt: commandPrompt,
-      };
-
-      const result = await submitQuery(tweetsSample, query, account);
+      const result = await submitQuery(
+        tweetsSample,
+        {
+          systemPrompt: systemPrompt,
+          prompt: commandPrompt,
+        },
+        account
+      );
       setQueryResult(result!);
     } catch (error) {
       console.error("Error submitting query:", error);
@@ -364,7 +340,7 @@ export function CustomQuery() {
     } finally {
       setIsProcessing(false);
     }
-  }, [account, systemPrompt, commandPrompt, startDate, endDate]);
+  }, [account, startDate, endDate, systemPrompt, commandPrompt]);
 
   const handleRangeSelect = (start: string, end: string) => {
     setStartDate(start);

@@ -1,10 +1,14 @@
-import { replaceAccountName, submitQuery, type Query } from "./ai_utils";
+import {
+  finalSystemPrompt,
+  replaceAccountName,
+  submitQuery,
+  type Query,
+} from "./ai_utils";
 import { useCallback, useState } from "react";
 import { db } from "../../db";
 import { useStore } from "../../store";
 import { RunQueryButton } from "./RunQueryButton";
 import { ResultsBox } from "./ResultsBox";
-import type { Tweet } from "../../types";
 
 const PRESET_QUERIES = [
   { prompt: "What kinds of topics does {account} post about?" },
@@ -61,12 +65,10 @@ export function RunQueries() {
       }
 
       // submit query to create the final result based on the collected texts
-      const systemPrompt =
-        "You will be given a prompt, followed by a list of tweets. Review the tweets and provide an answer to the prompt.";
 
       const result = await submitQuery(
         allTweetTexts.map((tweetText) => ({ full_text: tweetText })),
-        { systemPrompt, prompt: query.prompt },
+        { systemPrompt: finalSystemPrompt, prompt: query.prompt },
         account
       );
 
