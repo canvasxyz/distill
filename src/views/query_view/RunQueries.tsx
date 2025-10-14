@@ -81,7 +81,14 @@ export function RunQueries() {
   if (!account) return <></>;
 
   return (
-    <>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "10px",
+        paddingBottom: "20px",
+      }}
+    >
       <div
         style={{
           display: "flex",
@@ -108,8 +115,8 @@ export function RunQueries() {
           </div>
         ))}
       </div>
-      <h3>Results</h3>
+      <h3 style={{ marginBottom: "10px" }}>Results</h3>
       <ResultsBox isProcessing={isProcessing} queryResult={queryResult} />
-    </>
+    </div>
   );
 }

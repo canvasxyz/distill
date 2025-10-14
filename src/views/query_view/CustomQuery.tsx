@@ -113,25 +113,28 @@ export function CustomQuery() {
   if (!account) return <></>;
 
   return (
-    <>
-      <h3>Edit custom query</h3>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "10px",
+        paddingBottom: "20px",
+      }}
+    >
+      <h3 style={{ marginBottom: "5px" }}>Edit custom query</h3>
 
       {/* Tweet Range Selection */}
       <div
         style={{
-          marginBottom: "20px",
-          padding: "15px",
+          paddingLeft: "15px",
+          paddingRight: "15px",
           border: "1px solid #ddd",
           borderRadius: "6px",
           backgroundColor: "#f9f9f9",
         }}
       >
-        <h4 style={{ marginTop: "0", marginBottom: "15px" }}>
-          Select Tweet Range
-        </h4>
-
         {isLoadingGraph ? (
-          <div>Loading tweet data...</div>
+          <p>Loading tweet data...</p>
         ) : tweetCounts.length > 0 ? (
           <>
             <TweetFrequencyGraph
@@ -146,7 +149,7 @@ export function CustomQuery() {
         )}
       </div>
 
-      <div style={{ marginBottom: "20px" }}>
+      <div>
         <label
           htmlFor="system-prompt"
           style={{ display: "block", fontWeight: "bold", marginBottom: "6px" }}
@@ -197,12 +200,14 @@ export function CustomQuery() {
         />
       </div>
 
-      <div style={{ marginTop: "12px" }}>
+      <div>
         <RunQueryButton onClick={() => clickSubmitQuery()} />
       </div>
 
-      <h3>Results</h3>
-      <ResultsBox isProcessing={isProcessing} queryResult={queryResult} />
-    </>
+      <div>
+        <h3>Results</h3>
+        <ResultsBox isProcessing={isProcessing} queryResult={queryResult} />
+      </div>
+    </div>
   );
 }
