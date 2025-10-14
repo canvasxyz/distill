@@ -88,6 +88,8 @@ export function TweetsView({
         flexDirection: "column",
         paddingLeft: "10px",
         paddingRight: "10px",
+        margin: "0 auto",
+        maxWidth: "1200px", // limit width for readability on large screens
       }}
     >
       <h1>{title}</h1>

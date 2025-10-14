@@ -66,15 +66,6 @@ export function CustomQuery() {
     return counts;
   }, [allTweets]);
 
-  // Get date bounds for date picker
-  const dateBounds = useMemo(() => {
-    if (tweetCounts.length === 0) return { min: "", max: "" };
-    return {
-      min: tweetCounts[0].date,
-      max: tweetCounts[tweetCounts.length - 1].date,
-    };
-  }, [tweetCounts]);
-
   const clickSubmitQuery = useCallback(async () => {
     if (!account) return;
 
