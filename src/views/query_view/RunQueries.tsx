@@ -22,12 +22,12 @@ const PRESET_QUERIES = [
       "Based on these tweets, what MBTI is {account}? If you're unsure, list multiple options.",
   },
 ];
-
 export function RunQueries() {
   const [includeReplies, setIncludeReplies] = useState(true);
   const [includeRetweets, setIncludeRetweets] = useState(true);
   const [queryResult, setQueryResult] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [progress, setProgress] = useState({ current: 0, total: 0 });
   const { account } = useStore();
 
   const clickSubmitQuery = useCallback(
@@ -35,6 +35,7 @@ export function RunQueries() {
       if (!account) return;
 
       setIsProcessing(true);
+      setProgress({ current: 0, total: 1 });
 
       // get a sample of the latest tweets
       // Query all tweets in db.tweets in batches of `batchSize`
@@ -62,9 +63,13 @@ export function RunQueries() {
         i++;
       } while (batch.length === batchSize && i < 5);
 
-      // TODO: progress indicator
+      // Set total batches for progress tracking
+      setProgress({ current: 0, total: batches.length + 1 });
+
       const allTweetTexts: string[] = [];
-      for (const batch of batches) {
+      for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
+        const batch = batches[batchIndex];
+
         const result = await submitQuery(
           batch,
           { systemPrompt: batchSystemPrompt, prompt: query.prompt },
@@ -81,6 +86,9 @@ export function RunQueries() {
         for (const tweetText of tweetTexts) {
           allTweetTexts.push(tweetText);
         }
+
+        // Update progress
+        setProgress({ current: batchIndex + 1, total: batches.length + 1 });
       }
 
       // submit query to create the final result based on the collected texts
@@ -92,6 +100,7 @@ export function RunQueries() {
 
       setQueryResult(result);
       setIsProcessing(false);
+      setProgress({ current: 0, total: 0 });
     },
     [account, includeReplies, includeRetweets]
   );
@@ -153,7 +162,12 @@ export function RunQueries() {
         ))}
       </div>
       <h3 style={{ marginBottom: "10px" }}>Results</h3>
-      <ResultsBox isProcessing={isProcessing} queryResult={queryResult} />
+      <ResultsBox
+        isProcessing={isProcessing}
+        queryResult={queryResult}
+        currentProgress={progress.current}
+        totalProgress={progress.total}
+      />
     </div>
   );
 }

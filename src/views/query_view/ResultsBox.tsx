@@ -1,18 +1,12 @@
 import Markdown from "react-markdown";
 import { useState } from "react";
 
-export function ResultsBox({
-  isProcessing,
-  queryResult,
-}: {
-  isProcessing: boolean;
-  queryResult: string;
-}) {
+const CopyButton = ({ text }: { text: string }) => {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(queryResult);
+      await navigator.clipboard.writeText(text);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
@@ -20,6 +14,49 @@ export function ResultsBox({
     }
   };
 
+  return (
+    <button
+      onClick={handleCopy}
+      style={{
+        position: "absolute",
+        top: "8px",
+        right: "8px",
+        background: copied ? "#4CAF50" : "#fff",
+        border: "1px solid #ccc",
+        borderRadius: "4px",
+        padding: "4px 8px",
+        cursor: "pointer",
+        fontSize: "12px",
+        color: copied ? "#fff" : "#333",
+        transition: "all 0.2s ease",
+      }}
+      onMouseEnter={(e) => {
+        if (!copied) {
+          e.currentTarget.style.background = "#f0f0f0";
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (!copied) {
+          e.currentTarget.style.background = "#fff";
+        }
+      }}
+    >
+      {copied ? "Copied!" : "Copy"}
+    </button>
+  );
+};
+
+export function ResultsBox({
+  currentProgress,
+  totalProgress,
+  isProcessing,
+  queryResult,
+}: {
+  currentProgress: number;
+  totalProgress: number;
+  isProcessing: boolean;
+  queryResult: string;
+}) {
   return (
     <div
       style={{
@@ -30,68 +67,47 @@ export function ResultsBox({
         position: "relative",
       }}
     >
-      {queryResult && !isProcessing && (
-        <button
-          onClick={handleCopy}
-          style={{
-            position: "absolute",
-            top: "8px",
-            right: "8px",
-            background: copied ? "#4CAF50" : "#fff",
-            border: "1px solid #ccc",
-            borderRadius: "4px",
-            padding: "4px 8px",
-            cursor: "pointer",
-            fontSize: "12px",
-            color: copied ? "#fff" : "#333",
-            transition: "all 0.2s ease",
-          }}
-          onMouseEnter={(e) => {
-            if (!copied) {
-              e.currentTarget.style.background = "#f0f0f0";
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (!copied) {
-              e.currentTarget.style.background = "#fff";
-            }
-          }}
-        >
-          {copied ? "Copied!" : "Copy"}
-        </button>
-      )}
       {isProcessing ? (
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            minHeight: "40px",
-          }}
-        >
-          <span
-            className="spinner"
+        <div style={{ marginTop: "16px", marginBottom: "16px" }}>
+          <div
             style={{
-              width: "24px",
-              height: "24px",
-              border: "4px solid #ccc",
-              borderTop: "4px solid #333",
-              borderRadius: "50%",
-              display: "inline-block",
-              animation: "spin 1s linear infinite",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: "8px",
             }}
-          />
-          <style>
-            {`
-          @keyframes spin {
-            0% { transform: rotate(0deg);}
-            100% { transform: rotate(360deg);}
-          }
-        `}
-          </style>
+          >
+            <span style={{ fontSize: "14px", color: "#666" }}>
+              Processing batches...
+            </span>
+            <span style={{ fontSize: "14px", color: "#666" }}>
+              {currentProgress} / {totalProgress}
+            </span>
+          </div>
+          <div
+            style={{
+              width: "100%",
+              height: "8px",
+              backgroundColor: "#e0e0e0",
+              borderRadius: "4px",
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                width: `${(currentProgress / totalProgress) * 100}%`,
+                height: "100%",
+                backgroundColor: "#4CAF50",
+                transition: "width 0.3s ease",
+              }}
+            />
+          </div>
         </div>
       ) : queryResult ? (
-        <Markdown>{queryResult}</Markdown>
+        <>
+          <CopyButton text={queryResult} />
+          <Markdown>{queryResult}</Markdown>
+        </>
       ) : (
         "Query result will appear here."
       )}
