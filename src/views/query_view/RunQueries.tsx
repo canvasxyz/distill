@@ -1,4 +1,5 @@
 import {
+  batchSystemPrompt,
   finalSystemPrompt,
   replaceAccountName,
   submitQuery,
@@ -50,7 +51,11 @@ export function RunQueries() {
       // TODO: progress indicator
       const allTweetTexts: string[] = [];
       for (const batch of batches) {
-        const result = await submitQuery(batch, query, account);
+        const result = await submitQuery(
+          batch,
+          { systemPrompt: batchSystemPrompt, prompt: query.prompt },
+          account
+        );
         const tweetMatches = result.match(/<Tweet>([\s\S]*?)<\/Tweet>/g) || [];
         const tweetTexts = tweetMatches.map((m) =>
           m
@@ -65,7 +70,6 @@ export function RunQueries() {
       }
 
       // submit query to create the final result based on the collected texts
-
       const result = await submitQuery(
         allTweetTexts.map((tweetText) => ({ full_text: tweetText })),
         { systemPrompt: finalSystemPrompt, prompt: query.prompt },

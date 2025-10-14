@@ -43,10 +43,11 @@ export async function submitQuery(
 ) {
   const model = "Qwen/Qwen3-Next-80B-A3B-Instruct";
 
+  const messages = makePromptMessages(tweetsSample, query, account);
   const aiParams: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming =
     {
       model,
-      messages: makePromptMessages(tweetsSample, query, account),
+      messages,
     };
 
   const classificationResponse = await fetch(serverUrl, {
