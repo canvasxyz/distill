@@ -1,4 +1,6 @@
 import Markdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+
 import { useState } from "react";
 
 const CopyButton = ({ text }: { text: string }) => {
@@ -47,11 +49,13 @@ const CopyButton = ({ text }: { text: string }) => {
 };
 
 export function ResultsBox({
+  title,
   currentProgress,
   totalProgress,
   isProcessing,
   queryResult,
 }: {
+  title: string | null;
   currentProgress: number;
   totalProgress: number;
   isProcessing: boolean;
@@ -69,6 +73,7 @@ export function ResultsBox({
     >
       {isProcessing ? (
         <div style={{ marginTop: "16px", marginBottom: "16px" }}>
+          <h4>Currently processing "{title}"</h4>
           <div
             style={{
               display: "flex",
@@ -106,7 +111,8 @@ export function ResultsBox({
       ) : queryResult ? (
         <>
           <CopyButton text={queryResult} />
-          <Markdown>{queryResult}</Markdown>
+          <h4>{title}</h4>
+          <Markdown remarkPlugins={[remarkGfm]}>{queryResult}</Markdown>
         </>
       ) : (
         "Query result will appear here."
