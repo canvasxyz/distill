@@ -9,6 +9,7 @@ import { TweetFrequencyGraph } from "../../components/TweetFrequencyGraph";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useTweetCounts } from "./useTweetCounts";
+import { v4 as uuid4 } from "uuid";
 
 export function CustomQuery() {
   const [queryResult, setQueryResult] = useState<QueryResult | null>(null);
@@ -68,7 +69,14 @@ export function CustomQuery() {
 
       const endTime = performance.now();
       const totalRunTime = endTime - startTime;
-      setQueryResult({ ...result, totalRunTime });
+      setQueryResult({
+        ...result,
+        totalRunTime,
+        id: uuid4(),
+        rangeSelectionType: "date-range",
+        startDate,
+        endDate,
+      });
     } catch (error) {
       console.error("Error submitting query:", error);
       // setQueryResult("Error processing query. Please try again.");
