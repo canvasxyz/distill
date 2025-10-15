@@ -3,12 +3,18 @@ import {
   finalSystemPrompt,
   submitQuery,
   type QueryResult,
+  type RangeSelectionType,
 } from "./ai_utils";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { db } from "../../db";
 import { useStore } from "../../store";
 import { RunQueryButton } from "./RunQueryButton";
-import { CopyButton, ProcessingInfo, ResultsBox } from "./ResultsBox";
+import {
+  CopyButton,
+  ProgressBar,
+  ProgressLabel,
+  ResultsBox,
+} from "./ResultsBox";
 import PQueue from "p-queue";
 import type { Tweet } from "../../types";
 import { ExampleQueriesModal } from "./ExampleQueriesModal";
@@ -85,9 +91,8 @@ export function RunQueries() {
 
   const tweetCounts = useTweetCounts(filteredTweetsToAnalyse);
 
-  const [rangeSelectionType, setRangeSelectionType] = useState<
-    "whole-archive" | "date-range" | "random-sample"
-  >("whole-archive");
+  const [rangeSelectionType, setRangeSelectionType] =
+    useState<RangeSelectionType>("whole-archive");
 
   const clickSubmitQuery = useCallback(
     async (query: string) => {
@@ -206,11 +211,25 @@ export function RunQueries() {
     ).then((result) => {
       const finalTime = performance.now();
       const totalRunTime = finalTime - startedProcessingTime!;
-      setQueryResult({ ...result, totalRunTime });
+      setQueryResult({
+        ...result,
+        totalRunTime,
+        rangeSelectionType,
+        startDate,
+        endDate,
+      });
       setIsProcessing(false);
       setBatchStatuses(null);
     });
-  }, [batchStatuses, account, currentRunningQuery, startedProcessingTime]);
+  }, [
+    batchStatuses,
+    account,
+    currentRunningQuery,
+    startedProcessingTime,
+    startDate,
+    endDate,
+    rangeSelectionType,
+  ]);
 
   const [currentProgress, totalProgress] = useMemo(() => {
     if (batchStatuses === null) return [0, 1];
@@ -242,6 +261,7 @@ export function RunQueries() {
       >
         <textarea
           value={selectedQuery}
+          disabled={isProcessing}
           onChange={(e) => setSelectedQuery(e.target.value)}
           rows={3}
           style={{
@@ -259,6 +279,7 @@ export function RunQueries() {
         />
         <button
           onClick={() => setExampleQueriesModalIsOpen(true)}
+          disabled={isProcessing}
           style={{
             padding: "0 18px",
             background: "#f8f9fa",
@@ -288,6 +309,7 @@ export function RunQueries() {
         <label style={{ display: "flex", alignItems: "center", gap: "6px" }}>
           <input
             type="checkbox"
+            disabled={isProcessing}
             checked={includeReplies}
             onChange={(e) => setIncludeReplies(e.target.checked)}
           />
@@ -296,6 +318,7 @@ export function RunQueries() {
         <label style={{ display: "flex", alignItems: "center", gap: "6px" }}>
           <input
             type="checkbox"
+            disabled={isProcessing}
             checked={includeRetweets}
             onChange={(e) => setIncludeRetweets(e.target.checked)}
           />
@@ -313,6 +336,7 @@ export function RunQueries() {
         <label style={{ display: "flex", alignItems: "center", gap: "6px" }}>
           <input
             type="radio"
+            disabled={isProcessing}
             name="archiveMode"
             checked={rangeSelectionType === "whole-archive"}
             onChange={(e) => {
@@ -337,6 +361,7 @@ export function RunQueries() {
         >
           <input
             type="radio"
+            disabled={isProcessing}
             name="archiveMode"
             checked={rangeSelectionType === "date-range"}
             onChange={(e) => {
@@ -355,6 +380,7 @@ export function RunQueries() {
         >
           <input
             type="radio"
+            disabled={isProcessing}
             name="archiveMode"
             checked={rangeSelectionType === "random-sample"}
             onChange={(e) => {
@@ -384,10 +410,16 @@ export function RunQueries() {
         <RunQueryButton onClick={() => clickSubmitQuery(selectedQuery)} />
       </div>
 
-      {isProcessing && (
+      {isProcessing && currentRunningQuery && (
         <ResultsBox>
-          <ProcessingInfo
-            title={currentRunningQuery!}
+          <h4 style={{ marginTop: "0px" }}>
+            Currently processing "{currentRunningQuery}"
+          </h4>
+          <ProgressLabel
+            currentProgress={currentProgress}
+            totalProgress={totalProgress}
+          />
+          <ProgressBar
             currentProgress={currentProgress}
             totalProgress={totalProgress}
           />

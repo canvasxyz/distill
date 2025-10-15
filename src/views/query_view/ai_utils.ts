@@ -4,12 +4,20 @@ import OpenAI from "openai";
 
 export type Query = { prompt: string; systemPrompt?: string };
 
+export type RangeSelectionType =
+  | "whole-archive"
+  | "date-range"
+  | "random-sample";
+
 export type QueryResult = {
   query: string;
   result: string;
   totalRunTime: number;
   runTime: number;
   messages: ChatCompletionMessageParam[];
+  rangeSelectionType: RangeSelectionType;
+  startDate?: string;
+  endDate?: string;
 };
 
 export const batchSystemPrompt =

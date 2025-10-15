@@ -45,33 +45,39 @@ export const CopyButton = ({ text }: { text: string }) => {
   );
 };
 
-export function ProcessingInfo({
-  title,
+export const ProgressLabel = ({
   currentProgress,
   totalProgress,
 }: {
-  title: string;
+  currentProgress: number;
+  totalProgress: number;
+}) => (
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: "8px",
+    }}
+  >
+    <span style={{ fontSize: "14px", color: "#666" }}>
+      Processing batches...
+    </span>
+    <span style={{ fontSize: "14px", color: "#666" }}>
+      {currentProgress} / {totalProgress}
+    </span>
+  </div>
+);
+
+export function ProgressBar({
+  currentProgress,
+  totalProgress,
+}: {
   currentProgress: number;
   totalProgress: number;
 }) {
   return (
-    <div style={{ marginTop: "16px", marginBottom: "16px" }}>
-      <h4>Currently processing "{title}"</h4>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "8px",
-        }}
-      >
-        <span style={{ fontSize: "14px", color: "#666" }}>
-          Processing batches...
-        </span>
-        <span style={{ fontSize: "14px", color: "#666" }}>
-          {currentProgress} / {totalProgress}
-        </span>
-      </div>
+    <>
       <div
         style={{
           width: "100%",
@@ -90,7 +96,7 @@ export function ProcessingInfo({
           }}
         />
       </div>
-    </div>
+    </>
   );
 }
 
