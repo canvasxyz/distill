@@ -3,6 +3,7 @@ import {
   finalSystemPrompt,
   replaceAccountName,
   submitQuery,
+  type QueryResult,
 } from "./ai_utils";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { db } from "../../db";
@@ -60,7 +61,7 @@ const PRESET_QUERIES = [
 ];
 
 type BatchStatus =
-  | { status: "done"; result: string[] }
+  | { status: "done"; result: string[]; runTime: number }
   | { status: "pending" }
   | { status: "queued" };
 
@@ -83,8 +84,11 @@ async function getBatches(tweetsToAnalyse: Tweet[], batchSize: number) {
 export function RunQueries() {
   const [includeReplies, setIncludeReplies] = useState(true);
   const [includeRetweets, setIncludeRetweets] = useState(true);
-  const [queryResult, setQueryResult] = useState("");
+  const [queryResult, setQueryResult] = useState<QueryResult | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [startedProcessingTime, setStartedProcessingTime] = useState<
+    null | number
+  >(null);
 
   const [currentRunningQuery, setCurrentRunningQuery] = useState<string | null>(
     null
@@ -129,6 +133,7 @@ export function RunQueries() {
 
       setBatchStatuses(initialBatchStatuses);
       setCurrentRunningQuery(query);
+      setStartedProcessingTime(performance.now());
 
       console.log(
         `Starting LLM query with concurrency=${concurrency}, n=${tweetsToAnalyse.length}, batchSize=${batchSize}`
@@ -147,13 +152,13 @@ export function RunQueries() {
           }));
 
           // const batchStartTime = performance.now();
-          const result = await submitQuery(
+          const queryResult = await submitQuery(
             batch,
             { systemPrompt: batchSystemPrompt, prompt: query },
             account
           );
           const tweetMatches =
-            result.match(/<Tweet>([\s\S]*?)<\/Tweet>/g) || [];
+            queryResult.result.match(/<Tweet>([\s\S]*?)<\/Tweet>/g) || [];
           const tweetTexts = tweetMatches.map((m) =>
             m
               .replace(/^<Tweet>/, "")
@@ -167,7 +172,11 @@ export function RunQueries() {
           // );
           setBatchStatuses((oldBatchStatuses) => ({
             ...oldBatchStatuses,
-            [batchId]: { status: "done", result: tweetTexts },
+            [batchId]: {
+              status: "done",
+              result: tweetTexts,
+              runTime: queryResult.runTime,
+            },
           }));
         });
       }
@@ -197,7 +206,9 @@ export function RunQueries() {
       { systemPrompt: finalSystemPrompt, prompt: currentRunningQuery },
       account
     ).then((result) => {
-      setQueryResult(result);
+      const finalTime = performance.now();
+      const totalRunTime = finalTime - startedProcessingTime!;
+      setQueryResult({ ...result, totalRunTime });
       setIsProcessing(false);
       setBatchStatuses(null);
     });

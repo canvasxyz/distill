@@ -2,6 +2,7 @@ import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
 import { useState } from "react";
+import type { QueryResult } from "./ai_utils";
 
 const CopyButton = ({ text }: { text: string }) => {
   const [copied, setCopied] = useState(false);
@@ -59,7 +60,7 @@ export function ResultsBox({
   currentProgress: number;
   totalProgress: number;
   isProcessing: boolean;
-  queryResult: string;
+  queryResult: QueryResult | null;
 }) {
   return (
     <div
@@ -110,9 +111,12 @@ export function ResultsBox({
         </div>
       ) : queryResult ? (
         <>
-          <CopyButton text={queryResult} />
-          <h4>{title}</h4>
-          <Markdown remarkPlugins={[remarkGfm]}>{queryResult}</Markdown>
+          <CopyButton text={queryResult.result} />
+          <h4>
+            {title} (completed in {(queryResult.runTime / 1000).toFixed(2)}{" "}
+            seconds)
+          </h4>
+          <Markdown remarkPlugins={[remarkGfm]}>{queryResult.result}</Markdown>
         </>
       ) : (
         "Query result will appear here."

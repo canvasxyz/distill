@@ -1,7 +1,15 @@
+import type { ChatCompletionMessageParam } from "openai/resources";
 import type { Account } from "../../types";
 import OpenAI from "openai";
 
 export type Query = { prompt: string; systemPrompt?: string };
+
+export type QueryResult = {
+  result: string;
+  totalRunTime: number;
+  runTime: number;
+  messages: ChatCompletionMessageParam[];
+};
 
 export const batchSystemPrompt =
   "You are a researcher who is looking through an archive of a user's tweets ({account}) trying to answer a question (given in the user prompt). You are trying to collect together all of the tweets that might provide a way to answer that question. Give your reasoning in <Reasoning>...</Reasoning> tags and then return a list of the tweets that you used as evidence with each tweet text wrapped in a <Tweet>...</Tweet> tag. Return at most 20 tweets.";
@@ -41,6 +49,7 @@ export async function submitQuery(
   query: Query,
   account: Account
 ) {
+  const startTime = performance.now();
   const model = "Qwen/Qwen3-Next-80B-A3B-Instruct";
 
   const messages = makePromptMessages(tweetsSample, query, account);
@@ -57,5 +66,12 @@ export async function submitQuery(
   });
   const data = await classificationResponse.json();
 
-  return data.choices[0].message.content as string;
+  const endTime = performance.now();
+  const runTime = endTime - startTime;
+
+  return {
+    result: data.choices[0].message.content as string,
+    messages,
+    runTime,
+  };
 }
