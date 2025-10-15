@@ -398,7 +398,7 @@ export function RunQueries() {
           <h3 style={{ marginBottom: "10px" }}>Results</h3>
           <ResultsBox>
             <CopyButton text={queryResult.result} />
-            <h4>
+            <h4 style={{ marginTop: "0px" }}>
               {queryResult.query} (completed in{" "}
               {(queryResult.runTime / 1000).toFixed(2)} seconds)
             </h4>
