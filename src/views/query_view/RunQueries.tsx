@@ -179,7 +179,7 @@ export function RunQueries() {
         });
       }
     },
-    [account, filteredTweetsToAnalyse, rangeSelectionType]
+    [account, filteredTweetsToAnalyse, rangeSelectionType, startDate, endDate]
   );
 
   useEffect(() => {
@@ -322,7 +322,7 @@ export function RunQueries() {
                 setEndDate("");
               }
             }}
-            style={{ accentColor: "#007bff", margin: 0 }}
+            style={{ accentColor: "#007bff", marginTop: "2px" }}
           />
           Whole Archive (
           {filteredTweetsToAnalyse ? filteredTweetsToAnalyse.length : "-"}{" "}
@@ -342,7 +342,7 @@ export function RunQueries() {
             onChange={(e) => {
               if (e.target.checked) setRangeSelectionType("date-range");
             }}
-            style={{ accentColor: "#007bff", margin: 0 }}
+            style={{ accentColor: "#007bff", marginTop: "2px" }}
           />
           Select date range
         </label>
@@ -364,9 +364,9 @@ export function RunQueries() {
                 setEndDate("");
               }
             }}
-            style={{ margin: 0 }}
+            style={{ marginTop: "2px" }}
           />
-          Random Sample (not implemented yet)
+          Random Sample
         </label>
       </div>
       {rangeSelectionType === "date-range" && (
