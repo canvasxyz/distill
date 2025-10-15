@@ -10,6 +10,7 @@ export type RangeSelectionType =
   | "random-sample";
 
 export type QueryResult = {
+  id: string;
   query: string;
   result: string;
   totalRunTime: number;

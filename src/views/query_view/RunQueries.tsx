@@ -25,6 +25,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { useTweetCounts } from "./useTweetCounts";
 import { TweetFrequencyGraph } from "../../components/TweetFrequencyGraph";
 import { pickSampleNoRepeats } from "../../utils";
+import { v4 as uuid4 } from "uuid";
 
 type BatchStatus =
   | { status: "done"; result: string[]; runTime: number }
@@ -211,13 +212,17 @@ export function RunQueries() {
     ).then((result) => {
       const finalTime = performance.now();
       const totalRunTime = finalTime - startedProcessingTime!;
-      setQueryResult({
+
+      const newQueryResult = {
         ...result,
+        id: uuid4(),
         totalRunTime,
         rangeSelectionType,
         startDate,
         endDate,
-      });
+      };
+      setQueryResult(newQueryResult);
+      db.queryResults.add(newQueryResult);
       setIsProcessing(false);
       setBatchStatuses(null);
     });
