@@ -279,7 +279,7 @@ export function RunQueries() {
             checked={true}
             disabled
             readOnly
-            style={{ accentColor: "#007bff" }}
+            style={{ accentColor: "#007bff", margin: 0 }}
           />
           Whole Archive
         </label>
@@ -297,6 +297,7 @@ export function RunQueries() {
             checked={false}
             disabled
             readOnly
+            style={{ margin: 0 }}
           />
           Random Sample (not implemented yet)
         </label>
