@@ -3,12 +3,12 @@ import { RunQueryButton } from "./RunQueryButton";
 import { ResultsBox } from "./ResultsBox";
 import { useStore } from "../../store";
 import { db } from "../../db";
-import { finalSystemPrompt, submitQuery } from "./ai_utils";
+import { finalSystemPrompt, submitQuery, type QueryResult } from "./ai_utils";
 import { useLiveQuery } from "dexie-react-hooks";
 import { TweetFrequencyGraph } from "../../components/TweetFrequencyGraph";
 
 export function CustomQuery() {
-  const [queryResult, setQueryResult] = useState("");
+  const [queryResult, setQueryResult] = useState<QueryResult | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [systemPrompt, setSystemPrompt] = useState(finalSystemPrompt);
   const [commandPrompt, setCommandPrompt] = useState("");
@@ -70,6 +70,7 @@ export function CustomQuery() {
     if (!account) return;
 
     setIsProcessing(true);
+    const startTime = performance.now();
 
     try {
       // Filter tweets by date range
@@ -96,10 +97,13 @@ export function CustomQuery() {
         },
         account
       );
-      setQueryResult(result!);
+
+      const endTime = performance.now();
+      const totalRunTime = endTime - startTime;
+      setQueryResult({ ...result, totalRunTime });
     } catch (error) {
       console.error("Error submitting query:", error);
-      setQueryResult("Error processing query. Please try again.");
+      // setQueryResult("Error processing query. Please try again.");
     } finally {
       setIsProcessing(false);
     }

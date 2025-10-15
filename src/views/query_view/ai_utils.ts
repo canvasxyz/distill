@@ -5,6 +5,7 @@ import OpenAI from "openai";
 export type Query = { prompt: string; systemPrompt?: string };
 
 export type QueryResult = {
+  query: string;
   result: string;
   totalRunTime: number;
   runTime: number;
@@ -70,6 +71,7 @@ export async function submitQuery(
   const runTime = endTime - startTime;
 
   return {
+    query: query.prompt,
     result: data.choices[0].message.content as string,
     messages,
     runTime,

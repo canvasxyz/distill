@@ -8,11 +8,13 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { db } from "../../db";
 import { useStore } from "../../store";
 import { RunQueryButton } from "./RunQueryButton";
-import { ResultsBox } from "./ResultsBox";
+import { CopyButton, ProcessingInfo, ResultsBox } from "./ResultsBox";
 import PQueue from "p-queue";
 import type { Tweet } from "../../types";
 import { ExampleQueriesModal } from "./ExampleQueriesModal";
 import { EXAMPLE_QUERIES } from "./example_queries";
+import Markdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 type BatchStatus =
   | { status: "done"; result: string[]; runTime: number }
@@ -303,14 +305,30 @@ export function RunQueries() {
         <RunQueryButton onClick={() => clickSubmitQuery(selectedQuery)} />
       </div>
 
-      <h3 style={{ marginBottom: "10px" }}>Results</h3>
-      <ResultsBox
-        title={currentRunningQuery}
-        isProcessing={isProcessing}
-        queryResult={queryResult}
-        currentProgress={currentProgress}
-        totalProgress={totalProgress}
-      />
+      {isProcessing && (
+        <ResultsBox>
+          <ProcessingInfo
+            title={currentRunningQuery!}
+            currentProgress={currentProgress}
+            totalProgress={totalProgress}
+          />
+        </ResultsBox>
+      )}
+      {queryResult && (
+        <>
+          <h3 style={{ marginBottom: "10px" }}>Results</h3>
+          <ResultsBox>
+            <CopyButton text={queryResult.result} />
+            <h4>
+              {queryResult.query} (completed in{" "}
+              {(queryResult.runTime / 1000).toFixed(2)} seconds)
+            </h4>
+            <Markdown remarkPlugins={[remarkGfm]}>
+              {queryResult.result}
+            </Markdown>
+          </ResultsBox>
+        </>
+      )}
       <ExampleQueriesModal
         queries={EXAMPLE_QUERIES}
         isOpen={exampleQueriesModalIsOpen}
