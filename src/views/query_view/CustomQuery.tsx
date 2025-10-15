@@ -1,11 +1,13 @@
 import { useCallback, useState, useMemo } from "react";
 import { RunQueryButton } from "./RunQueryButton";
-import { ResultsBox } from "./ResultsBox";
+import { CopyButton, ResultsBox } from "./ResultsBox";
 import { useStore } from "../../store";
 import { db } from "../../db";
 import { finalSystemPrompt, submitQuery, type QueryResult } from "./ai_utils";
 import { useLiveQuery } from "dexie-react-hooks";
 import { TweetFrequencyGraph } from "../../components/TweetFrequencyGraph";
+import Markdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 export function CustomQuery() {
   const [queryResult, setQueryResult] = useState<QueryResult | null>(null);
@@ -208,16 +210,26 @@ export function CustomQuery() {
         <RunQueryButton onClick={() => clickSubmitQuery()} />
       </div>
 
-      <div>
-        <h3>Results</h3>
-        <ResultsBox
-          title={""}
-          isProcessing={isProcessing}
-          queryResult={queryResult}
-          currentProgress={0}
-          totalProgress={1}
-        />
-      </div>
+      {isProcessing && (
+        <ResultsBox>
+          <h4>Currently processing "{commandPrompt}"</h4>
+        </ResultsBox>
+      )}
+      {queryResult && (
+        <>
+          <h3 style={{ marginBottom: "10px" }}>Results</h3>
+          <ResultsBox>
+            <CopyButton text={queryResult.result} />
+            <h4>
+              {queryResult.query} (completed in{" "}
+              {(queryResult.runTime / 1000).toFixed(2)} seconds)
+            </h4>
+            <Markdown remarkPlugins={[remarkGfm]}>
+              {queryResult.result}
+            </Markdown>
+          </ResultsBox>
+        </>
+      )}
     </div>
   );
 }
