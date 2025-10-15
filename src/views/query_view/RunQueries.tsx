@@ -67,7 +67,6 @@ type BatchStatus =
 async function getBatches(tweetsToAnalyse: Tweet[], batchSize: number) {
   let offset = 0;
 
-  let i = 0;
   const batches = [];
   let batch: Tweet[];
   do {
@@ -76,7 +75,6 @@ async function getBatches(tweetsToAnalyse: Tweet[], batchSize: number) {
     batches.push(batch);
 
     offset += batchSize;
-    i++;
   } while (batch.length === batchSize);
 
   return batches;
