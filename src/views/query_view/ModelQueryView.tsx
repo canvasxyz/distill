@@ -5,7 +5,7 @@ import { CustomQuery } from "./CustomQuery";
 
 function ModelQueryViewInner() {
   const TABS = [
-    { label: "Queries", key: "run-queries" },
+    { label: "Run Query", key: "run-queries" },
     { label: "Custom Query", key: "custom-query" },
   ];
   const [activeTab, setActiveTab] = useState(TABS[0].key);
@@ -24,7 +24,7 @@ function ModelQueryViewInner() {
           boxSizing: "border-box",
         }}
       >
-        <h1>Run Queries</h1>
+        <h1>Model Query</h1>
 
         {/* Tab Menu */}
         <div

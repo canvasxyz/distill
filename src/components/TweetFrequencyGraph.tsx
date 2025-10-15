@@ -32,6 +32,8 @@ export function SelectedTweetCount({
   );
 }
 
+const LOG_FUNC = Math.log;
+
 // Tweet frequency graph component
 export function TweetFrequencyGraph({
   tweetCounts,
@@ -48,7 +50,7 @@ export function TweetFrequencyGraph({
   const [dragStart, setDragStart] = useState<number | null>(null);
   const [dragEnd, setDragEnd] = useState<number | null>(null);
 
-  const maxCount = Math.max(...tweetCounts.map((d) => d.count), 1);
+  const maxCount = LOG_FUNC(Math.max(...tweetCounts.map((d) => d.count), 1));
   const graphHeight = 120;
   const graphWidth = 600;
 
@@ -112,7 +114,7 @@ export function TweetFrequencyGraph({
       >
         {tweetCounts.map((data, index) => {
           const barWidth = graphWidth / tweetCounts.length;
-          const barHeight = (data.count / maxCount) * graphHeight;
+          const barHeight = (LOG_FUNC(data.count) / maxCount) * graphHeight;
           const x = index * barWidth;
           const y = graphHeight - barHeight + 20;
 

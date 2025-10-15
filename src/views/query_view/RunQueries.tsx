@@ -15,6 +15,9 @@ import { ExampleQueriesModal } from "./ExampleQueriesModal";
 import { EXAMPLE_QUERIES } from "./example_queries";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { useLiveQuery } from "dexie-react-hooks";
+import { useTweetCounts } from "./useTweetCounts";
+import { TweetFrequencyGraph } from "../../components/TweetFrequencyGraph";
 
 type BatchStatus =
   | { status: "done"; result: string[]; runTime: number }
@@ -60,33 +63,45 @@ export function RunQueries() {
 
   const { account } = useStore();
 
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+
+  const allTweets = useLiveQuery(() => db.tweets.toArray());
+
+  const filteredTweetsToAnalyse = useMemo(
+    () =>
+      (allTweets || []).filter((tweet) => {
+        if (!includeReplies && tweet.in_reply_to_user_id) {
+          return false;
+        }
+        if (!includeRetweets && tweet.full_text.startsWith("RT ")) {
+          return false;
+        }
+        return true;
+      }),
+    [allTweets, includeReplies, includeRetweets]
+  );
+
+  const tweetCounts = useTweetCounts(filteredTweetsToAnalyse);
+
+  const [rangeSelectionType, setRangeSelectionType] = useState<
+    "whole-archive" | "date-range" | "random-sample"
+  >("whole-archive");
+
   const clickSubmitQuery = useCallback(
     async (query: string) => {
+      if (!filteredTweetsToAnalyse) return;
       if (!account) return;
 
       setIsProcessing(true);
       setCurrentRunningQuery(query);
-
-      // get a sample of the latest tweets
-      // Query all tweets in db.tweets in batches of `batchSize`
-      const tweetsToAnalyse = await db.tweets
-        .filter((tweet) => {
-          if (!includeReplies && tweet.in_reply_to_user_id) {
-            return false;
-          }
-          if (!includeRetweets && tweet.full_text.startsWith("RT ")) {
-            return false;
-          }
-          return true;
-        })
-        .toArray();
 
       // make a pqueue
       const concurrency = 30;
       const queue = new PQueue({ concurrency });
 
       const batchSize = 1000;
-      const batches = await getBatches(tweetsToAnalyse, batchSize);
+      const batches = await getBatches(filteredTweetsToAnalyse, batchSize);
 
       const initialBatchStatuses = Object.fromEntries(
         batches.map((_tweets, idx) => [idx, { status: "queued" as const }])
@@ -96,7 +111,7 @@ export function RunQueries() {
       setStartedProcessingTime(performance.now());
 
       console.log(
-        `Starting LLM query with concurrency=${concurrency}, n=${tweetsToAnalyse.length}, batchSize=${batchSize}`
+        `Starting LLM query with concurrency=${concurrency}, n=${filteredTweetsToAnalyse.length}, batchSize=${batchSize}`
       );
       console.log(`Prompt: "${query}"`);
 
@@ -141,7 +156,7 @@ export function RunQueries() {
         });
       }
     },
-    [account, includeReplies, includeRetweets]
+    [account, filteredTweetsToAnalyse]
   );
 
   useEffect(() => {
@@ -276,32 +291,64 @@ export function RunQueries() {
           <input
             type="radio"
             name="archiveMode"
-            checked={true}
-            disabled
-            readOnly
+            checked={rangeSelectionType === "whole-archive"}
+            onChange={(e) => {
+              if (e.target.checked) setRangeSelectionType("whole-archive");
+            }}
             style={{ accentColor: "#007bff", margin: 0 }}
           />
-          Whole Archive
+          Whole Archive (
+          {filteredTweetsToAnalyse ? filteredTweetsToAnalyse.length : "-"}{" "}
+          tweets)
         </label>
         <label
           style={{
             display: "flex",
             alignItems: "center",
             gap: "6px",
-            opacity: 0.48,
           }}
         >
           <input
             type="radio"
             name="archiveMode"
-            checked={false}
-            disabled
-            readOnly
+            checked={rangeSelectionType === "date-range"}
+            onChange={(e) => {
+              if (e.target.checked) setRangeSelectionType("date-range");
+            }}
+            style={{ accentColor: "#007bff", margin: 0 }}
+          />
+          Select date range
+        </label>
+        <label
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+          }}
+        >
+          <input
+            type="radio"
+            name="archiveMode"
+            checked={rangeSelectionType === "random-sample"}
+            onChange={(e) => {
+              if (e.target.checked) setRangeSelectionType("random-sample");
+            }}
             style={{ margin: 0 }}
           />
           Random Sample (not implemented yet)
         </label>
       </div>
+      {rangeSelectionType === "date-range" && (
+        <TweetFrequencyGraph
+          tweetCounts={tweetCounts}
+          startDate={startDate}
+          endDate={endDate}
+          onRangeSelect={(newStartDate, newEndDate) => {
+            setStartDate(newStartDate);
+            setEndDate(newEndDate);
+          }}
+        />
+      )}
       <div>
         <RunQueryButton onClick={() => clickSubmitQuery(selectedQuery)} />
       </div>
