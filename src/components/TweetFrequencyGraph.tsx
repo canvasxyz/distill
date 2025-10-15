@@ -26,9 +26,9 @@ export function SelectedTweetCount({
 
   if (totalTweets === 0) return null;
   return (
-    <p style={{ color: "#555", fontSize: "12px" }}>
+    <span style={{ color: "#555", fontSize: "12px" }}>
       {totalTweets} tweet{totalTweets !== 1 ? "s" : ""} selected in range.
-    </p>
+    </span>
   );
 }
 
@@ -96,11 +96,16 @@ export function TweetFrequencyGraph({
   );
 
   return (
-    <>
-      <h4>Tweet Frequency Over Time</h4>
-      <p style={{ fontSize: "12px", color: "#666" }}>
-        Click and drag to select a date range
-      </p>
+    <div
+      style={{
+        border: "1px solid #ddd",
+        borderRadius: "8px",
+        padding: "16px",
+        background: "#fafbfc",
+        marginBottom: "12px",
+      }}
+    >
+      <p style={{ marginTop: "0px" }}>Click and drag to select a date range</p>
       <svg
         width={graphWidth}
         height={graphHeight + 40}
@@ -108,6 +113,7 @@ export function TweetFrequencyGraph({
           border: "1px solid #ddd",
           borderRadius: "4px",
           cursor: "crosshair",
+          background: "#fff",
         }}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
@@ -166,6 +172,6 @@ export function TweetFrequencyGraph({
         startDate={startDate}
         endDate={endDate}
       />
-    </>
+    </div>
   );
 }

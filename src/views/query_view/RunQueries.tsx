@@ -18,6 +18,7 @@ import remarkGfm from "remark-gfm";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useTweetCounts } from "./useTweetCounts";
 import { TweetFrequencyGraph } from "../../components/TweetFrequencyGraph";
+import { pickSampleNoRepeats } from "../../utils";
 
 type BatchStatus =
   | { status: "done"; result: string[]; runTime: number }
@@ -96,12 +97,34 @@ export function RunQueries() {
       setIsProcessing(true);
       setCurrentRunningQuery(query);
 
+      let tweetsToAnalyse: Tweet[];
+      if (rangeSelectionType === "whole-archive") {
+        tweetsToAnalyse = filteredTweetsToAnalyse;
+      } else if (rangeSelectionType === "date-range") {
+        const startDateTime = new Date(startDate);
+        const endDateTime = new Date(endDate);
+        endDateTime.setMonth(endDateTime.getMonth() + 1); // Include the entire end month
+
+        tweetsToAnalyse = filteredTweetsToAnalyse.filter((tweet) => {
+          // tweet.created_at
+          const tweetDate = new Date(tweet.created_at);
+          return tweetDate >= startDateTime && tweetDate < endDateTime;
+        });
+      } else {
+        const sampleSize = 1000;
+        // random sample
+        tweetsToAnalyse = pickSampleNoRepeats(
+          filteredTweetsToAnalyse,
+          sampleSize
+        );
+      }
+
       // make a pqueue
       const concurrency = 30;
       const queue = new PQueue({ concurrency });
 
       const batchSize = 1000;
-      const batches = await getBatches(filteredTweetsToAnalyse, batchSize);
+      const batches = await getBatches(tweetsToAnalyse, batchSize);
 
       const initialBatchStatuses = Object.fromEntries(
         batches.map((_tweets, idx) => [idx, { status: "queued" as const }])
@@ -111,7 +134,7 @@ export function RunQueries() {
       setStartedProcessingTime(performance.now());
 
       console.log(
-        `Starting LLM query with concurrency=${concurrency}, n=${filteredTweetsToAnalyse.length}, batchSize=${batchSize}`
+        `Starting LLM query with concurrency=${concurrency}, n=${tweetsToAnalyse.length}, batchSize=${batchSize}`
       );
       console.log(`Prompt: "${query}"`);
 
@@ -156,7 +179,7 @@ export function RunQueries() {
         });
       }
     },
-    [account, filteredTweetsToAnalyse]
+    [account, filteredTweetsToAnalyse, rangeSelectionType]
   );
 
   useEffect(() => {
@@ -293,7 +316,11 @@ export function RunQueries() {
             name="archiveMode"
             checked={rangeSelectionType === "whole-archive"}
             onChange={(e) => {
-              if (e.target.checked) setRangeSelectionType("whole-archive");
+              if (e.target.checked) {
+                setRangeSelectionType("whole-archive");
+                setStartDate("");
+                setEndDate("");
+              }
             }}
             style={{ accentColor: "#007bff", margin: 0 }}
           />
@@ -331,7 +358,11 @@ export function RunQueries() {
             name="archiveMode"
             checked={rangeSelectionType === "random-sample"}
             onChange={(e) => {
-              if (e.target.checked) setRangeSelectionType("random-sample");
+              if (e.target.checked) {
+                setRangeSelectionType("random-sample");
+                setStartDate("");
+                setEndDate("");
+              }
             }}
             style={{ margin: 0 }}
           />
