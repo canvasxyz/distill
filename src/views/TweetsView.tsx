@@ -5,6 +5,7 @@ import { useStore } from "../state/store";
 import { UploadView } from "./UploadView";
 import type { Tweet } from "../types";
 import { PseudoLink } from "../PseudoLink";
+import { db } from "../db";
 
 export function TweetsView({
   allTweets,
@@ -21,12 +22,7 @@ export function TweetsView({
   navigateNext?: () => void;
   navigatePrevious?: () => void;
 }) {
-  const {
-    addExcludedTweets,
-    removeExcludedTweets,
-    excludedTweetIdsSet,
-    filterMatchesByTweetId,
-  } = useStore();
+  const { excludedTweetIdsSet, filterMatchesByTweetId } = useStore();
 
   const [checkedTweets, setCheckedTweets] = useState<{
     [id: string]: boolean;
@@ -60,14 +56,18 @@ export function TweetsView({
     setCheckedTweets(newCheckedTweets);
   };
 
-  const handleIncludeExclude = (newStatus: "included" | "excluded") => {
+  const handleIncludeExclude = async (newStatus: "included" | "excluded") => {
     const checkedTweetIds = Object.keys(checkedTweets).filter(
       (tweetId) => checkedTweets[tweetId]
     );
     if (newStatus === "included") {
-      removeExcludedTweets(checkedTweetIds);
+      for (const tweetId of checkedTweetIds) {
+        await db.excludedTweetIds.delete(tweetId);
+      }
     } else {
-      addExcludedTweets(checkedTweetIds);
+      for (const tweetId of checkedTweetIds) {
+        await db.excludedTweetIds.add({ id: tweetId }, tweetId);
+      }
     }
     setSelectAllChecked(false);
     setCheckedTweets({});

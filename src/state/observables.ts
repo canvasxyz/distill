@@ -1,5 +1,5 @@
-import { db } from "./db";
-import type { FilterMatch } from "./types";
+import { db } from "../db";
+import type { FilterMatch } from "../types";
 
 export const accountObservable = () => db.accounts.toArray();
 
