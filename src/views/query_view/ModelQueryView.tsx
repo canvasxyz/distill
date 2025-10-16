@@ -1,13 +1,11 @@
 import { useState } from "react";
 import { ShowIfTweetsLoaded } from "../ShowIfTweetsLoaded";
 import { RunQueries } from "./RunQueries";
-import { CustomQuery } from "./CustomQuery";
 import { PastQueries } from "./PastQueries";
 
 function ModelQueryViewInner() {
   const TABS = [
     { label: "Run Query", key: "run-queries" },
-    { label: "Custom Query", key: "custom-query" },
     { label: "Past Queries", key: "past-queries" },
   ];
   const [activeTab, setActiveTab] = useState(TABS[0].key);
@@ -65,7 +63,6 @@ function ModelQueryViewInner() {
 
         {/* Tab Content */}
         {activeTab === "run-queries" && <RunQueries />}
-        {activeTab === "custom-query" && <CustomQuery />}
         {activeTab === "past-queries" && <PastQueries />}
       </div>
     </div>
