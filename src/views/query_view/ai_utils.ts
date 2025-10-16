@@ -10,6 +10,17 @@ export type RangeSelectionType =
   | "date-range"
   | "random-sample";
 
+export type BatchStatus =
+  | {
+      status: "done";
+      startTime: number;
+      endTime: number;
+      runTime: number;
+      result: string[];
+    }
+  | { status: "pending"; startTime: number }
+  | { status: "queued" };
+
 export type QueryResult = {
   id: string;
   query: string;
@@ -20,6 +31,7 @@ export type QueryResult = {
   rangeSelectionType: RangeSelectionType;
   startDate?: string;
   endDate?: string;
+  batchStatuses: Record<string, BatchStatus>;
 };
 
 export const batchSystemPrompt =

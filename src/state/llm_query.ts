@@ -6,6 +6,7 @@ import {
   finalSystemPrompt,
   selectSubset,
   submitQuery,
+  type BatchStatus,
   type QueryResult,
   type RangeSelectionType,
 } from "../views/query_view/ai_utils";
@@ -14,17 +15,6 @@ import type { Tweet } from "../types";
 import { getBatches } from "../utils";
 import { v7 as uuidv7 } from "uuid";
 import { db } from "../db";
-
-export type BatchStatus =
-  | {
-      status: "done";
-      startTime: number;
-      endTime: number;
-      runTime: number;
-      result: string[];
-    }
-  | { status: "pending"; startTime: number }
-  | { status: "queued" };
 
 export type LlmQuerySlice = {
   queryResult: QueryResult | null;
@@ -150,6 +140,7 @@ export const createLlmQuerySlice: StateCreator<
           rangeSelectionType,
           startDate,
           endDate,
+          batchStatuses,
         };
 
         db.queryResults.add(newQueryResult);

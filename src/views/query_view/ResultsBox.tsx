@@ -17,9 +17,6 @@ export const CopyButton = ({ text }: { text: string }) => {
     <button
       onClick={handleCopy}
       style={{
-        position: "absolute",
-        top: "8px",
-        right: "8px",
         background: copied ? "#4CAF50" : "#fff",
         border: "1px solid #ccc",
         borderRadius: "4px",

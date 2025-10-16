@@ -14,6 +14,7 @@ import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useTweetCounts } from "./useTweetCounts";
 import { TweetFrequencyGraph } from "../../components/TweetFrequencyGraph";
+import { BatchTweetsModal } from "./BatchTweetsModal";
 
 export function RunQueries() {
   const [exampleQueriesModalIsOpen, setExampleQueriesModalIsOpen] =
@@ -63,6 +64,8 @@ export function RunQueries() {
     const totalProgress = Object.values(batchStatuses).length;
     return [currentProgress, totalProgress];
   }, [batchStatuses]);
+
+  const [showBatchTweetsModal, setShowBatchTweetsModal] = useState(false);
 
   if (!account) return <></>;
 
@@ -232,6 +235,7 @@ export function RunQueries() {
       )}
       <div>
         <RunQueryButton
+          disabled={isProcessing}
           onClick={() =>
             submit(filteredTweetsToAnalyse, selectedQuery, rangeSelectionType, {
               startDate,
@@ -260,7 +264,41 @@ export function RunQueries() {
         <>
           <h3 style={{ marginBottom: "10px" }}>Results</h3>
           <ResultsBox>
-            <CopyButton text={queryResult.result} />
+            <div
+              style={{
+                position: "absolute",
+                top: "8px",
+                right: "8px",
+                display: "flex",
+                gap: "10px",
+              }}
+            >
+              <button
+                style={{
+                  border: "1px solidrgb(150, 234, 153)",
+                  borderRadius: "4px",
+                  padding: "4px 8px",
+                  background: "#fff",
+                  color: "#388e3c",
+                  fontSize: "12px",
+                  fontWeight: "bold",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "#e7f6e7";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "#fff";
+                }}
+                onClick={() => {
+                  setShowBatchTweetsModal(true);
+                }}
+              >
+                Show Evidence
+              </button>
+              <CopyButton text={queryResult.result} />
+            </div>
             <h4 style={{ marginTop: "0px" }}>
               {queryResult.query} (completed in{" "}
               {(queryResult.runTime / 1000).toFixed(2)} seconds)
@@ -281,6 +319,11 @@ export function RunQueries() {
           setSelectedQuery(query);
           setExampleQueriesModalIsOpen(false);
         }}
+      />
+      <BatchTweetsModal
+        isOpen={showBatchTweetsModal}
+        queryResult={queryResult}
+        onClose={() => setShowBatchTweetsModal(false)}
       />
     </div>
   );
