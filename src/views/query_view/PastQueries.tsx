@@ -1,4 +1,4 @@
-import { useStore } from "../../store";
+import { useStore } from "../../state/store";
 
 import { useState } from "react";
 import type { QueryResult } from "./ai_utils";

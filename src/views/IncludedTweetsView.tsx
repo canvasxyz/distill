@@ -1,7 +1,7 @@
 import { TweetsView } from "./TweetsView";
 import { usePagination } from "../hooks/usePagination";
 import { ShowIfTweetsLoaded } from "./ShowIfTweetsLoaded";
-import { useStore } from "../store";
+import { useStore } from "../state/store";
 
 function IncludedTweetsViewInner() {
   const { includedTweets } = useStore();

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { TweetEntry } from "../TweetEntry";
 
-import { useStore } from "../store";
+import { useStore } from "../state/store";
 import { UploadView } from "./UploadView";
 import type { Tweet } from "../types";
 import { PseudoLink } from "../PseudoLink";

@@ -7,7 +7,7 @@ import {
 } from "./ai_utils";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { db } from "../../db";
-import { useStore } from "../../store";
+import { useStore } from "../../state/store";
 import { RunQueryButton } from "./RunQueryButton";
 import {
   CopyButton,

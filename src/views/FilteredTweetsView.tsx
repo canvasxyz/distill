@@ -1,4 +1,4 @@
-import { useStore } from "../store";
+import { useStore } from "../state/store";
 import { TweetsView } from "./TweetsView";
 import { useParams } from "react-router";
 import { filters } from "../filtering/filters";

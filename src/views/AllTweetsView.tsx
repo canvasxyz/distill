@@ -1,7 +1,7 @@
 import { usePagination } from "../hooks/usePagination";
 import { TweetsView } from "./TweetsView";
 import { ShowIfTweetsLoaded } from "./ShowIfTweetsLoaded";
-import { useStore } from "../store";
+import { useStore } from "../state/store";
 
 function AllTweetsViewInner() {
   const { allTweets } = useStore();

@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { replaceAccountName } from "./ai_utils";
-import { useStore } from "../../store";
+import { useStore } from "../../state/store";
 
 export function ExampleQueriesModal({
   isOpen,

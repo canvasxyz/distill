@@ -1,8 +1,8 @@
 import { create } from "zustand";
-import type { Account, FilterMatch, Tweet } from "./types";
-import { classificationLabels, getClassification } from "./filtering/openai";
+import type { Account, FilterMatch, Tweet } from "../types";
+import { classificationLabels, getClassification } from "../filtering/openai";
 import PQueue from "p-queue";
-import { db } from "./db";
+import { db } from "../db";
 import { liveQuery, type Subscription } from "dexie";
 import { createRef, type RefObject } from "react";
 import {
@@ -12,9 +12,9 @@ import {
   filterTweetsObservable,
   includedTweetsObservable,
   queryResultsObservable,
-} from "./observables";
-import { filters } from "./filtering/filters";
-import type { QueryResult } from "./views/query_view/ai_utils";
+} from "../observables";
+import { filters } from "../filtering/filters";
+import type { QueryResult } from "../views/query_view/ai_utils";
 
 const concurrency = 40;
 

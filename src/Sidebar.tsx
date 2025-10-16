@@ -1,6 +1,6 @@
 import { filters } from "./filtering/filters";
 import { LinkButton } from "./LinkButton";
-import { useStore } from "./store";
+import { useStore } from "./state/store";
 
 function HorizontalRule() {
   return (

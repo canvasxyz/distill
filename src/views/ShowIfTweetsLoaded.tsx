@@ -1,5 +1,5 @@
 import { Navigate } from "react-router";
-import { useStore } from "../store";
+import { useStore } from "../state/store";
 
 export const ShowIfTweetsLoaded = ({
   children,

@@ -2,7 +2,7 @@ import React, { useRef } from "react";
 import type { Account, Tweet } from "../types";
 import { unzip, type ZipEntry } from "unzipit";
 import { parseTwitterArchiveFile } from "../twitterArchiveParser";
-import { useStore } from "../store";
+import { useStore } from "../state/store";
 import { Navigate } from "react-router";
 
 const processTwitterArchive = async (

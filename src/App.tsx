@@ -2,7 +2,7 @@ import { Outlet } from "react-router";
 import "./App.css";
 import { Sidebar } from "./Sidebar";
 import { useEffect } from "react";
-import { useStore } from "./store";
+import { useStore } from "./state/store";
 
 function App() {
   const { init, subscribe, unsubscribe } = useStore();
