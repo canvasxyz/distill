@@ -21,7 +21,6 @@ import { ExampleQueriesModal } from "./ExampleQueriesModal";
 import { EXAMPLE_QUERIES } from "./example_queries";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { useLiveQuery } from "dexie-react-hooks";
 import { useTweetCounts } from "./useTweetCounts";
 import { TweetFrequencyGraph } from "../../components/TweetFrequencyGraph";
 import { pickSampleNoRepeats } from "../../utils";
@@ -69,12 +68,10 @@ export function RunQueries() {
     BatchStatus
   > | null>(null);
 
-  const { account } = useStore();
+  const { account, allTweets } = useStore();
 
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-
-  const allTweets = useLiveQuery(() => db.tweets.toArray());
 
   const filteredTweetsToAnalyse = useMemo(
     () =>

@@ -1,6 +1,4 @@
-import { useLiveQuery } from "dexie-react-hooks";
 import { useStore } from "../../store";
-import { db } from "../../db";
 
 import { useState } from "react";
 import type { QueryResult } from "./ai_utils";
@@ -140,9 +138,7 @@ function PastQueryItem({ query }: { query: QueryResult }) {
 }
 
 export function PastQueries() {
-  const { account } = useStore();
-
-  const pastQueries = useLiveQuery(() => db.queryResults.toArray());
+  const { account, queryResults } = useStore();
 
   if (!account) return <></>;
 
@@ -156,7 +152,7 @@ export function PastQueries() {
         paddingTop: "20px",
       }}
     >
-      {(pastQueries || []).map((query) => (
+      {(queryResults || []).map((query) => (
         <PastQueryItem query={query} />
       ))}
     </div>

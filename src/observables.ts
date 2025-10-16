@@ -53,3 +53,6 @@ export const filterTweetsObservable = async () => {
   }
   return { tweetsByFilterName, filterMatchesByTweetId };
 };
+
+export const queryResultsObservable = async () =>
+  await db.queryResults.toArray();

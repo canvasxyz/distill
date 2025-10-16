@@ -11,8 +11,10 @@ import {
   excludedTweetsObservable,
   filterTweetsObservable,
   includedTweetsObservable,
+  queryResultsObservable,
 } from "./observables";
 import { filters } from "./filtering/filters";
+import type { QueryResult } from "./views/query_view/ai_utils";
 
 const concurrency = 40;
 
@@ -26,6 +28,7 @@ type StoreTypes = {
   excludedTweets: Tweet[];
   tweetsByFilterName: Record<string, Tweet[]>;
   filterMatchesByTweetId: Record<string, FilterMatch[]>;
+  queryResults: QueryResult[];
   dbHasTweets: boolean;
   clearDatabase: () => Promise<void>;
   appIsReady: boolean;
@@ -92,12 +95,20 @@ export const useStore = create<StoreTypes>((set, get) => ({
       error: (error) => console.error(error),
     });
 
+    const queryResultsSubscription = liveQuery(
+      queryResultsObservable
+    ).subscribe({
+      next: (queryResults) => set({ queryResults }),
+      error: (error) => console.error(error),
+    });
+
     subscriptions.current = [
       accountSubscription,
       allTweetsSubscription,
       includedTweetsSubscription,
       excludedTweetsSubscription,
       filterTweetsSubscription,
+      queryResultsSubscription,
     ];
   },
   unsubscribe: () => {
@@ -115,6 +126,7 @@ export const useStore = create<StoreTypes>((set, get) => ({
   excludedTweets: [],
   tweetsByFilterName: {},
   filterMatchesByTweetId: {},
+  queryResults: [],
   dbHasTweets: false,
   clearDatabase: async () => {
     await db.delete();

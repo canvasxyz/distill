@@ -3,17 +3,14 @@ import { TweetsView } from "./TweetsView";
 import { useParams } from "react-router";
 import { filters } from "../filtering/filters";
 import { usePagination } from "../hooks/usePagination";
-import { useLiveQuery } from "dexie-react-hooks";
-import { db } from "../db";
 import { ShowIfTweetsLoaded } from "./ShowIfTweetsLoaded";
 
 function FilteredTweetsViewInner() {
   const params = useParams();
-  const { filterMatchesByTweetId } = useStore();
-  const tweets = useLiveQuery(() => db.tweets.toArray());
+  const { allTweets, filterMatchesByTweetId } = useStore();
 
   const filterName = params.filter as string;
-  const filteredTweets = (tweets || []).filter(
+  const filteredTweets = (allTweets || []).filter(
     (tweet) =>
       (filterMatchesByTweetId[tweet.id] || [])
         .map((result) => result.filterName)

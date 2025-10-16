@@ -4,8 +4,6 @@ import { unzip, type ZipEntry } from "unzipit";
 import { parseTwitterArchiveFile } from "../twitterArchiveParser";
 import { useStore } from "../store";
 import { Navigate } from "react-router";
-import { db } from "../db";
-import { useLiveQuery } from "dexie-react-hooks";
 
 const processTwitterArchive = async (
   file: File
@@ -64,8 +62,7 @@ const processTwitterArchive = async (
 };
 
 export function UploadView() {
-  const { setAccount, setTweets } = useStore();
-  const tweets = useLiveQuery(() => db.tweets.toArray());
+  const { allTweets, setAccount, setTweets } = useStore();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const handleFileUpload = async (
@@ -80,7 +77,7 @@ export function UploadView() {
     }
   };
 
-  if (tweets && tweets.length > 0) {
+  if (allTweets && allTweets.length > 0) {
     return <Navigate to="/" />;
   }
 
