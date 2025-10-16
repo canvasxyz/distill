@@ -1,5 +1,5 @@
 import { type RangeSelectionType } from "./ai_utils";
-import { useCallback, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useStore } from "../../state/store";
 import { RunQueryButton } from "./RunQueryButton";
 import {
@@ -54,20 +54,6 @@ export function RunQueries() {
 
   const [rangeSelectionType, setRangeSelectionType] =
     useState<RangeSelectionType>("whole-archive");
-
-  const clickSubmitQuery = useCallback(
-    (query: string) => {
-      if (!filteredTweetsToAnalyse) {
-        return;
-      }
-
-      submit(filteredTweetsToAnalyse, query, rangeSelectionType, {
-        startDate,
-        endDate,
-      });
-    },
-    [filteredTweetsToAnalyse, rangeSelectionType, startDate, endDate, submit]
-  );
 
   const [currentProgress, totalProgress] = useMemo(() => {
     if (batchStatuses === null) return [0, 1];
@@ -245,7 +231,14 @@ export function RunQueries() {
         />
       )}
       <div>
-        <RunQueryButton onClick={() => clickSubmitQuery(selectedQuery)} />
+        <RunQueryButton
+          onClick={() =>
+            submit(filteredTweetsToAnalyse, selectedQuery, rangeSelectionType, {
+              startDate,
+              endDate,
+            })
+          }
+        />
       </div>
 
       {isProcessing && currentRunningQuery && (
