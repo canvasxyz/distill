@@ -11,3 +11,19 @@ export const pickSampleNoRepeats = <T>(inputList: T[], n: number) => {
   }
   return output;
 };
+
+export function getBatches<T>(tweetsToAnalyse: T[], batchSize: number) {
+  let offset = 0;
+
+  const batches = [];
+  let batch: T[];
+  do {
+    batch = tweetsToAnalyse.slice(offset, offset + batchSize);
+
+    batches.push(batch);
+
+    offset += batchSize;
+  } while (batch.length === batchSize);
+
+  return batches;
+}

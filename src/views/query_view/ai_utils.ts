@@ -86,3 +86,14 @@ export async function submitQuery(
     runTime,
   };
 }
+
+export const extractTweetTexts = (queryResult: string) => {
+  const tweetMatches = queryResult.match(/<Tweet>([\s\S]*?)<\/Tweet>/g) || [];
+  const tweetTexts = tweetMatches.map((m) =>
+    m
+      .replace(/^<Tweet>/, "")
+      .replace(/<\/Tweet>$/, "")
+      .trim()
+  );
+  return tweetTexts;
+};
