@@ -1,6 +1,7 @@
 import type { ChatCompletionMessageParam } from "openai/resources";
-import type { Account } from "../../types";
+import type { Account, Tweet } from "../../types";
 import OpenAI from "openai";
+import { pickSampleNoRepeats } from "../../utils";
 
 export type Query = { prompt: string; systemPrompt?: string };
 
@@ -96,4 +97,28 @@ export const extractTweetTexts = (queryResult: string) => {
       .trim()
   );
   return tweetTexts;
+};
+
+export const selectSubset = (
+  tweets: Tweet[],
+  rangeSelectionType: RangeSelectionType,
+  { startDate, endDate }: { startDate: string; endDate: string }
+) => {
+  if (rangeSelectionType === "whole-archive") {
+    return tweets;
+  } else if (rangeSelectionType === "date-range") {
+    const startDateTime = new Date(startDate);
+    const endDateTime = new Date(endDate);
+    endDateTime.setMonth(endDateTime.getMonth() + 1); // Include the entire end month
+
+    return tweets.filter((tweet) => {
+      // tweet.created_at
+      const tweetDate = new Date(tweet.created_at);
+      return tweetDate >= startDateTime && tweetDate < endDateTime;
+    });
+  } else {
+    const sampleSize = 1000;
+    // random sample
+    return pickSampleNoRepeats(tweets, sampleSize);
+  }
 };

@@ -4,13 +4,14 @@ import {
   batchSystemPrompt,
   extractTweetTexts,
   finalSystemPrompt,
+  selectSubset,
   submitQuery,
   type QueryResult,
   type RangeSelectionType,
 } from "../views/query_view/ai_utils";
 import PQueue from "p-queue";
 import type { Tweet } from "../types";
-import { getBatches, pickSampleNoRepeats } from "../utils";
+import { getBatches } from "../utils";
 import { v7 as uuidv7 } from "uuid";
 import { db } from "../db";
 
@@ -65,30 +66,17 @@ export const createLlmQuerySlice: StateCreator<
   ) => {
     const queryId = uuidv7();
 
-    let tweetsToAnalyse: Tweet[];
-    if (rangeSelectionType === "whole-archive") {
-      tweetsToAnalyse = filteredTweetsToAnalyse;
-    } else if (rangeSelectionType === "date-range") {
-      const startDateTime = new Date(startDate);
-      const endDateTime = new Date(endDate);
-      endDateTime.setMonth(endDateTime.getMonth() + 1); // Include the entire end month
-
-      tweetsToAnalyse = filteredTweetsToAnalyse.filter((tweet) => {
-        // tweet.created_at
-        const tweetDate = new Date(tweet.created_at);
-        return tweetDate >= startDateTime && tweetDate < endDateTime;
-      });
-    } else {
-      const sampleSize = 1000;
-      // random sample
-      tweetsToAnalyse = pickSampleNoRepeats(
-        filteredTweetsToAnalyse,
-        sampleSize
-      );
-    }
+    const filteredTweetsSubsetToAnalyse = selectSubset(
+      filteredTweetsToAnalyse,
+      rangeSelectionType,
+      {
+        startDate,
+        endDate,
+      }
+    );
 
     const batchSize = 1000;
-    const batches = getBatches(tweetsToAnalyse, batchSize);
+    const batches = getBatches(filteredTweetsSubsetToAnalyse, batchSize);
 
     const queuedTime = performance.now();
     set({
@@ -139,15 +127,16 @@ export const createLlmQuerySlice: StateCreator<
           if (batchStatus.status !== "done") return;
         }
 
-        const allTweetTexts = Object.values(
+        const collectedTweetTexts = Object.values(
           batchStatuses as unknown as { result: string }[]
         )
           .map((batchStatus) => batchStatus.result)
-          .flat();
+          .flat()
+          .map((tweetText) => ({ full_text: tweetText }));
 
         // submit query to create the final result based on the collected texts
         const result = await submitQuery(
-          allTweetTexts.map((tweetText) => ({ full_text: tweetText })),
+          collectedTweetTexts,
           { systemPrompt: finalSystemPrompt, prompt: query },
           account
         );
