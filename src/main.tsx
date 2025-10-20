@@ -17,8 +17,8 @@ const router = createHashRouter([
     path: "/",
     Component: App,
     children: [
-      { index: true, Component: AllTweetsView },
-      { path: "my-archive", Component: MyArchiveView },
+      { index: true, Component: MyArchiveView },
+      { path: "all-tweets", Component: AllTweetsView },
       { path: "included-tweets", Component: IncludedTweetsView },
       { path: "excluded-tweets", Component: ExcludedTweetsView },
       { path: "filters/:filter", Component: FilteredTweetsView },

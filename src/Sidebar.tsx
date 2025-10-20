@@ -38,7 +38,7 @@ export function Sidebar() {
     >
       <h1 style={{ fontSize: "22px" }}>Tweet Archive Explorer</h1>
       <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-        <LinkButton to="/my-archive">My Archive</LinkButton>
+        <LinkButton to="/">My Archive</LinkButton>
 
         <LinkButton to="/model-query" disabled={!allTweets}>
           Model Query ✨
@@ -84,7 +84,7 @@ export function Sidebar() {
         )}
 
         <HorizontalRule />
-        <LinkButton to="/" disabled={!allTweets}>
+        <LinkButton to="/all-tweets" disabled={!allTweets}>
           All tweets {allTweets && `(${allTweets.length})`}
         </LinkButton>
         <LinkButton to="/included-tweets" disabled={!allTweets}>

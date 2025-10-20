@@ -1,6 +1,7 @@
 import { useStore } from "../state/store";
+import { ShowIfTweetsLoaded } from "./ShowIfTweetsLoaded";
 
-export function MyArchiveView() {
+function MyArchiveViewInner() {
   const {
     account,
     allTweets,
@@ -328,5 +329,13 @@ export function MyArchiveView() {
         </button>
       </div>
     </div>
+  );
+}
+
+export function MyArchiveView() {
+  return (
+    <ShowIfTweetsLoaded>
+      <MyArchiveViewInner />
+    </ShowIfTweetsLoaded>
   );
 }
