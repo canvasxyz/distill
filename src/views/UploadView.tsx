@@ -34,7 +34,8 @@ export function UploadView() {
       <p>
         To begin, open your archive. Use the ".zip" file that you received when
         you requested your archive from Twitter/X. The Twitter Archive Explorer
-        will only look at the tweet(s).js and account.js file.
+        will only look at the account.js, follower.js, following.js, profile.js
+        and tweet(s).js files.
       </p>
       <div
         style={{
