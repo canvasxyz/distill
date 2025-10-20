@@ -92,17 +92,21 @@ export function TweetEntry({
     );
   }
 
+  const borderColor = isIncluded ? "#b3ffb5" : "#ffb5b5";
+
   return (
     <div
       style={{
         backgroundColor: isIncluded ? "#e0ffe1" : "#ffe0e0",
-        border: checked ? `3px solid black` : "1px solid black",
+        border: checked
+          ? `3px solid ${borderColor}`
+          : `1px solid ${borderColor}`,
         marginTop: checked ? (isFirst ? 2 : -2) : 4,
         marginLeft: checked ? 0 : 2,
         marginRight: checked ? 0 : 2,
         marginBottom: checked ? 10 : 12,
         borderRadius: "5px",
-        padding: "5px",
+        padding: "8px",
         paddingTop: "8px",
         paddingBottom: "8px",
         display: "flex",
@@ -132,6 +136,7 @@ export function TweetEntry({
           <a
             href={`https://x.com/${account?.username}/status/${tweet.id}`}
             target="_blank"
+            style={{ color: "#4287f5" }}
           >
             {new Date(tweet.created_at).toLocaleString()}
           </a>
@@ -140,8 +145,40 @@ export function TweetEntry({
         <span>&quot;{highlightedTweetParts}&quot;</span>
         {/* labels */}
         <div style={{ display: "flex", gap: "10px" }}>
-          <span>⭐ {tweet.favorite_count}</span>
-          <span>🔁 {tweet.retweet_count}</span>
+          <span
+            style={{
+              backgroundColor: "white",
+              border: "1px solid #e0e0e0",
+              borderRadius: "12px",
+              padding: "2px 8px",
+              fontSize: "12px",
+              color: "#333",
+              display: "inline-flex",
+              alignItems: "center",
+              fontWeight: 500,
+              gap: "4px",
+            }}
+            title="Favorites"
+          >
+            ⭐ {tweet.favorite_count}
+          </span>
+          <span
+            style={{
+              backgroundColor: "white",
+              border: "1px solid #e0e0e0",
+              borderRadius: "12px",
+              padding: "2px 8px",
+              fontSize: "12px",
+              color: "#333",
+              display: "inline-flex",
+              alignItems: "center",
+              fontWeight: 500,
+              gap: "4px",
+            }}
+            title="Retweets"
+          >
+            🔁 {tweet.retweet_count}
+          </span>
           {filterMatches.map((label, index) => (
             <a href={`#/filters/${label.filterName}`} key={index}>
               <div
