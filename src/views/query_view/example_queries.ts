@@ -45,4 +45,10 @@ export const EXAMPLE_QUERIES = [
   "Which corner of the internet would claim me as one of their own?",
 ]
 
-export const FEATURED_QUERIES = EXAMPLE_QUERIES.slice(0, 3)
+export const FEATURED_QUERIES = [
+  "What kinds of topics does {account} post about?",
+  "Based on these tweets, what Enneagram type is {account}? If you're unsure, list multiple options.",
+  "Based on these tweets, what MBTI is {account}? If you're unsure, list multiple options.",
+  "What seems to drive {account} to tweet, e.g. attention, reflection, humor, advocacy, curiosity?",
+  "What were the main eras or turning points in {account}'s Twitter life?",
+]
