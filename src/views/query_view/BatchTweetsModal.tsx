@@ -92,7 +92,8 @@ export function BatchTweetsModal({
         <p>
           <em>
             The below texts are the tweets that were used to generate the final
-            result - they may be hallucinated.
+            result. They are not currently validated against the baseline data
+            set, so some tweets may be hallucinated.
           </em>
         </p>
         <div
