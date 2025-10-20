@@ -3,6 +3,7 @@ import type { StoreSlices } from "./types";
 import { filters } from "../filtering/filters";
 import { processTwitterArchive } from "../processTwitterArchive";
 import { db } from "../db";
+import { strToU8, zipSync } from "fflate";
 
 export type InitSlice = {
   init: () => Promise<void>;
@@ -10,10 +11,12 @@ export type InitSlice = {
   clearDatabase: () => Promise<void>;
   appIsReady: boolean;
   ingestTwitterArchive: (file: File) => Promise<void>;
+  downloadArchive: () => Promise<void>;
 };
 
 export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
-  set
+  set,
+  get
 ) => ({
   init: async () => {
     // before anything else is displayed we need to check that the database has tweets in it
@@ -64,5 +67,75 @@ export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
     set(() => ({
       dbHasTweets: true,
     }));
+  },
+
+  downloadArchive: async () => {
+    // Fetch all relevant data from the database
+    const accounts = await db.accounts.toArray();
+    const follower = await db.follower.toArray();
+    const following = await db.following.toArray();
+    const profiles = await db.profiles.toArray();
+    const tweets = await db.tweets.toArray();
+
+    // Get the excluded tweet IDs set from the store
+    const excludedTweetIdsSet = get().excludedTweetIdsSet;
+
+    // Filter tweets using the excludedTweetIdsSet
+    const filteredTweets = tweets.filter(
+      (tweet) => !excludedTweetIdsSet.has(tweet.id)
+    );
+
+    const zipBlob = zipSync({
+      data: {
+        "account.js": strToU8(
+          `window.YTD.account.part0 = ${JSON.stringify(
+            accounts.map((account) => ({ account })),
+            null,
+            2
+          )}`
+        ),
+        "follower.js": strToU8(
+          `window.YTD.follower.part0 = ${JSON.stringify(
+            follower.map((f) => ({ follower: f })),
+            null,
+            2
+          )}`
+        ),
+        "following.js": strToU8(
+          `window.YTD.following.part0 = ${JSON.stringify(
+            following.map((f) => ({ following: f })),
+            null,
+            2
+          )}`
+        ),
+        "profile.js": strToU8(
+          `window.YTD.profile.part0 = ${JSON.stringify(
+            profiles.map((p) => ({ profile: p })),
+            null,
+            2
+          )}`
+        ),
+        "tweets.js": strToU8(
+          `window.YTD.tweets.part0 = ${JSON.stringify(
+            filteredTweets.map((ft) => ({ tweet: ft })),
+            null,
+            2
+          )}`
+        ),
+      },
+    });
+
+    // Create a Blob from the Uint8Array, then trigger download using a temporary anchor element
+    const blob = new Blob([zipBlob as Uint8Array<ArrayBuffer>], {
+      type: "application/zip",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "twitter-archive.zip";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   },
 });

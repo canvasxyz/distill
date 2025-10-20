@@ -8,6 +8,7 @@ export function MyArchiveView() {
     excludedTweets,
     clearDatabase,
     profile,
+    downloadArchive,
   } = useStore();
 
   return (
@@ -304,10 +305,10 @@ export function MyArchiveView() {
             cursor: "pointer",
             width: "fit-content",
           }}
-          disabled
-          title="Download not implemented yet"
+          title="Download"
+          onClick={() => downloadArchive()}
         >
-          Download Tweets (Coming Soon)
+          Download Tweets
         </button>
         <button
           style={{

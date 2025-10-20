@@ -12,6 +12,7 @@
   "dependencies": {
     "dexie": "^4.2.0",
     "dexie-react-hooks": "^4.2.0",
+    "fflate": "^0.8.2",
     "json-with-bigint": "^3.4.4",
     "openai": "^5.23.2",
     "p-queue": "^8.1.1",
