@@ -33,7 +33,7 @@ export function UploadView() {
       <h1>Open your archive</h1>
       <p>
         To begin, open your archive. Use the ".zip" file that you received when
-        you requested your archive from Twitter/X. The Tweet Archive Explorer
+        you requested your archive from Twitter/X. The Twitter Archive Explorer
         will only look at the tweet(s).js and account.js file.
       </p>
       <div

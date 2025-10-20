@@ -36,7 +36,7 @@ export function Sidebar() {
         paddingRight: "10px",
       }}
     >
-      <h1 style={{ fontSize: "22px" }}>Tweet Archive Explorer</h1>
+      <h1 style={{ fontSize: "22px" }}>Twitter Archive Explorer</h1>
       <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
         <LinkButton to="/">My Archive</LinkButton>
 
@@ -130,8 +130,8 @@ export function Sidebar() {
 
         <HorizontalRule />
         <span style={{ fontSize: "0.75em", fontStyle: "italic" }}>
-          Note: Tweet Archive Explorer analyzes the text content of tweets, not
-          the images or any other linked data (e.g. quoted tweets).
+          Note: Twitter Archive Explorer analyzes the text content of tweets,
+          not the images or any other linked data (e.g. quoted tweets).
         </span>
       </div>
     </div>
