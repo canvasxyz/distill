@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { useStore } from "../state/store";
 import { ShowIfTweetsLoaded } from "./ShowIfTweetsLoaded";
 
@@ -11,6 +12,15 @@ function MyArchiveViewInner() {
     profile,
     downloadArchive,
   } = useStore();
+
+  // check if the profile picture is a broken link
+  const [showProfilePicture, setShowProfilePicture] = useState(false);
+  useEffect(() => {
+    if (!profile) return;
+    fetch(profile?.avatarMediaUrl).then((response) => {
+      if (response.status === 200) setShowProfilePicture(true);
+    });
+  }, [profile]);
 
   return (
     <div style={{ height: "100vh", overflowY: "scroll" }}>
@@ -59,14 +69,29 @@ function MyArchiveViewInner() {
               }}
               title={account.accountDisplayName}
             >
-              {account.accountDisplayName
-                ? account.accountDisplayName
-                    .split(" ")
-                    .map((word) => word[0])
-                    .join("")
-                    .toUpperCase()
-                    .slice(0, 2)
-                : "@"}
+              {showProfilePicture ? (
+                <img
+                  src={profile?.avatarMediaUrl}
+                  alt={account.accountDisplayName || account.username}
+                  style={{
+                    width: 78,
+                    height: 78,
+                    borderRadius: "50%",
+                    objectFit: "cover",
+                    border: "2px solid #afcfef",
+                    boxShadow: "0 2px 6px rgba(80,120,180,0.10)",
+                  }}
+                />
+              ) : account.accountDisplayName ? (
+                account.accountDisplayName
+                  .split(" ")
+                  .map((word) => word[0])
+                  .join("")
+                  .toUpperCase()
+                  .slice(0, 2)
+              ) : (
+                "@"
+              )}
             </div>
             {/* Details column */}
             <div
@@ -243,7 +268,7 @@ function MyArchiveViewInner() {
           }}
         >
           <a
-            href="#/"
+            href="#/all-tweets"
             style={{
               display: "block",
               padding: "20px 30px",
