@@ -2,6 +2,7 @@ import PQueue from "p-queue";
 import type { StoreSlices } from "./types";
 import { classificationLabels, getClassification } from "../filtering/openai";
 import type { StateCreator } from "zustand";
+import { db } from "../db";
 
 const concurrency = 40;
 
