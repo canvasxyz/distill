@@ -21,7 +21,6 @@ function ModelQueryViewInner() {
           paddingRight: "10px",
           margin: "0 auto",
           maxWidth: "1200px", // limit width for readability on large screens
-          boxSizing: "border-box",
         }}
       >
         <h1>Model Query</h1>

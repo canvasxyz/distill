@@ -82,151 +82,157 @@ export function TweetsView({
 
   return (
     <div
-      style={{
-        maxHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        paddingLeft: "10px",
-        paddingRight: "10px",
-        margin: "0 auto",
-        maxWidth: "1200px", // limit width for readability on large screens
-      }}
+      style={{ height: "100vh", overflowY: "auto", scrollbarGutter: "stable" }}
     >
-      <h1>{title}</h1>
-      {blurb && (
-        <div style={{ marginBottom: "10px" }}>
-          <em>{blurb}</em>
-        </div>
-      )}
       <div
         style={{
+          maxHeight: "100vh",
           display: "flex",
-          gap: "10px",
-          marginBottom: "10px",
-          alignItems: "center",
+          flexDirection: "column",
+          paddingLeft: "10px",
+          paddingRight: "10px",
+          margin: "0 auto",
+          maxWidth: "1200px", // limit width for readability on large screens
         }}
       >
-        <input
-          checked={selectAllChecked}
-          type="checkbox"
-          onChange={(event) => onSelectAllChange(event.target.checked)}
-        ></input>
-
-        <button
-          onClick={handleInclude}
+        <h1>{title}</h1>
+        {blurb && (
+          <div style={{ marginBottom: "10px" }}>
+            <em>{blurb}</em>
+          </div>
+        )}
+        <div
           style={{
-            backgroundColor: "green",
-            color: "white",
-            borderRadius: "5px",
-            padding: "5px",
-            border: "1px solid black",
-            transition: "background-color 0.1s",
+            display: "flex",
+            gap: "10px",
+            marginBottom: "10px",
+            alignItems: "center",
           }}
-          onMouseEnter={(e) =>
-            (e.currentTarget.style.backgroundColor = "#48c91a")
-          }
-          onMouseLeave={(e) =>
-            (e.currentTarget.style.backgroundColor = "green")
-          }
         >
-          Include
-        </button>
-        <button
-          onClick={handleExclude}
-          style={{
-            backgroundColor: "red",
-            color: "white",
-            borderRadius: "5px",
-            padding: "5px",
-            border: "1px solid black",
-            transition: "background-color 0.1s",
-          }}
-          onMouseEnter={(e) =>
-            (e.currentTarget.style.backgroundColor = "#ff6661")
-          }
-          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "red")}
-        >
-          Exclude
-        </button>
-        <div>
-          {Object.keys(checkedTweets).length > 0 && (
-            <>
-              {Object.keys(checkedTweets).length} tweets are selected.{" "}
-              <PseudoLink onClick={checkAllTweets}>
-                Select all tweets in {title}.
-              </PseudoLink>
-            </>
-          )}
-        </div>
-      </div>
+          <input
+            checked={selectAllChecked}
+            type="checkbox"
+            onChange={(event) => onSelectAllChange(event.target.checked)}
+          ></input>
 
-      <div style={{ overflowY: "auto", flexGrow: 1 }}>
-        {tweetsToDisplay.map((tweet, index) => (
-          <TweetEntry
-            isFirst={index === 0}
-            tweet={tweet}
-            checked={checkedTweets[tweet.id] || false}
-            isIncluded={!excludedTweetIdsSet.has(tweet.id)}
-            key={index}
-            onCheckboxChange={(isChecked) => {
-              if (isChecked) {
-                setCheckedTweets({ ...checkedTweets, [tweet.id]: true });
-              } else {
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                const { [tweet.id]: _discard, ...newCheckedTweets } =
-                  checkedTweets;
-                setCheckedTweets(newCheckedTweets);
-              }
+          <button
+            onClick={handleInclude}
+            style={{
+              backgroundColor: "green",
+              color: "white",
+              borderRadius: "5px",
+              padding: "5px",
+              border: "1px solid black",
+              transition: "background-color 0.1s",
             }}
-            filterMatches={filterMatchesByTweetId[tweet.id] || []}
-          />
-        ))}
-      </div>
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.backgroundColor = "#48c91a")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.backgroundColor = "green")
+            }
+          >
+            Include
+          </button>
+          <button
+            onClick={handleExclude}
+            style={{
+              backgroundColor: "red",
+              color: "white",
+              borderRadius: "5px",
+              padding: "5px",
+              border: "1px solid black",
+              transition: "background-color 0.1s",
+            }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.backgroundColor = "#ff6661")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.backgroundColor = "red")
+            }
+          >
+            Exclude
+          </button>
+          <div>
+            {Object.keys(checkedTweets).length > 0 && (
+              <>
+                {Object.keys(checkedTweets).length} tweets are selected.{" "}
+                <PseudoLink onClick={checkAllTweets}>
+                  Select all tweets in {title}.
+                </PseudoLink>
+              </>
+            )}
+          </div>
+        </div>
 
-      <div
-        style={{
-          gap: "10px",
-          display: "flex",
-          flexDirection: "row",
-          paddingTop: "10px",
-          paddingBottom: "10px",
-          justifyContent: "end",
-        }}
-      >
-        <button
-          disabled={!navigatePrevious}
-          onClick={navigatePrevious}
+        <div style={{ overflowY: "auto", flexGrow: 1 }}>
+          {tweetsToDisplay.map((tweet, index) => (
+            <TweetEntry
+              isFirst={index === 0}
+              tweet={tweet}
+              checked={checkedTweets[tweet.id] || false}
+              isIncluded={!excludedTweetIdsSet.has(tweet.id)}
+              key={index}
+              onCheckboxChange={(isChecked) => {
+                if (isChecked) {
+                  setCheckedTweets({ ...checkedTweets, [tweet.id]: true });
+                } else {
+                  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                  const { [tweet.id]: _discard, ...newCheckedTweets } =
+                    checkedTweets;
+                  setCheckedTweets(newCheckedTweets);
+                }
+              }}
+              filterMatches={filterMatchesByTweetId[tweet.id] || []}
+            />
+          ))}
+        </div>
+
+        <div
           style={{
-            backgroundColor: "white",
-            borderRadius: "5px",
-            padding: "5px",
-            border: "1px solid black",
-            transition: "background-color 0.1s",
+            gap: "10px",
+            display: "flex",
+            flexDirection: "row",
+            paddingTop: "10px",
+            paddingBottom: "10px",
+            justifyContent: "end",
           }}
-          onMouseEnter={(e) =>
-            (e.currentTarget.style.backgroundColor = "#f0f0f0")
-          }
-          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "")}
         >
-          Previous
-        </button>
-        <button
-          disabled={!navigateNext}
-          onClick={navigateNext}
-          style={{
-            backgroundColor: "white",
-            borderRadius: "5px",
-            padding: "5px",
-            border: "1px solid black",
-            transition: "background-color 0.1s",
-          }}
-          onMouseEnter={(e) =>
-            (e.currentTarget.style.backgroundColor = "#f0f0f0")
-          }
-          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "")}
-        >
-          Next
-        </button>
+          <button
+            disabled={!navigatePrevious}
+            onClick={navigatePrevious}
+            style={{
+              backgroundColor: "white",
+              borderRadius: "5px",
+              padding: "5px",
+              border: "1px solid black",
+              transition: "background-color 0.1s",
+            }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.backgroundColor = "#f0f0f0")
+            }
+            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "")}
+          >
+            Previous
+          </button>
+          <button
+            disabled={!navigateNext}
+            onClick={navigateNext}
+            style={{
+              backgroundColor: "white",
+              borderRadius: "5px",
+              padding: "5px",
+              border: "1px solid black",
+              transition: "background-color 0.1s",
+            }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.backgroundColor = "#f0f0f0")
+            }
+            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "")}
+          >
+            Next
+          </button>
+        </div>
       </div>
     </div>
   );
