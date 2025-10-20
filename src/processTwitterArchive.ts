@@ -1,59 +1,71 @@
-import type { Account, Tweet } from "./types";
-import { unzip, type ZipEntry } from "unzipit";
+import { v7 as uuidv7 } from "uuid";
+import type { Account, Tweet, Profile, ProfileWithId } from "./types";
+import { unzip } from "unzipit";
 import { parseTwitterArchiveFile } from "./twitterArchiveParser";
 
 export const processTwitterArchive = async (
   file: File
-): Promise<{ account: Account; tweets: Tweet[] }> => {
+): Promise<{ account: Account; profile: ProfileWithId; tweets: Tweet[] }> => {
   // This is a stub method. Implement the logic to parse the Twitter archive zip file.
   // Once parsed, use setTweets to update the tweets state.
   console.log("Parsing Twitter archive:", file.name);
   const zipInfo = await unzip(file);
-  let tweetEntry: ZipEntry | null = null;
+
+  const fileNamesToExtract = [
+    "account.js",
+    "profile.js",
+    "tweet.js",
+    "tweets.js",
+  ];
+
+  let account;
+  let profile;
+  let tweets;
+
   for (const entry of Object.values(zipInfo.entries)) {
-    if (entry.name.endsWith("/tweet.js") || entry.name.endsWith("/tweets.js")) {
-      console.log("found tweet file in archive!");
-      tweetEntry = entry;
-      break;
+    const entryNameParts = entry.name.split("/");
+    const lastEntryNamePart = entryNameParts[entryNameParts.length - 1];
+
+    if (fileNamesToExtract.includes(lastEntryNamePart)) {
+      const content = new TextDecoder().decode(
+        new Uint8Array(await entry.arrayBuffer())
+      );
+
+      const parsedData = parseTwitterArchiveFile(content);
+      if (!parsedData) {
+        throw new Error(`couldn't parse ${lastEntryNamePart}`);
+      }
+
+      if (
+        lastEntryNamePart === "tweet.js" ||
+        lastEntryNamePart === "tweets.js"
+      ) {
+        tweets = (parsedData as { tweet: Tweet }[]).map((entry) => entry.tweet);
+      } else if (lastEntryNamePart === "account.js") {
+        account = (parsedData as { account: Account }[])[0].account;
+      } else if (lastEntryNamePart === "profile.js") {
+        const profileId = uuidv7();
+        profile = {
+          ...(parsedData as { profile: Profile }[])[0].profile,
+          profileId,
+        };
+      }
     }
   }
-  if (!tweetEntry) {
-    throw new Error("tweet.js or tweets.js file not found in archive!");
-  }
 
-  const tweetsContent = new TextDecoder().decode(
-    new Uint8Array(await tweetEntry.arrayBuffer())
-  );
-
-  const tweets = parseTwitterArchiveFile<{ tweet: Tweet }[]>(tweetsContent);
-  if (!tweets) {
-    throw new Error("couldn't parse tweet.js");
-  }
-
-  let accountEntry: ZipEntry | null = null;
-  for (const entry of Object.values(zipInfo.entries)) {
-    if (entry.name.endsWith("/account.js")) {
-      console.log("found account file in archive!");
-      accountEntry = entry;
-      break;
-    }
-  }
-  if (!accountEntry) {
-    throw new Error("account.js or account.js file not found in archive!");
-  }
-
-  const accountContent = new TextDecoder().decode(
-    new Uint8Array(await accountEntry.arrayBuffer())
-  );
-
-  const account =
-    parseTwitterArchiveFile<{ account: Account }[]>(accountContent);
   if (!account) {
-    throw new Error("couldn't parse tweet.js");
+    throw new Error("Couldn't extract account data");
+  }
+  if (!profile) {
+    throw new Error("Couldn't extract profile data");
+  }
+  if (tweets === undefined) {
+    throw new Error("Couldn't extract tweets data");
   }
 
   return {
-    account: account[0].account,
-    tweets: tweets.map(({ tweet }) => tweet),
+    account,
+    profile,
+    tweets,
   };
 };

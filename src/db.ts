@@ -1,10 +1,11 @@
 import Dexie from "dexie";
-import type { Tweet, Account, FilterMatch } from "./types";
+import type { Tweet, Account, FilterMatch, ProfileWithId } from "./types";
 import type { QueryResult } from "./views/query_view/ai_utils";
 
 class AppDatabase extends Dexie {
   tweets: Dexie.Table<Tweet, string>;
   accounts: Dexie.Table<Account, string>;
+  profiles: Dexie.Table<ProfileWithId, string>;
   excludedTweetIds: Dexie.Table<{ id: string }, string>;
   filterTweetIds: Dexie.Table<FilterMatch, string>;
   queryResults: Dexie.Table<QueryResult, string>;
@@ -14,6 +15,7 @@ class AppDatabase extends Dexie {
     this.version(1).stores({
       tweets: "id,created_at",
       accounts: "accountId",
+      profiles: "profileId",
       excludedTweetIds: "id",
       filterTweetIds: "[filterName+id]",
       queryResults: "id",
@@ -21,6 +23,7 @@ class AppDatabase extends Dexie {
 
     this.tweets = this.table("tweets");
     this.accounts = this.table("accounts");
+    this.profiles = this.table("profiles");
     this.excludedTweetIds = this.table("excludedTweetIds");
     this.filterTweetIds = this.table("filterTweetIds");
     this.queryResults = this.table("queryResults");

@@ -7,6 +7,20 @@ export type Account = {
   accountDisplayName: string;
 };
 
+export type ProfileDescription = {
+  bio: string;
+  website: string;
+  location: string;
+};
+
+export type Profile = {
+  description: ProfileDescription;
+  avatarMediaUrl: string;
+  headerMediaUrl: string;
+};
+
+export type ProfileWithId = { profileId: string } & Profile;
+
 export type Tweet = {
   id: string;
   id_str: string;

@@ -30,7 +30,12 @@ export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
 
   appIsReady: false,
   ingestTwitterArchive: async (file: File) => {
-    const { account, tweets } = await processTwitterArchive(file);
+    const { account, profile, tweets } = await processTwitterArchive(file);
+
+    await db.profiles.clear();
+    await db.profiles.add(profile);
+    // TODO: add following
+    // TODO: add follower
 
     await db.accounts.clear();
     await db.accounts.add(account);
