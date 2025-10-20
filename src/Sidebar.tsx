@@ -1,3 +1,4 @@
+import { AnalyzeTweetsButton } from "./AnalyzeTweetsButton";
 import { filters } from "./filtering/filters";
 import { LinkButton } from "./LinkButton";
 import { useStore } from "./state/store";
@@ -76,55 +77,10 @@ export function Sidebar() {
             </div>
           </>
         ) : (
-          <button
-            style={{
-              borderRadius: "10px",
-              padding: "10px 18px",
-              border: allTweets ? "1.5px solid #3dbb63" : "1.5px solid #b6dfc3",
-              background: allTweets
-                ? "linear-gradient(90deg, #e6faee 60%, #baf9d7 100%)"
-                : "linear-gradient(90deg, #f4faf5 80%, #eaf7f1 100%)",
-              color: allTweets ? "#21733b" : "#b7cdb9",
-              fontWeight: 600,
-              fontSize: "1em",
-              cursor: allTweets ? "pointer" : "not-allowed",
-              boxShadow: allTweets
-                ? "0 2px 8px 0px rgba(35,180,90,0.14)"
-                : "none",
-              transition:
-                "background 0.18s, color 0.14s, border 0.14s, box-shadow 0.14s",
-              outline: "none",
-              opacity: allTweets ? 1 : 0.7,
-              position: "relative",
-              overflow: "hidden",
-            }}
-            onMouseEnter={(e) => {
-              if (allTweets)
-                e.currentTarget.style.background =
-                  "linear-gradient(90deg, #cbefdc 60%, #87e2ad 100%)";
-            }}
-            onMouseLeave={(e) => {
-              if (allTweets)
-                e.currentTarget.style.background =
-                  "linear-gradient(90deg, #e6faee 60%, #baf9d7 100%)";
-            }}
-            onClick={() => {
-              analyzeTweets();
-            }}
-            disabled={!allTweets}
-          >
-            <span
-              style={{
-                filter: "drop-shadow(0 0 2px #87e2ad)",
-                marginRight: "8px",
-                fontSize: "1.10em",
-                verticalAlign: "-2px",
-              }}
-            >
-              ⚡
-            </span>
-            Analyze Tweets
-          </button>
+          <AnalyzeTweetsButton
+            canAnalyse={!!allTweets}
+            onClick={() => analyzeTweets()}
+          />
         )}
 
         <HorizontalRule />
