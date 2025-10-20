@@ -74,7 +74,28 @@ export function RunQueries() {
     })
   }
 
-  const sharedActionButtonStyle: CSSProperties = {
+  const featuredQueryCardStyle: CSSProperties = {
+    padding: "16px",
+    background: "#f8f9fa",
+    color: "#212529",
+    border: "1px solid #007bff",
+    borderRadius: "6px",
+    fontSize: "15px",
+    fontWeight: 500,
+    cursor: isProcessing ? "not-allowed" : "pointer",
+    boxShadow: "0 2px 6px rgba(0,0,0,0.04)",
+    transition: "background 0.2s, color 0.2s",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "space-between",
+    textAlign: "center",
+    minHeight: "140px",
+    gap: "12px",
+    opacity: isProcessing ? 0.6 : 1,
+  }
+
+  const browseMoreButtonStyle: CSSProperties = {
     padding: "12px 16px",
     background: "#f8f9fa",
     color: "#007bff",
@@ -314,14 +335,22 @@ export function RunQueries() {
         {FEATURED_QUERIES.map((baseQuery) => {
           const query = replaceAccountName(baseQuery, account.username)
           return (
-            <button
-              type="button"
+            <div
+              role="button"
               key={baseQuery}
-              disabled={isProcessing}
-              style={sharedActionButtonStyle}
+              tabIndex={isProcessing ? -1 : 0}
+              aria-disabled={isProcessing}
+              style={featuredQueryCardStyle}
               onClick={() => {
                 if (isProcessing) return
                 setSelectedQuery(query)
+              }}
+              onKeyDown={(e) => {
+                if (isProcessing) return
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault()
+                  setSelectedQuery(query)
+                }
               }}
               onMouseEnter={(e) => {
                 if (isProcessing) return
@@ -331,14 +360,41 @@ export function RunQueries() {
                 e.currentTarget.style.background = "#f8f9fa"
               }}
             >
-              {query}
-            </button>
+              <div
+                style={{
+                  color: "#0056b3",
+                  whiteSpace: "pre-wrap",
+                  wordBreak: "break-word",
+                  flex: 1,
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
+                {query}
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  width: "100%",
+                }}
+              >
+                <RunQueryButton
+                  disabled={isProcessing}
+                  onClick={() => {
+                    if (isProcessing) return
+                    setSelectedQuery(query)
+                    handleRunQuery(query)
+                  }}
+                />
+              </div>
+            </div>
           )
         })}
         <button
           type="button"
           disabled={isProcessing}
-          style={sharedActionButtonStyle}
+          style={browseMoreButtonStyle}
           onClick={() => {
             if (isProcessing) return
             setExampleQueriesModalIsOpen(true)
