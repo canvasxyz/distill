@@ -8,12 +8,10 @@ A browser-based application for analyzing tweets from your `.zip` export, which 
   remain in your browser.
 * Create a filtered export of your archive, for uploading to public
   databases. Scan for NSFW tweets or offensive tweets using AI.
-* Query your archive with arbitrary AI queries. (This uses OpenRouter
-  and will send your tweets to an LLM provider; we do not log or
-  retain your tweets.)
+* Query your archive with arbitrary AI queries. (This will send your
+  tweets to an LLM provider. We do not log or retain your tweets.)
 * Data is stored in IndexedDB and can be wiped at any time by
-  selecting **Clear My Data** in the archive view, which deletes the
-  database and reloads the page.
+  selecting **Close Archive** in the archive view.
 
 ## Usage
 

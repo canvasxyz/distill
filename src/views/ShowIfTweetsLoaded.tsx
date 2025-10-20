@@ -9,7 +9,7 @@ export const ShowIfTweetsLoaded = ({
   const { appIsReady, dbHasTweets } = useStore();
 
   if (appIsReady && !dbHasTweets) {
-    return <Navigate to="/upload-tweets" />;
+    return <Navigate to="/" />;
   }
 
   return children;

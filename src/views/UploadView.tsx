@@ -2,8 +2,8 @@ import React, { useRef } from "react";
 import { useStore } from "../state/store";
 import { Navigate } from "react-router";
 
-export function UploadView() {
-  const { allTweets, ingestTwitterArchive } = useStore();
+export function UploadPanel() {
+  const { ingestTwitterArchive } = useStore();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const handleFileUpload = async (
@@ -14,10 +14,6 @@ export function UploadView() {
       await ingestTwitterArchive(file);
     }
   };
-
-  if (allTweets && allTweets.length > 0) {
-    return <Navigate to="/" />;
-  }
 
   return (
     <div
@@ -49,7 +45,7 @@ export function UploadView() {
           transition: "background-color 0.2s",
         }}
         onClick={() => {
-          fileInputRef.current!.click();
+          fileInputRef.current?.click();
         }}
         onDragOver={(e) => e.preventDefault()}
         onDrop={async (e) => {
@@ -80,4 +76,14 @@ export function UploadView() {
       </div>
     </div>
   );
+}
+
+export function UploadView() {
+  const { allTweets } = useStore();
+
+  if (allTweets && allTweets.length > 0) {
+    return <Navigate to="/" />;
+  }
+
+  return <UploadPanel />;
 }

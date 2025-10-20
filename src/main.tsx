@@ -9,8 +9,6 @@ import { IncludedTweetsView } from "./views/IncludedTweetsView.tsx";
 import { ExcludedTweetsView } from "./views/ExcludedTweetsView.tsx";
 import { FilteredTweetsView } from "./views/FilteredTweetsView.tsx";
 import { AllTweetsView } from "./views/AllTweetsView.tsx";
-import { UploadView } from "./views/UploadView.tsx";
-import { ModelQueryView } from "./views/query_view/ModelQueryView.tsx";
 
 const router = createHashRouter([
   {
@@ -22,8 +20,6 @@ const router = createHashRouter([
       { path: "included-tweets", Component: IncludedTweetsView },
       { path: "excluded-tweets", Component: ExcludedTweetsView },
       { path: "filters/:filter", Component: FilteredTweetsView },
-      { path: "model-query", Component: ModelQueryView },
-      { path: "upload-tweets", Component: UploadView },
     ],
   },
 ]);

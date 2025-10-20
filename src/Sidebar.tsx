@@ -1,7 +1,7 @@
-import { AnalyzeTweetsButton } from "./AnalyzeTweetsButton";
-import { filters } from "./filtering/filters";
-import { LinkButton } from "./LinkButton";
-import { useStore } from "./state/store";
+import { AnalyzeTweetsButton } from "./AnalyzeTweetsButton"
+import { filters } from "./filtering/filters"
+import { LinkButton } from "./LinkButton"
+import { useStore } from "./state/store"
 
 function HorizontalRule() {
   return (
@@ -12,7 +12,7 @@ function HorizontalRule() {
         borderTop: "1px solid #ccc",
       }}
     />
-  );
+  )
 }
 
 export function Sidebar() {
@@ -25,9 +25,9 @@ export function Sidebar() {
     excludedTweets,
     tweetsByFilterName,
     downloadArchive,
-  } = useStore();
+  } = useStore()
 
-  const totalNumTweets = (allTweets || []).length;
+  const totalNumTweets = (allTweets || []).length
   return (
     <div
       style={{
@@ -39,15 +39,11 @@ export function Sidebar() {
     >
       <h1 style={{ fontSize: "22px" }}>Twitter Archive Explorer</h1>
       <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-        <LinkButton to="/">My Archive</LinkButton>
-
-        <LinkButton to="/model-query" disabled={!allTweets}>
-          Model Query ✨
-        </LinkButton>
+        <LinkButton to="/">Archive Query</LinkButton>
 
         <HorizontalRule />
         <LinkButton to="/all-tweets" disabled={!allTweets}>
-          All tweets {allTweets && `(${allTweets.length})`}
+          Archive Review
         </LinkButton>
         <LinkButton to="/included-tweets" disabled={!allTweets}>
           Included 👍 {includedTweets && `(${includedTweets.length})`}
@@ -70,8 +66,8 @@ export function Sidebar() {
           }}
           title="Download"
           onClick={() => {
-            if (!allTweets) return;
-            downloadArchive();
+            if (!allTweets) return
+            downloadArchive()
           }}
           disabled={!allTweets}
         >
@@ -153,5 +149,5 @@ export function Sidebar() {
         </span>
       </div>
     </div>
-  );
+  )
 }
