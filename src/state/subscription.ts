@@ -4,13 +4,14 @@ import { liveQuery, type Subscription } from "dexie";
 import { createRef, type RefObject } from "react";
 import {
   accountObservable,
+  profileObservable,
   allTweetsObservable,
   excludedTweetsObservable,
   filterTweetsObservable,
   includedTweetsObservable,
   queryResultsObservable,
 } from "./observables";
-import type { Account, FilterMatch, Tweet } from "../types";
+import type { Account, FilterMatch, ProfileWithId, Tweet } from "../types";
 import type { QueryResult } from "../views/query_view/ai_utils";
 import type { StateCreator } from "zustand";
 import type { StoreSlices } from "./types";
@@ -20,6 +21,7 @@ export type SubscriptionSlice = {
   subscribe: () => void;
   unsubscribe: () => void;
   account: Account | null;
+  profile: ProfileWithId | null;
   allTweets: Tweet[];
   includedTweets: Tweet[];
   excludedTweets: Tweet[];
@@ -43,6 +45,11 @@ export const createSubscriptionSlice: StateCreator<
 
     const accountSubscription = liveQuery(accountObservable).subscribe({
       next: (newAccount) => set({ account: newAccount[0] || null }),
+      error: (error) => console.error(error),
+    });
+
+    const profileSubscription = liveQuery(profileObservable).subscribe({
+      next: (newProfile) => set({ profile: newProfile[0] || null }),
       error: (error) => console.error(error),
     });
 
@@ -88,6 +95,7 @@ export const createSubscriptionSlice: StateCreator<
 
     subscriptions.current = [
       accountSubscription,
+      profileSubscription,
       allTweetsSubscription,
       includedTweetsSubscription,
       excludedTweetsSubscription,
@@ -103,6 +111,7 @@ export const createSubscriptionSlice: StateCreator<
     subscriptions.current = [];
   },
   account: null,
+  profile: null,
   allTweets: [],
   includedTweets: [],
   excludedTweets: [],
