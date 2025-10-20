@@ -132,7 +132,14 @@ function MyArchiveViewInner() {
                   <span>
                     Joined:{" "}
                     <span style={{ color: "#8b92b7", fontWeight: 600 }}>
-                      {account.createdAt}
+                      {new Date(account.createdAt).toLocaleDateString(
+                        undefined,
+                        {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        }
+                      )}
                     </span>
                   </span>
                 </span>
