@@ -43,4 +43,6 @@ export const EXAMPLE_QUERIES = [
   "If my tweets were chapters of a memoir, what would the chapters be called?",
   "What’s the “thesis statement” of my Twitter presence — the message beneath everything?",
   "Which corner of the internet would claim me as one of their own?",
-];
+]
+
+export const FEATURED_QUERIES = EXAMPLE_QUERIES.slice(0, 3)

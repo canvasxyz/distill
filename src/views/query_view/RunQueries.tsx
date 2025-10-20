@@ -1,28 +1,28 @@
-import { type RangeSelectionType } from "./ai_utils";
-import { useMemo, useState } from "react";
-import { useStore } from "../../state/store";
-import { RunQueryButton } from "./RunQueryButton";
+import { type RangeSelectionType, replaceAccountName } from "./ai_utils"
+import { useMemo, useState, type CSSProperties } from "react"
+import { useStore } from "../../state/store"
+import { RunQueryButton } from "./RunQueryButton"
 import {
   CopyButton,
   ProgressBar,
   ProgressLabel,
   ResultsBox,
-} from "./ResultsBox";
-import { ExampleQueriesModal } from "./ExampleQueriesModal";
-import { EXAMPLE_QUERIES } from "./example_queries";
-import Markdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import { useTweetCounts } from "./useTweetCounts";
-import { TweetFrequencyGraph } from "../../components/TweetFrequencyGraph";
-import { BatchTweetsModal } from "./BatchTweetsModal";
+} from "./ResultsBox"
+import { ExampleQueriesModal } from "./ExampleQueriesModal"
+import { EXAMPLE_QUERIES, FEATURED_QUERIES } from "./example_queries"
+import Markdown from "react-markdown"
+import remarkGfm from "remark-gfm"
+import { useTweetCounts } from "./useTweetCounts"
+import { TweetFrequencyGraph } from "../../components/TweetFrequencyGraph"
+import { BatchTweetsModal } from "./BatchTweetsModal"
 
 export function RunQueries() {
   const [exampleQueriesModalIsOpen, setExampleQueriesModalIsOpen] =
-    useState(false);
-  const [selectedQuery, setSelectedQuery] = useState("");
+    useState(false)
+  const [selectedQuery, setSelectedQuery] = useState("")
 
-  const [includeReplies, setIncludeReplies] = useState(true);
-  const [includeRetweets, setIncludeRetweets] = useState(true);
+  const [includeReplies, setIncludeReplies] = useState(true)
+  const [includeRetweets, setIncludeRetweets] = useState(true)
 
   const {
     account,
@@ -32,42 +32,68 @@ export function RunQueries() {
     isProcessing,
     currentRunningQuery,
     queryResult,
-  } = useStore();
+  } = useStore()
 
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  const [startDate, setStartDate] = useState("")
+  const [endDate, setEndDate] = useState("")
 
   const filteredTweetsToAnalyse = useMemo(
     () =>
       (allTweets || []).filter((tweet) => {
         if (!includeReplies && tweet.in_reply_to_user_id) {
-          return false;
+          return false
         }
         if (!includeRetweets && tweet.full_text.startsWith("RT ")) {
-          return false;
+          return false
         }
-        return true;
+        return true
       }),
-    [allTweets, includeReplies, includeRetweets]
-  );
+    [allTweets, includeReplies, includeRetweets],
+  )
 
-  const tweetCounts = useTweetCounts(filteredTweetsToAnalyse);
+  const tweetCounts = useTweetCounts(filteredTweetsToAnalyse)
 
   const [rangeSelectionType, setRangeSelectionType] =
-    useState<RangeSelectionType>("whole-archive");
+    useState<RangeSelectionType>("whole-archive")
 
   const [currentProgress, totalProgress] = useMemo(() => {
-    if (batchStatuses === null) return [0, 1];
+    if (batchStatuses === null) return [0, 1]
     const currentProgress = Object.values(batchStatuses).filter(
-      (status) => status.status === "done"
-    ).length;
-    const totalProgress = Object.values(batchStatuses).length;
-    return [currentProgress, totalProgress];
-  }, [batchStatuses]);
+      (status) => status.status === "done",
+    ).length
+    const totalProgress = Object.values(batchStatuses).length
+    return [currentProgress, totalProgress]
+  }, [batchStatuses])
 
-  const [showBatchTweetsModal, setShowBatchTweetsModal] = useState(false);
+  const [showBatchTweetsModal, setShowBatchTweetsModal] = useState(false)
 
-  if (!account) return <></>;
+  const handleRunQuery = (queryText: string) => {
+    submit(filteredTweetsToAnalyse, queryText, rangeSelectionType, {
+      startDate,
+      endDate,
+    })
+  }
+
+  const sharedActionButtonStyle: CSSProperties = {
+    padding: "12px 16px",
+    background: "#f8f9fa",
+    color: "#007bff",
+    border: "1px solid #007bff",
+    borderRadius: "6px",
+    fontSize: "16px",
+    fontWeight: "bold",
+    cursor: isProcessing ? "not-allowed" : "pointer",
+    boxShadow: "0 2px 6px rgba(0,0,0,0.04)",
+    transition: "background 0.2s, color 0.2s",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    textAlign: "center",
+    minHeight: "52px",
+    opacity: isProcessing ? 0.6 : 1,
+  }
+
+  if (!account) return <></>
 
   return (
     <div
@@ -80,9 +106,6 @@ export function RunQueries() {
     >
       <div
         style={{
-          display: "flex",
-          flexDirection: "row",
-          gap: "10px",
           marginTop: "24px",
         }}
       >
@@ -99,37 +122,10 @@ export function RunQueries() {
             borderRadius: "6px",
             border: "1px solid #ccc",
             resize: "vertical",
-            flex: 1,
             boxSizing: "border-box",
           }}
           placeholder="Type your query here..."
         />
-        <button
-          onClick={() => setExampleQueriesModalIsOpen(true)}
-          disabled={isProcessing}
-          style={{
-            padding: "0 18px",
-            background: "#f8f9fa",
-            color: "#007bff",
-            border: "1px solid #007bff",
-            borderRadius: "6px",
-            fontSize: "16px",
-            fontWeight: "bold",
-            cursor: "pointer",
-            boxShadow: "0 2px 6px rgba(0,0,0,0.04)",
-            transition: "background 0.2s, color 0.2s",
-            display: "flex",
-            alignItems: "center",
-          }}
-          onMouseOver={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.background = "#e2e6ea";
-          }}
-          onMouseOut={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.background = "#f8f9fa";
-          }}
-        >
-          Browse Examples
-        </button>
       </div>
       {/* Checkboxes for includeReplies and includeRetweets */}
       <div style={{ display: "flex", gap: "24px" }}>
@@ -168,9 +164,9 @@ export function RunQueries() {
             checked={rangeSelectionType === "whole-archive"}
             onChange={(e) => {
               if (e.target.checked) {
-                setRangeSelectionType("whole-archive");
-                setStartDate("");
-                setEndDate("");
+                setRangeSelectionType("whole-archive")
+                setStartDate("")
+                setEndDate("")
               }
             }}
             style={{ accentColor: "#007bff", marginTop: "2px" }}
@@ -192,7 +188,7 @@ export function RunQueries() {
             name="archiveMode"
             checked={rangeSelectionType === "date-range"}
             onChange={(e) => {
-              if (e.target.checked) setRangeSelectionType("date-range");
+              if (e.target.checked) setRangeSelectionType("date-range")
             }}
             style={{ accentColor: "#007bff", marginTop: "2px" }}
           />
@@ -212,9 +208,9 @@ export function RunQueries() {
             checked={rangeSelectionType === "random-sample"}
             onChange={(e) => {
               if (e.target.checked) {
-                setRangeSelectionType("random-sample");
-                setStartDate("");
-                setEndDate("");
+                setRangeSelectionType("random-sample")
+                setStartDate("")
+                setEndDate("")
               }
             }}
             style={{ marginTop: "2px" }}
@@ -228,20 +224,17 @@ export function RunQueries() {
           startDate={startDate}
           endDate={endDate}
           onRangeSelect={(newStartDate, newEndDate) => {
-            setStartDate(newStartDate);
-            setEndDate(newEndDate);
+            setStartDate(newStartDate)
+            setEndDate(newEndDate)
           }}
         />
       )}
       <div>
         <RunQueryButton
           disabled={isProcessing}
-          onClick={() =>
-            submit(filteredTweetsToAnalyse, selectedQuery, rangeSelectionType, {
-              startDate,
-              endDate,
-            })
-          }
+          onClick={() => {
+            handleRunQuery(selectedQuery)
+          }}
         />
       </div>
 
@@ -286,13 +279,13 @@ export function RunQueries() {
                   transition: "all 0.2s ease",
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = "#e7f6e7";
+                  e.currentTarget.style.background = "#e7f6e7"
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = "#fff";
+                  e.currentTarget.style.background = "#fff"
                 }}
                 onClick={() => {
-                  setShowBatchTweetsModal(true);
+                  setShowBatchTweetsModal(true)
                 }}
               >
                 Show Evidence
@@ -309,15 +302,67 @@ export function RunQueries() {
           </ResultsBox>
         </>
       )}
+      <div
+        style={{
+          marginTop: "32px",
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+          gap: "12px",
+          alignItems: "stretch",
+        }}
+      >
+        {FEATURED_QUERIES.map((baseQuery) => {
+          const query = replaceAccountName(baseQuery, account.username)
+          return (
+            <button
+              type="button"
+              key={baseQuery}
+              disabled={isProcessing}
+              style={sharedActionButtonStyle}
+              onClick={() => {
+                if (isProcessing) return
+                setSelectedQuery(query)
+              }}
+              onMouseEnter={(e) => {
+                if (isProcessing) return
+                e.currentTarget.style.background = "#e2e6ea"
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "#f8f9fa"
+              }}
+            >
+              {query}
+            </button>
+          )
+        })}
+        <button
+          type="button"
+          disabled={isProcessing}
+          style={sharedActionButtonStyle}
+          onClick={() => {
+            if (isProcessing) return
+            setExampleQueriesModalIsOpen(true)
+          }}
+          onMouseEnter={(e) => {
+            if (isProcessing) return
+            e.currentTarget.style.background = "#e2e6ea"
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "#f8f9fa"
+          }}
+        >
+          Browse more examples...
+        </button>
+      </div>
       <ExampleQueriesModal
         queries={EXAMPLE_QUERIES}
         isOpen={exampleQueriesModalIsOpen}
         onClose={() => {
-          setExampleQueriesModalIsOpen(false);
+          setExampleQueriesModalIsOpen(false)
         }}
         onSelectQuery={(query) => {
-          setSelectedQuery(query);
-          setExampleQueriesModalIsOpen(false);
+          setSelectedQuery(query)
+          setExampleQueriesModalIsOpen(false)
         }}
       />
       <BatchTweetsModal
@@ -326,5 +371,5 @@ export function RunQueries() {
         onClose={() => setShowBatchTweetsModal(false)}
       />
     </div>
-  );
+  )
 }
