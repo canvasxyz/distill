@@ -30,7 +30,7 @@ export function Sidebar() {
   return (
     <div
       style={{
-        width: "250px",
+        width: "260px",
         borderRight: "1px solid #ccc",
         paddingLeft: "10px",
         paddingRight: "10px",
