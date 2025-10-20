@@ -2,6 +2,7 @@ import type { ChatCompletionMessageParam } from "openai/resources";
 import type { Account, Tweet } from "../../types";
 import OpenAI from "openai";
 import { pickSampleNoRepeats } from "../../utils";
+import { QUERY_BATCH_SIZE } from "../../constants";
 
 export type Query = { prompt: string; systemPrompt?: string };
 
@@ -129,8 +130,7 @@ export const selectSubset = (
       return tweetDate >= startDateTime && tweetDate < endDateTime;
     });
   } else {
-    const sampleSize = 1000;
     // random sample
-    return pickSampleNoRepeats(tweets, sampleSize);
+    return pickSampleNoRepeats(tweets, QUERY_BATCH_SIZE);
   }
 };

@@ -1,4 +1,8 @@
-import { type RangeSelectionType, replaceAccountName } from "./ai_utils"
+import {
+  type RangeSelectionType,
+  replaceAccountName,
+  selectSubset,
+} from "./ai_utils"
 import { useMemo, useState, type CSSProperties } from "react"
 import { useStore } from "../../state/store"
 import { RunQueryButton } from "./RunQueryButton"
@@ -15,6 +19,7 @@ import remarkGfm from "remark-gfm"
 import { useTweetCounts } from "./useTweetCounts"
 import { TweetFrequencyGraph } from "../../components/TweetFrequencyGraph"
 import { BatchTweetsModal } from "./BatchTweetsModal"
+import { QUERY_BATCH_SIZE } from "../../constants"
 
 export function RunQueries() {
   const [exampleQueriesModalIsOpen, setExampleQueriesModalIsOpen] =
@@ -73,6 +78,31 @@ export function RunQueries() {
       endDate,
     })
   }
+
+  const tweetsSelectedForQuery = useMemo(() => {
+    if (
+      rangeSelectionType === "date-range" &&
+      (!startDate || !endDate)
+    ) {
+      return []
+    }
+    return selectSubset(filteredTweetsToAnalyse, rangeSelectionType, {
+      startDate,
+      endDate,
+    })
+  }, [
+    filteredTweetsToAnalyse,
+    rangeSelectionType,
+    startDate,
+    endDate,
+  ])
+
+  const batchCount = useMemo(() => {
+    if (tweetsSelectedForQuery.length === 0) return 0
+    return Math.ceil(tweetsSelectedForQuery.length / QUERY_BATCH_SIZE)
+  }, [tweetsSelectedForQuery])
+
+  const shouldShowBatchCount = batchCount > 1
 
   const featuredQueryCardStyle: CSSProperties = {
     padding: "16px",
@@ -250,13 +280,30 @@ export function RunQueries() {
           }}
         />
       )}
-      <div>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "flex-start",
+          gap: "4px",
+        }}
+      >
         <RunQueryButton
           disabled={isProcessing}
           onClick={() => {
             handleRunQuery(selectedQuery)
           }}
         />
+        {shouldShowBatchCount && (
+          <span
+            style={{
+              fontSize: "13px",
+              color: "#6c757d",
+            }}
+          >
+            {batchCount} batches
+          </span>
+        )}
       </div>
 
       {isProcessing && currentRunningQuery && (

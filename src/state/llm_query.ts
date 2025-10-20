@@ -15,6 +15,7 @@ import type { Tweet } from "../types";
 import { getBatches } from "../utils";
 import { v7 as uuidv7 } from "uuid";
 import { db } from "../db";
+import { QUERY_BATCH_SIZE } from "../constants";
 
 export type LlmQuerySlice = {
   queryResult: QueryResult | null;
@@ -65,8 +66,10 @@ export const createLlmQuerySlice: StateCreator<
       }
     );
 
-    const batchSize = 1000;
-    const batches = getBatches(filteredTweetsSubsetToAnalyse, batchSize);
+    const batches = getBatches(
+      filteredTweetsSubsetToAnalyse,
+      QUERY_BATCH_SIZE,
+    );
 
     const queuedTime = performance.now();
     set({
