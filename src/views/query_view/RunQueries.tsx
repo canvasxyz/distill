@@ -3,7 +3,7 @@ import {
   replaceAccountName,
   selectSubset,
 } from "./ai_utils"
-import { useMemo, useState, type CSSProperties } from "react"
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react"
 import { useStore } from "../../state/store"
 import { RunQueryButton } from "./RunQueryButton"
 import {
@@ -73,6 +73,7 @@ export function RunQueries() {
   const [showBatchTweetsModal, setShowBatchTweetsModal] = useState(false)
 
   const handleRunQuery = (queryText: string) => {
+    if (queryText === "" || queryText.trim() === "") return
     submit(filteredTweetsToAnalyse, queryText, rangeSelectionType, {
       startDate,
       endDate,
@@ -80,22 +81,14 @@ export function RunQueries() {
   }
 
   const tweetsSelectedForQuery = useMemo(() => {
-    if (
-      rangeSelectionType === "date-range" &&
-      (!startDate || !endDate)
-    ) {
+    if (rangeSelectionType === "date-range" && (!startDate || !endDate)) {
       return []
     }
     return selectSubset(filteredTweetsToAnalyse, rangeSelectionType, {
       startDate,
       endDate,
     })
-  }, [
-    filteredTweetsToAnalyse,
-    rangeSelectionType,
-    startDate,
-    endDate,
-  ])
+  }, [filteredTweetsToAnalyse, rangeSelectionType, startDate, endDate])
 
   const batchCount = useMemo(() => {
     if (tweetsSelectedForQuery.length === 0) return 0
@@ -126,13 +119,12 @@ export function RunQueries() {
   }
 
   const browseMoreButtonStyle: CSSProperties = {
-    padding: "12px 16px",
+    padding: "12px 20px",
     background: "#f8f9fa",
-    color: "#007bff",
+    color: "#0056B3",
     border: "1px solid #007bff",
     borderRadius: "6px",
     fontSize: "16px",
-    fontWeight: "bold",
     cursor: isProcessing ? "not-allowed" : "pointer",
     boxShadow: "0 2px 6px rgba(0,0,0,0.04)",
     transition: "background 0.2s, color 0.2s",
@@ -143,6 +135,14 @@ export function RunQueries() {
     minHeight: "52px",
     opacity: isProcessing ? 0.6 : 1,
   }
+
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null)
+
+  useEffect(() => {
+    if (!account) return
+    if (!selectedQuery) return
+    textareaRef.current?.focus()
+  }, [account, selectedQuery])
 
   if (!account) return <></>
 
@@ -161,9 +161,17 @@ export function RunQueries() {
         }}
       >
         <textarea
+          ref={textareaRef}
           value={selectedQuery}
           disabled={isProcessing}
           onChange={(e) => setSelectedQuery(e.target.value)}
+          onKeyDown={(event) => {
+            if (event.key !== "Enter") return
+            if (!event.metaKey) return
+            event.preventDefault()
+            if (isProcessing) return
+            handleRunQuery(selectedQuery)
+          }}
           rows={3}
           style={{
             width: "100%",
@@ -178,8 +186,14 @@ export function RunQueries() {
           placeholder="Type your query here..."
         />
       </div>
-      {/* Checkboxes for includeReplies and includeRetweets */}
-      <div style={{ display: "flex", gap: "24px" }}>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "row",
+          alignItems: "center",
+          gap: "18px",
+        }}
+      >
         <label style={{ display: "flex", alignItems: "center", gap: "6px" }}>
           <input
             type="checkbox"
@@ -198,15 +212,6 @@ export function RunQueries() {
           />
           Include retweets
         </label>
-      </div>
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "row",
-          alignItems: "center",
-          gap: "18px",
-        }}
-      >
         <label style={{ display: "flex", alignItems: "center", gap: "6px" }}>
           <input
             type="radio"
@@ -243,7 +248,7 @@ export function RunQueries() {
             }}
             style={{ accentColor: "#007bff", marginTop: "2px" }}
           />
-          Select date range
+          Select Range
         </label>
         <label
           style={{
@@ -283,9 +288,8 @@ export function RunQueries() {
       <div
         style={{
           display: "flex",
-          flexDirection: "column",
           alignItems: "flex-start",
-          gap: "4px",
+          gap: "12px",
         }}
       >
         <RunQueryButton
@@ -293,12 +297,14 @@ export function RunQueries() {
           onClick={() => {
             handleRunQuery(selectedQuery)
           }}
+          showShortcut
         />
         {shouldShowBatchCount && (
           <span
             style={{
               fontSize: "13px",
               color: "#6c757d",
+              marginTop: "7px",
             }}
           >
             {batchCount} batches
@@ -391,12 +397,14 @@ export function RunQueries() {
               onClick={() => {
                 if (isProcessing) return
                 setSelectedQuery(query)
+                textareaRef.current?.focus()
               }}
               onKeyDown={(e) => {
                 if (isProcessing) return
                 if (e.key === "Enter" || e.key === " ") {
                   e.preventDefault()
                   setSelectedQuery(query)
+                  textareaRef.current?.focus()
                 }
               }}
               onMouseEnter={(e) => {
@@ -432,6 +440,7 @@ export function RunQueries() {
                     if (isProcessing) return
                     setSelectedQuery(query)
                     handleRunQuery(query)
+                    textareaRef.current?.focus()
                   }}
                 />
               </div>

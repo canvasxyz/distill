@@ -3,13 +3,7 @@ import { ShowIfTweetsLoaded } from "../ShowIfTweetsLoaded"
 import { RunQueries } from "./RunQueries"
 import { PastQueries } from "./PastQueries"
 
-type HeadingLevel = "h1" | "h2" | "h3"
-
-export function ModelQuerySection({
-  headingLevel = "h2",
-}: {
-  headingLevel?: HeadingLevel
-} = {}) {
+export function ModelQuerySection() {
   const TABS = [
     { label: "Run Query", key: "run-queries" },
     { label: "Past Queries", key: "past-queries" },
@@ -79,7 +73,7 @@ export function ModelQueryView() {
             maxWidth: "1200px",
           }}
         >
-          <ModelQuerySection headingLevel="h1" />
+          <ModelQuerySection />
         </div>
       </div>
     </ShowIfTweetsLoaded>

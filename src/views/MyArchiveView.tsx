@@ -236,7 +236,7 @@ export function MyArchiveView() {
           <>
             <h1>My Archive</h1>
             <ArchiveSummaryCard />
-            <ModelQuerySection headingLevel="h2" />
+            <ModelQuerySection />
           </>
         ) : (
           <UploadPanel />
