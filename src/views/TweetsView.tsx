@@ -61,13 +61,11 @@ export function TweetsView({
       (tweetId) => checkedTweets[tweetId]
     );
     if (newStatus === "included") {
-      for (const tweetId of checkedTweetIds) {
-        await db.excludedTweetIds.delete(tweetId);
-      }
+      await db.excludedTweetIds.bulkDelete(checkedTweetIds);
     } else {
-      for (const tweetId of checkedTweetIds) {
-        await db.excludedTweetIds.add({ id: tweetId }, tweetId);
-      }
+      await db.excludedTweetIds.bulkAdd(
+        checkedTweetIds.map((tweetId) => ({ id: tweetId }))
+      );
     }
     setSelectAllChecked(false);
     setCheckedTweets({});
