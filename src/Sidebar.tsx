@@ -24,6 +24,7 @@ export function Sidebar() {
     includedTweets,
     excludedTweets,
     tweetsByFilterName,
+    downloadArchive,
   } = useStore();
 
   const totalNumTweets = (allTweets || []).length;
@@ -44,45 +45,6 @@ export function Sidebar() {
           Model Query ✨
         </LinkButton>
 
-        {analysisInProgress ? (
-          <>
-            <div style={{ width: "100%", margin: "10px 0" }}>
-              <div
-                style={{ display: "flex", alignItems: "center", gap: "10px" }}
-              >
-                <div
-                  style={{
-                    flex: 1,
-                    height: "16px",
-                    background: "#eee",
-                    borderRadius: "8px",
-                    overflow: "hidden",
-                    position: "relative",
-                    minWidth: "60px",
-                  }}
-                >
-                  <div
-                    style={{
-                      width: `${totalNumTweets ? (numTweetsAnalyzed / totalNumTweets) * 100 : 0}%`,
-                      height: "100%",
-                      background: "#4caf50",
-                      transition: "width 0.3s",
-                    }}
-                  />
-                </div>
-                <span style={{ fontSize: "13px", minWidth: "90px" }}>
-                  {numTweetsAnalyzed}/{totalNumTweets} analyzed
-                </span>
-              </div>
-            </div>
-          </>
-        ) : (
-          <AnalyzeTweetsButton
-            canAnalyse={!!allTweets}
-            onClick={() => analyzeTweets()}
-          />
-        )}
-
         <HorizontalRule />
         <LinkButton to="/all-tweets" disabled={!allTweets}>
           All tweets {allTweets && `(${allTweets.length})`}
@@ -93,7 +55,63 @@ export function Sidebar() {
         <LinkButton to="/excluded-tweets" disabled={!allTweets}>
           Excluded 👎 {excludedTweets && `(${excludedTweets.length})`}
         </LinkButton>
+        <button
+          style={{
+            borderRadius: "5px",
+            padding: "8px 16px",
+            margin: "4px 0 12px",
+            backgroundColor: "#eee",
+            border: "1px solid #ccc",
+            fontSize: "16px",
+            cursor: allTweets ? "pointer" : "not-allowed",
+            width: "100%",
+            textAlign: "center",
+            opacity: allTweets ? 1 : 0.6,
+          }}
+          title="Download"
+          onClick={() => {
+            if (!allTweets) return;
+            downloadArchive();
+          }}
+          disabled={!allTweets}
+        >
+          Download Tweets
+        </button>
         <HorizontalRule />
+        {analysisInProgress ? (
+          <div style={{ width: "100%", margin: "10px 0" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <div
+                style={{
+                  flex: 1,
+                  height: "16px",
+                  background: "#eee",
+                  borderRadius: "8px",
+                  overflow: "hidden",
+                  position: "relative",
+                  minWidth: "60px",
+                }}
+              >
+                <div
+                  style={{
+                    width: `${totalNumTweets ? (numTweetsAnalyzed / totalNumTweets) * 100 : 0}%`,
+                    height: "100%",
+                    background: "#4caf50",
+                    transition: "width 0.3s",
+                  }}
+                />
+              </div>
+              <span style={{ fontSize: "13px", minWidth: "90px" }}>
+                {numTweetsAnalyzed}/{totalNumTweets} analyzed
+              </span>
+            </div>
+          </div>
+        ) : (
+          <AnalyzeTweetsButton
+            canAnalyse={!!allTweets}
+            onClick={() => analyzeTweets()}
+          />
+        )}
         {filters.map((filter, index) => (
           <LinkButton
             key={index}

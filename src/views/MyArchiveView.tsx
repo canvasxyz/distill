@@ -10,7 +10,6 @@ function MyArchiveViewInner() {
     excludedTweets,
     clearDatabase,
     profile,
-    downloadArchive,
   } = useStore();
 
   // check if the profile picture is a broken link
@@ -327,22 +326,6 @@ function MyArchiveViewInner() {
             {excludedTweets ? excludedTweets.length : 0}
           </a>
         </div>
-        <button
-          style={{
-            borderRadius: "5px",
-            padding: "8px 16px",
-            margin: "10px 0",
-            backgroundColor: "#eee",
-            border: "1px solid #ccc",
-            fontSize: "16px",
-            cursor: "pointer",
-            width: "fit-content",
-          }}
-          title="Download"
-          onClick={() => downloadArchive()}
-        >
-          Download Tweets
-        </button>
         <button
           style={{
             borderRadius: "5px",
