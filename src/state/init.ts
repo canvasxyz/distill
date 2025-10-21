@@ -100,15 +100,13 @@ export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
         break;
       }
     }
-    const tweets = allTweets;
+    const tweets = (allTweets || []).map((tweet) => ({
+      ...tweet,
+      id: tweet.tweet_id,
+    })) as Tweet[];
 
     await db.tweets.clear();
-    await db.tweets.bulkAdd(
-      (tweets || []).map((tweet) => ({
-        ...tweet,
-        id: tweet.tweet_id,
-      })) as Tweet[]
-    );
+    await db.tweets.bulkAdd(tweets);
 
     const { data: profileData } = await supabase
       .schema("public")
@@ -159,6 +157,19 @@ export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
     }));
 
     await db.follower.bulkAdd(follower);
+
+    // apply filters
+    const filterMatchesToAdd = [];
+    for (const tweet of tweets || []) {
+      for (const filter of filters) {
+        const filterMatch = filter.evaluateFilter(tweet);
+
+        if (filterMatch) {
+          filterMatchesToAdd.push(filterMatch);
+        }
+      }
+    }
+    await db.filterTweetIds.bulkAdd(filterMatchesToAdd);
 
     set({ viewingMyArchive: false, dbHasTweets: true });
   },
