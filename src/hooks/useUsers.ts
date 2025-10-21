@@ -40,7 +40,7 @@ export const useCommunityArchiveAccounts = () => {
       console.log(data);
       // field names in the community archive are in snake case, while the twitter archive uses camel case
       setAccounts(
-        data ? (mapKeysDeep(data, snakeToCamelCase) as Result) : null
+        data ? (mapKeysDeep(data, snakeToCamelCase) as Result) : null,
       );
     }
     getAccounts();

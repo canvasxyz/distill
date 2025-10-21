@@ -10,11 +10,11 @@ export const includedTweetsObservable = async () => {
   const excludedTweetIds = await db.excludedTweetIds.toArray();
 
   const excludedTweetIdsSet = new Set(
-    (excludedTweetIds || []).map((entry) => entry.id)
+    (excludedTweetIds || []).map((entry) => entry.id),
   );
 
   const includedTweets = (allTweets || []).filter(
-    (tweet) => !excludedTweetIdsSet.has(tweet.id)
+    (tweet) => !excludedTweetIdsSet.has(tweet.id),
   );
   return includedTweets;
 };
@@ -24,11 +24,11 @@ export const excludedTweetsObservable = async () => {
   const excludedTweetIds = await db.excludedTweetIds.toArray();
 
   const excludedTweetIdsSet = new Set(
-    (excludedTweetIds || []).map((entry) => entry.id)
+    (excludedTweetIds || []).map((entry) => entry.id),
   );
 
   const includedTweets = (allTweets || []).filter((tweet) =>
-    excludedTweetIdsSet.has(tweet.id)
+    excludedTweetIdsSet.has(tweet.id),
   );
   return includedTweets;
 };

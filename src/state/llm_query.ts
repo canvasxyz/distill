@@ -28,7 +28,7 @@ export type LlmQuerySlice = {
     filteredTweetsToAnalyse: Tweet[],
     query: string,
     rangeSelectionType: RangeSelectionType,
-    rangeArgs: { startDate: string; endDate: string }
+    rangeArgs: { startDate: string; endDate: string },
   ) => void;
   updateBatchStatus: (batchId: number, status: BatchStatus) => void;
 };
@@ -53,7 +53,7 @@ export const createLlmQuerySlice: StateCreator<
     filteredTweetsToAnalyse: Tweet[],
     query: string,
     rangeSelectionType,
-    { startDate, endDate }
+    { startDate, endDate },
   ) => {
     const queryId = uuidv7();
 
@@ -63,7 +63,7 @@ export const createLlmQuerySlice: StateCreator<
       {
         startDate,
         endDate,
-      }
+      },
     );
 
     const batches = getBatches(filteredTweetsSubsetToAnalyse, QUERY_BATCH_SIZE);
@@ -71,7 +71,7 @@ export const createLlmQuerySlice: StateCreator<
     const queuedTime = performance.now();
     set({
       batchStatuses: Object.fromEntries(
-        batches.map((_tweets, idx) => [idx, { status: "queued" as const }])
+        batches.map((_tweets, idx) => [idx, { status: "queued" as const }]),
       ),
       startedProcessingTime: queuedTime,
       currentRunningQuery: query,
@@ -102,7 +102,7 @@ export const createLlmQuerySlice: StateCreator<
             queryResult = await submitQuery(
               batch,
               { systemPrompt: batchSystemPrompt, prompt: query },
-              account
+              account,
             );
           } catch (e) {
             console.log(e);
@@ -133,14 +133,14 @@ export const createLlmQuerySlice: StateCreator<
         }
 
         const collectedTweetTexts = Object.values(
-          batchStatuses as unknown as { result: string }[]
+          batchStatuses as unknown as { result: string }[],
         )
           .map((batchStatus) => batchStatus.result)
           .flat()
           .map((tweetText) => ({ full_text: tweetText }));
 
         console.log(
-          `submitting final query with ${collectedTweetTexts.length} tweets`
+          `submitting final query with ${collectedTweetTexts.length} tweets`,
         );
 
         let finalQueryRetries = 3;
@@ -153,7 +153,7 @@ export const createLlmQuerySlice: StateCreator<
             finalQueryResult = await submitQuery(
               collectedTweetTexts,
               { systemPrompt: finalSystemPrompt, prompt: query },
-              account
+              account,
             );
           } catch (e) {
             console.log(e);
@@ -164,7 +164,7 @@ export const createLlmQuerySlice: StateCreator<
 
         if (!finalQueryResult) {
           throw new Error(
-            `Final query failed after ${finalQueryRetries} retries!`
+            `Final query failed after ${finalQueryRetries} retries!`,
           );
         }
 

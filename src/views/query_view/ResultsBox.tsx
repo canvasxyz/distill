@@ -1,17 +1,17 @@
-import { useState, type ReactNode } from "react"
+import { useState, type ReactNode } from "react";
 
 export const CopyButton = ({ text }: { text: string }) => {
-  const [copied, setCopied] = useState(false)
+  const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(text)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      console.error("Failed to copy text: ", err)
+      console.error("Failed to copy text: ", err);
     }
-  }
+  };
 
   return (
     <button
@@ -28,29 +28,29 @@ export const CopyButton = ({ text }: { text: string }) => {
       }}
       onMouseEnter={(e) => {
         if (!copied) {
-          e.currentTarget.style.background = "#f0f0f0"
+          e.currentTarget.style.background = "#f0f0f0";
         }
       }}
       onMouseLeave={(e) => {
         if (!copied) {
-          e.currentTarget.style.background = "#fff"
+          e.currentTarget.style.background = "#fff";
         }
       }}
     >
       {copied ? "Copied!" : "Copy"}
     </button>
-  )
-}
+  );
+};
 
 export const ProgressLabel = ({
   currentProgress,
   totalProgress,
 }: {
-  currentProgress: number
-  totalProgress: number
+  currentProgress: number;
+  totalProgress: number;
 }) => {
   const allBatchesComplete =
-    totalProgress > 0 && currentProgress >= totalProgress
+    totalProgress > 0 && currentProgress >= totalProgress;
 
   return (
     <div
@@ -70,15 +70,15 @@ export const ProgressLabel = ({
         {currentProgress} / {totalProgress}
       </span>
     </div>
-  )
-}
+  );
+};
 
 export function ProgressBar({
   currentProgress,
   totalProgress,
 }: {
-  currentProgress: number
-  totalProgress: number
+  currentProgress: number;
+  totalProgress: number;
 }) {
   return (
     <>
@@ -101,7 +101,7 @@ export function ProgressBar({
         />
       </div>
     </>
-  )
+  );
 }
 
 export function ResultsBox({ children }: { children: ReactNode }) {
@@ -118,5 +118,5 @@ export function ResultsBox({ children }: { children: ReactNode }) {
     >
       {children}
     </div>
-  )
+  );
 }

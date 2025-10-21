@@ -21,7 +21,7 @@ export function SelectedTweetCount({
         const entryDateObj = new Date(entry.date);
         return entryDateObj >= startDateObj && entryDateObj <= endDateObj;
       })
-      .map((entry) => entry.count)
+      .map((entry) => entry.count),
   );
 
   if (totalTweets === 0) return null;
@@ -92,7 +92,7 @@ export function TweetFrequencyGraph({
   const endDateLastDayOfMonth = new Date(
     endDateObj.getFullYear(),
     endDateObj.getMonth() + 1,
-    0
+    0,
   );
 
   return (

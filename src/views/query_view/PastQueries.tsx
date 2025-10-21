@@ -67,7 +67,7 @@ function PastQueryItem({ query }: { query: QueryResult }) {
         >
           {query.rangeSelectionType === "date-range"
             ? `${formatDateTime(query.startDate)} - ${formatDateTime(
-                query.endDate
+                query.endDate,
               )}`
             : query.rangeSelectionType.replace("-", " ")}
         </span>
@@ -126,7 +126,7 @@ function PastQueryItem({ query }: { query: QueryResult }) {
               <span style={{ color: "#baac4e", fontWeight: 500 }}>Range:</span>{" "}
               {query.rangeSelectionType === "date-range"
                 ? `${formatDateTime(query.startDate)} - ${formatDateTime(
-                    query.endDate
+                    query.endDate,
                   )}`
                 : query.rangeSelectionType.replace("-", " ")}
             </span>

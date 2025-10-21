@@ -103,7 +103,7 @@ export function ExampleQueriesModal({
             {queries.map((query, idx) => {
               const queryWithAccountName = replaceAccountName(
                 query,
-                account?.username || ""
+                account?.username || "",
               );
               return (
                 <li

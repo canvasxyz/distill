@@ -47,7 +47,7 @@ export function replaceAccountName(text: string, accountName: string) {
 export function makePromptMessages(
   tweetsSample: { full_text: string }[],
   query: Query,
-  account: Account
+  account: Account,
 ) {
   return [
     {
@@ -71,7 +71,7 @@ export const serverUrl = "https://tweet-analysis-worker.bob-wbb.workers.dev";
 export async function submitQuery(
   tweetsSample: { full_text: string }[],
   query: Query,
-  account: Account
+  account: Account,
 ) {
   const startTime = performance.now();
   const model = "Qwen/Qwen3-Next-80B-A3B-Instruct";
@@ -107,7 +107,7 @@ export const extractTweetTexts = (queryResult: string) => {
     m
       .replace(/^<Tweet>/, "")
       .replace(/<\/Tweet>$/, "")
-      .trim()
+      .trim(),
   );
   return tweetTexts;
 };
@@ -115,7 +115,7 @@ export const extractTweetTexts = (queryResult: string) => {
 export const selectSubset = (
   tweets: Tweet[],
   rangeSelectionType: RangeSelectionType,
-  { startDate, endDate }: { startDate: string; endDate: string }
+  { startDate, endDate }: { startDate: string; endDate: string },
 ) => {
   if (rangeSelectionType === "whole-archive") {
     return tweets;

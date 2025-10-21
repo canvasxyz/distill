@@ -14,7 +14,7 @@ function FilteredTweetsViewInner() {
     (tweet) =>
       (filterMatchesByTweetId[tweet.id] || [])
         .map((result) => result.filterName)
-        .indexOf(filterName) !== -1
+        .indexOf(filterName) !== -1,
   );
 
   const {

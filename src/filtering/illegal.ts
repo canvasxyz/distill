@@ -14,5 +14,5 @@ export const illegalWords = [
 ];
 
 export const illegalWordsRegExp = new RegExp(
-  illegalWords.map((word) => `\\b${word}\\b`).join("|")
+  illegalWords.map((word) => `\\b${word}\\b`).join("|"),
 );

@@ -58,13 +58,13 @@ export function TweetsView({
 
   const handleIncludeExclude = async (newStatus: "included" | "excluded") => {
     const checkedTweetIds = Object.keys(checkedTweets).filter(
-      (tweetId) => checkedTweets[tweetId]
+      (tweetId) => checkedTweets[tweetId],
     );
     if (newStatus === "included") {
       await db.excludedTweetIds.bulkDelete(checkedTweetIds);
     } else {
       await db.excludedTweetIds.bulkAdd(
-        checkedTweetIds.map((tweetId) => ({ id: tweetId }))
+        checkedTweetIds.map((tweetId) => ({ id: tweetId })),
       );
     }
     setSelectAllChecked(false);

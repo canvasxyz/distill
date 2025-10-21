@@ -10,7 +10,7 @@ import { unzip } from "unzipit";
 import { parseTwitterArchiveFile } from "./twitterArchiveParser";
 
 export const processTwitterArchive = async (
-  file: File
+  file: File,
 ): Promise<{
   account: Account;
   profile: ProfileWithId;
@@ -44,7 +44,7 @@ export const processTwitterArchive = async (
 
     if (fileNamesToExtract.includes(lastEntryNamePart)) {
       const content = new TextDecoder().decode(
-        new Uint8Array(await entry.arrayBuffer())
+        new Uint8Array(await entry.arrayBuffer()),
       );
 
       const parsedData = parseTwitterArchiveFile(content);
@@ -64,12 +64,12 @@ export const processTwitterArchive = async (
       } else if (lastEntryNamePart === "following.js") {
         // add following
         following = (parsedData as { following: Following }[]).map(
-          (entry) => entry.following
+          (entry) => entry.following,
         );
       } else if (lastEntryNamePart === "follower.js") {
         // add follower
         follower = (parsedData as { follower: Follower }[]).map(
-          (entry) => entry.follower
+          (entry) => entry.follower,
         );
       }
     }

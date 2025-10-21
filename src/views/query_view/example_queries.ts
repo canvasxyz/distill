@@ -43,7 +43,7 @@ export const EXAMPLE_QUERIES = [
   "If my tweets were chapters of a memoir, what would the chapters be called?",
   "What’s the “thesis statement” of my Twitter presence — the message beneath everything?",
   "Which corner of the internet would claim me as one of their own?",
-]
+];
 
 export const FEATURED_QUERIES = [
   "What kinds of topics does {account} post about?",
@@ -51,4 +51,4 @@ export const FEATURED_QUERIES = [
   "Based on these tweets, what MBTI is {account}? If you're unsure, list multiple options.",
   "What seems to drive {account} to tweet, e.g. attention, reflection, humor, advocacy, curiosity?",
   "What were the main eras or turning points in {account}'s Twitter life?",
-]
+];

@@ -1,15 +1,15 @@
 const isMacPlatform =
   typeof navigator !== "undefined" &&
-  /macintosh|mac os x/i.test(navigator.userAgent)
+  /macintosh|mac os x/i.test(navigator.userAgent);
 
 export function RunQueryButton({
   onClick,
   disabled = false,
   showShortcut = false,
 }: {
-  onClick: () => void
-  disabled?: boolean
-  showShortcut?: boolean
+  onClick: () => void;
+  disabled?: boolean;
+  showShortcut?: boolean;
 }) {
   return (
     <button
@@ -43,5 +43,5 @@ export function RunQueryButton({
         </span>
       )}
     </button>
-  )
+  );
 }

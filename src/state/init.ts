@@ -36,7 +36,7 @@ export type InitSlice = {
 
 export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
   set,
-  get
+  get,
 ) => ({
   init: async () => {
     // before anything else is displayed we need to check that the database has tweets in it
@@ -268,7 +268,7 @@ export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
 
     // Filter tweets using the excludedTweetIdsSet
     const filteredTweets = tweets.filter(
-      (tweet) => !excludedTweetIdsSet.has(tweet.id)
+      (tweet) => !excludedTweetIdsSet.has(tweet.id),
     );
 
     const zipBlob = zipSync({
@@ -277,36 +277,36 @@ export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
           `window.YTD.account.part0 = ${JSON.stringify(
             accounts.map((account) => ({ account })),
             null,
-            2
-          )}`
+            2,
+          )}`,
         ),
         "follower.js": strToU8(
           `window.YTD.follower.part0 = ${JSON.stringify(
             follower.map((f) => ({ follower: f })),
             null,
-            2
-          )}`
+            2,
+          )}`,
         ),
         "following.js": strToU8(
           `window.YTD.following.part0 = ${JSON.stringify(
             following.map((f) => ({ following: f })),
             null,
-            2
-          )}`
+            2,
+          )}`,
         ),
         "profile.js": strToU8(
           `window.YTD.profile.part0 = ${JSON.stringify(
             profiles.map((p) => ({ profile: p })),
             null,
-            2
-          )}`
+            2,
+          )}`,
         ),
         "tweets.js": strToU8(
           `window.YTD.tweets.part0 = ${JSON.stringify(
             filteredTweets.map((ft) => ({ tweet: ft })),
             null,
-            2
-          )}`
+            2,
+          )}`,
         ),
       },
     });

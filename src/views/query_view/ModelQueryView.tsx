@@ -1,14 +1,14 @@
-import { useState } from "react"
-import { ShowIfTweetsLoaded } from "../ShowIfTweetsLoaded"
-import { RunQueries } from "./RunQueries"
-import { PastQueries } from "./PastQueries"
+import { useState } from "react";
+import { ShowIfTweetsLoaded } from "../ShowIfTweetsLoaded";
+import { RunQueries } from "./RunQueries";
+import { PastQueries } from "./PastQueries";
 
 export function ModelQuerySection() {
   const TABS = [
     { label: "Run Query", key: "run-queries" },
     { label: "Past Queries", key: "past-queries" },
-  ]
-  const [activeTab, setActiveTab] = useState(TABS[0].key)
+  ];
+  const [activeTab, setActiveTab] = useState(TABS[0].key);
 
   return (
     <section
@@ -55,7 +55,7 @@ export function ModelQuerySection() {
       {activeTab === "run-queries" && <RunQueries />}
       {activeTab === "past-queries" && <PastQueries />}
     </section>
-  )
+  );
 }
 
 export function ModelQueryView() {
@@ -77,5 +77,5 @@ export function ModelQueryView() {
         </div>
       </div>
     </ShowIfTweetsLoaded>
-  )
+  );
 }

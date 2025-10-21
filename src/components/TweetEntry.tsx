@@ -51,7 +51,7 @@ export function TweetEntry({
       // Overlap or adjacent, merge
       mergedRanges[mergedRanges.length - 1].end = Math.max(
         mergedRanges[mergedRanges.length - 1].end,
-        range.end
+        range.end,
       );
     } else {
       mergedRanges.push({ ...range });
@@ -66,7 +66,7 @@ export function TweetEntry({
       highlightedTweetParts.push(
         <span key={lastIndex + "-plain"}>
           {tweet.full_text.slice(lastIndex, start)}
-        </span>
+        </span>,
       );
     }
     highlightedTweetParts.push(
@@ -80,7 +80,7 @@ export function TweetEntry({
         }}
       >
         {tweet.full_text.slice(start, end)}
-      </span>
+      </span>,
     );
     lastIndex = end;
   }
@@ -88,7 +88,7 @@ export function TweetEntry({
     highlightedTweetParts.push(
       <span key={lastIndex + "-plain-end"}>
         {tweet.full_text.slice(lastIndex)}
-      </span>
+      </span>,
     );
   }
 

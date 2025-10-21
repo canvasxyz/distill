@@ -59,27 +59,27 @@ export const createSubscriptionSlice: StateCreator<
     });
 
     const includedTweetsSubscription = liveQuery(
-      includedTweetsObservable
+      includedTweetsObservable,
     ).subscribe({
       next: (newIncludedTweets) => set({ includedTweets: newIncludedTweets }),
       error: (error) => console.error(error),
     });
 
     const excludedTweetsSubscription = liveQuery(
-      excludedTweetsObservable
+      excludedTweetsObservable,
     ).subscribe({
       next: (newExcludedTweets) =>
         set({
           excludedTweets: newExcludedTweets,
           excludedTweetIdsSet: new Set(
-            newExcludedTweets.map((tweet) => tweet.id)
+            newExcludedTweets.map((tweet) => tweet.id),
           ),
         }),
       error: (error) => console.error(error),
     });
 
     const filterTweetsSubscription = liveQuery(
-      filterTweetsObservable
+      filterTweetsObservable,
     ).subscribe({
       next: ({ tweetsByFilterName, filterMatchesByTweetId }) =>
         set({ tweetsByFilterName, filterMatchesByTweetId }),
@@ -87,7 +87,7 @@ export const createSubscriptionSlice: StateCreator<
     });
 
     const queryResultsSubscription = liveQuery(
-      queryResultsObservable
+      queryResultsObservable,
     ).subscribe({
       next: (queryResults) => set({ queryResults }),
       error: (error) => console.error(error),

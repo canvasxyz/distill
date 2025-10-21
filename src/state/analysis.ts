@@ -30,12 +30,12 @@ export const createAnalysisSlice: StateCreator<
         try {
           const mistralClassification = await getClassification(
             tweet.full_text,
-            "mistralai/Mistral-Small-3.2-24B-Instruct-2506"
+            "mistralai/Mistral-Small-3.2-24B-Instruct-2506",
           );
 
           const qwenClassification = await getClassification(
             tweet.full_text,
-            "Qwen/Qwen3-30B-A3B"
+            "Qwen/Qwen3-30B-A3B",
           );
 
           for (const label of classificationLabels) {

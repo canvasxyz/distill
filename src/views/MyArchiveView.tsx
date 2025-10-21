@@ -1,50 +1,50 @@
-import { useEffect, useMemo, useState } from "react"
-import { useStore } from "../state/store"
-import { UploadPanel } from "./UploadView"
-import { ModelQuerySection } from "./query_view/ModelQueryView"
+import { useEffect, useMemo, useState } from "react";
+import { useStore } from "../state/store";
+import { UploadPanel } from "./UploadView";
+import { ModelQuerySection } from "./query_view/ModelQueryView";
 
 function ArchiveSummaryCard() {
-  const { account, allTweets, clearDatabase, profile } = useStore()
-  const [showProfilePicture, setShowProfilePicture] = useState(false)
+  const { account, allTweets, clearDatabase, profile } = useStore();
+  const [showProfilePicture, setShowProfilePicture] = useState(false);
 
   useEffect(() => {
-    if (!profile) return
+    if (!profile) return;
     fetch(profile.avatarMediaUrl).then((response) => {
-      if (response.status === 200) setShowProfilePicture(true)
-    })
-  }, [profile])
+      if (response.status === 200) setShowProfilePicture(true);
+    });
+  }, [profile]);
 
   const { totalTweetsCount, originalTweetsCount, repliesCount, retweetsCount } =
     useMemo(() => {
-      const tweets = allTweets || []
-      let replies = 0
-      let retweets = 0
+      const tweets = allTweets || [];
+      let replies = 0;
+      let retweets = 0;
 
       for (const tweet of tweets) {
         if (tweet.in_reply_to_user_id) {
-          replies += 1
-          continue
+          replies += 1;
+          continue;
         }
 
-        const text = tweet.full_text || ""
+        const text = tweet.full_text || "";
         if (text.trim().toUpperCase().startsWith("RT ")) {
-          retweets += 1
+          retweets += 1;
         }
       }
 
-      const total = tweets.length
-      const original = Math.max(total - replies - retweets, 0)
+      const total = tweets.length;
+      const original = Math.max(total - replies - retweets, 0);
 
       return {
         totalTweetsCount: total,
         originalTweetsCount: original,
         repliesCount: replies,
         retweetsCount: retweets,
-      }
-    }, [allTweets])
+      };
+    }, [allTweets]);
 
   if (!account) {
-    return null
+    return null;
   }
 
   return (
@@ -206,19 +206,19 @@ function ArchiveSummaryCard() {
               "Close this archive? You will have to upload a ZIP file again.",
             )
           ) {
-            clearDatabase()
+            clearDatabase();
           }
         }}
       >
         Close Archive
       </button>
     </section>
-  )
+  );
 }
 
 export function MyArchiveView() {
-  const { allTweets, account } = useStore()
-  const hasArchiveLoaded = (allTweets?.length || 0) > 0 && !!account
+  const { allTweets, account } = useStore();
+  const hasArchiveLoaded = (allTweets?.length || 0) > 0 && !!account;
 
   return (
     <div style={{ height: "100vh", overflowY: "scroll" }}>
@@ -243,5 +243,5 @@ export function MyArchiveView() {
         )}
       </div>
     </div>
-  )
+  );
 }
