@@ -1,4 +1,3 @@
-import { v7 as uuidv7 } from "uuid";
 import type {
   Account,
   Tweet,
@@ -39,8 +38,6 @@ export const processTwitterArchive = async (
   let following;
   let follower;
 
-  let accountId;
-
   for (const entry of Object.values(zipInfo.entries)) {
     const entryNameParts = entry.name.split("/");
     const lastEntryNamePart = entryNameParts[entryNameParts.length - 1];
@@ -62,12 +59,8 @@ export const processTwitterArchive = async (
         tweets = (parsedData as { tweet: Tweet }[]).map((entry) => entry.tweet);
       } else if (lastEntryNamePart === "account.js") {
         account = (parsedData as { account: Account }[])[0].account;
-        accountId = account.accountId;
       } else if (lastEntryNamePart === "profile.js") {
-        profile = {
-          ...(parsedData as { profile: Profile }[])[0].profile,
-          accountId,
-        };
+        profile = (parsedData as { profile: Profile }[])[0].profile;
       } else if (lastEntryNamePart === "following.js") {
         // add following
         following = (parsedData as { following: Following }[]).map(
@@ -98,9 +91,11 @@ export const processTwitterArchive = async (
     throw new Error("Couldn't extract follower data");
   }
 
+  const profileWithId = { ...profile, accountId: account.accountId };
+
   return {
     account,
-    profile,
+    profile: profileWithId,
     tweets,
     following,
     follower,

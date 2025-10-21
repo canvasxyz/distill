@@ -78,6 +78,8 @@ export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
   loadCommunityArchiveUser: async (accountId) => {
     // Fetch all required data from Supabase
     // Page through all tweets for this account
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let allTweets: any[] = [];
     let page = 0;
     const pageSize = 1000;

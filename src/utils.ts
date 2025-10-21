@@ -44,6 +44,6 @@ export const mapKeysDeep = (obj: Json, fn: (key: string) => string): Json =>
     ? obj.map((item) => mapKeysDeep(item, fn))
     : obj && typeof obj === "object"
       ? Object.fromEntries(
-          Object.entries(obj).map(([k, v]) => [fn(k), mapKeysDeep(v, fn)])
+          Object.entries(obj).map(([k, v]) => [fn(k), mapKeysDeep(v!, fn)])
         )
       : obj;

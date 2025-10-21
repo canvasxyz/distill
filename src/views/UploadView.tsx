@@ -102,6 +102,7 @@ export function UploadPanel() {
                 <img
                   src={account.profile.avatarMediaUrl}
                   onError={(e) =>
+                    // @ts-expect-error "..."
                     (e.target.src =
                       "https://www.community-archive.org/_next/image?url=%2Fplaceholder.jpg&w=3840&q=75")
                   }
