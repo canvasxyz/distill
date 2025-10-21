@@ -55,5 +55,5 @@ export const onRequest = async ({ request, env }) => {
     )
   }
 
-  return next()
+  return env.ASSETS.fetch(request)
 }
