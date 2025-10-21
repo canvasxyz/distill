@@ -374,7 +374,7 @@ export function RunQueries() {
             </div>
             <h4 style={{ marginTop: "0px" }}>
               {queryResult.query} (completed in{" "}
-              {(queryResult.runTime / 1000).toFixed(2)} seconds)
+              {(queryResult.totalRunTime / 1000).toFixed(2)} seconds)
             </h4>
             <Markdown remarkPlugins={[remarkGfm]}>
               {queryResult.result}
