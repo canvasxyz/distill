@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { TweetEntry } from "../TweetEntry";
+import { TweetEntry } from "../components/TweetEntry";
 
 import { useStore } from "../state/store";
 import { UploadView } from "./UploadView";

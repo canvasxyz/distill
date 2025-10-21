@@ -1,7 +1,7 @@
-import { AnalyzeTweetsButton } from "./AnalyzeTweetsButton"
-import { filters } from "./filtering/filters"
-import { LinkButton } from "./LinkButton"
-import { useStore } from "./state/store"
+import { AnalyzeTweetsButton } from "./AnalyzeTweetsButton";
+import { filters } from "../filtering/filters";
+import { LinkButton } from "./LinkButton";
+import { useStore } from "../state/store";
 
 function HorizontalRule() {
   return (
@@ -12,7 +12,7 @@ function HorizontalRule() {
         borderTop: "1px solid #ccc",
       }}
     />
-  )
+  );
 }
 
 export function Sidebar() {
@@ -25,9 +25,9 @@ export function Sidebar() {
     excludedTweets,
     tweetsByFilterName,
     downloadArchive,
-  } = useStore()
+  } = useStore();
 
-  const totalNumTweets = (allTweets || []).length
+  const totalNumTweets = (allTweets || []).length;
   return (
     <div
       style={{
@@ -66,8 +66,8 @@ export function Sidebar() {
           }}
           title="Download"
           onClick={() => {
-            if (!allTweets) return
-            downloadArchive()
+            if (!allTweets) return;
+            downloadArchive();
           }}
           disabled={!allTweets}
         >
@@ -149,5 +149,5 @@ export function Sidebar() {
         </span>
       </div>
     </div>
-  )
+  );
 }

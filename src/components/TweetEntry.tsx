@@ -1,5 +1,5 @@
-import type { FilterMatch, Tweet } from "./types";
-import { useStore } from "./state/store";
+import type { FilterMatch, Tweet } from "../types";
+import { useStore } from "../state/store";
 
 export function TweetEntry({
   isFirst,
