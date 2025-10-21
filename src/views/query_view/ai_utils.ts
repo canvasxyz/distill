@@ -74,7 +74,7 @@ export async function submitQuery(
   account: Account,
 ) {
   const startTime = performance.now();
-  const model = "Qwen/Qwen3-Next-80B-A3B-Instruct";
+  const model = "google/gemini-2.0-flash-001";
 
   const messages = makePromptMessages(tweetsSample, query, account);
   const aiParams: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming =
