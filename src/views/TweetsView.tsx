@@ -4,7 +4,7 @@ import { TweetEntry } from "../components/TweetEntry";
 import { useStore } from "../state/store";
 import { UploadView } from "./UploadView";
 import type { Tweet } from "../types";
-import { PseudoLink } from "../PseudoLink";
+import { PseudoLink } from "../components/PseudoLink";
 import { db } from "../db";
 
 export function TweetsView({
