@@ -4,7 +4,11 @@ import { Navigate } from "react-router";
 import { useCommunityArchiveAccounts } from "../hooks/useUsers";
 
 export function UploadPanel() {
-  const { ingestTwitterArchive, loadCommunityArchiveUser } = useStore();
+  const {
+    ingestTwitterArchive,
+    loadCommunityArchiveUser,
+    loadCommunityArchiveUserProgress,
+  } = useStore();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const otherUserAccounts = useCommunityArchiveAccounts();
 
@@ -81,79 +85,97 @@ export function UploadPanel() {
         />
       </div>
       <h3>... or select a user from Community Archive</h3>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr",
-          gap: "8px",
-          marginTop: "16px",
-          alignItems: "center",
-        }}
-      >
-        <div></div>
-        <div style={{ fontWeight: "bold" }}>Username</div>
-        <div style={{ fontWeight: "bold" }}>Tweets</div>
-        <div style={{ fontWeight: "bold" }}>Followers</div>
-        <div></div>
-        {(otherUserAccounts || []).map((account, idx) => (
-          <>
-            <div key={`avatar-${idx}`}>
-              {account.profile && account.profile.avatarMediaUrl ? (
-                <img
-                  src={account.profile.avatarMediaUrl}
-                  onError={(e) =>
-                    // @ts-expect-error "..."
-                    (e.target.src =
-                      "https://www.community-archive.org/_next/image?url=%2Fplaceholder.jpg&w=3840&q=75")
-                  }
+      {loadCommunityArchiveUserProgress ? (
+        <>
+          {loadCommunityArchiveUserProgress.status === "starting" &&
+            "Starting..."}
+          {loadCommunityArchiveUserProgress.status === "loadingTweets" &&
+            `Loading tweets (${loadCommunityArchiveUserProgress.tweetsLoaded}/${loadCommunityArchiveUserProgress.totalNumTweets})`}
+          {loadCommunityArchiveUserProgress.status === "loadingProfile" &&
+            "Loading profile"}
+
+          {loadCommunityArchiveUserProgress.status === "loadingAccount" &&
+            "Loading account"}
+          {loadCommunityArchiveUserProgress.status === "loadingFollower" &&
+            "Loading followers"}
+          {loadCommunityArchiveUserProgress.status === "loadingFollowing" &&
+            "Loading following"}
+        </>
+      ) : (
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr",
+            gap: "8px",
+            marginTop: "16px",
+            alignItems: "center",
+          }}
+        >
+          <div></div>
+          <div style={{ fontWeight: "bold" }}>Username</div>
+          <div style={{ fontWeight: "bold" }}>Tweets</div>
+          <div style={{ fontWeight: "bold" }}>Followers</div>
+          <div></div>
+          {(otherUserAccounts || []).map((account, idx) => (
+            <>
+              <div key={`avatar-${idx}`}>
+                {account.profile && account.profile.avatarMediaUrl ? (
+                  <img
+                    src={account.profile.avatarMediaUrl}
+                    onError={(e) =>
+                      // @ts-expect-error "..."
+                      (e.target.src =
+                        "https://www.community-archive.org/_next/image?url=%2Fplaceholder.jpg&w=3840&q=75")
+                    }
+                    style={{
+                      width: "36px",
+                      height: "36px",
+                      borderRadius: "50%",
+                      objectFit: "cover",
+                      border: "1px solid #ccc",
+                    }}
+                  />
+                ) : (
+                  <div
+                    style={{
+                      width: "36px",
+                      height: "36px",
+                      borderRadius: "50%",
+                      backgroundColor: "#ddd",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "20px",
+                      color: "#888",
+                    }}
+                  >
+                    ?
+                  </div>
+                )}
+              </div>
+              <div key={`username-${idx}`}>{account.username}</div>
+              <div key={`tweets-${idx}`}>{account.numTweets}</div>
+              <div key={`followers-${idx}`}>{account.numFollowers}</div>
+              <div key={`select-${idx}`}>
+                <button
                   style={{
-                    width: "36px",
-                    height: "36px",
-                    borderRadius: "50%",
-                    objectFit: "cover",
-                    border: "1px solid #ccc",
+                    padding: "4px 10px",
+                    borderRadius: "5px",
+                    border: "1px solid #1976d2",
+                    background: "#1976d2",
+                    color: "#fff",
+                    cursor: "pointer",
+                    fontWeight: 500,
                   }}
-                />
-              ) : (
-                <div
-                  style={{
-                    width: "36px",
-                    height: "36px",
-                    borderRadius: "50%",
-                    backgroundColor: "#ddd",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "20px",
-                    color: "#888",
-                  }}
+                  onClick={() => selectCommunityArchiveUser(account.accountId)}
                 >
-                  ?
-                </div>
-              )}
-            </div>
-            <div key={`username-${idx}`}>{account.username}</div>
-            <div key={`tweets-${idx}`}>{account.numTweets}</div>
-            <div key={`followers-${idx}`}>{account.numFollowers}</div>
-            <div key={`select-${idx}`}>
-              <button
-                style={{
-                  padding: "4px 10px",
-                  borderRadius: "5px",
-                  border: "1px solid #1976d2",
-                  background: "#1976d2",
-                  color: "#fff",
-                  cursor: "pointer",
-                  fontWeight: 500,
-                }}
-                onClick={() => selectCommunityArchiveUser(account.accountId)}
-              >
-                Select
-              </button>
-            </div>
-          </>
-        ))}
-      </div>
+                  Select
+                </button>
+              </div>
+            </>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

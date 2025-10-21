@@ -8,6 +8,19 @@ import { supabase } from "../supabase";
 import { mapKeysDeep, snakeToCamelCase } from "../utils";
 import type { Account, ProfileWithId, Tweet } from "../types";
 
+type LoadCommunityArchiveUserProgress =
+  | { status: "starting" }
+  | {
+      status: "loadingTweets";
+      totalNumTweets: number;
+      tweetsLoaded: number;
+    }
+  | { status: "loadingProfile" }
+  | { status: "loadingAccount" }
+  | { status: "loadingFollowing" }
+  | { status: "loadingFollower" }
+  | { status: "applyWordLists" };
+
 export type InitSlice = {
   init: () => Promise<void>;
   dbHasTweets: boolean;
@@ -15,6 +28,7 @@ export type InitSlice = {
   appIsReady: boolean;
   ingestTwitterArchive: (file: File) => Promise<void>;
   loadCommunityArchiveUser: (accountId: string) => Promise<void>;
+  loadCommunityArchiveUserProgress: LoadCommunityArchiveUserProgress | null;
   downloadArchive: () => Promise<void>;
   // are we viewing the user's own uploaded archive or an archive from the community archive supabase api?
   viewingMyArchive: boolean;
@@ -79,6 +93,30 @@ export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
     // Fetch all required data from Supabase
     // Page through all tweets for this account
 
+    set({
+      loadCommunityArchiveUserProgress: {
+        status: "starting",
+      },
+    });
+
+    const { count: tweetCountData, error: tweetCountError } = await supabase
+      .schema("public")
+      .from("tweets")
+      .select("*", { count: "exact", head: true })
+      .eq("account_id", accountId);
+
+    if (tweetCountError) throw tweetCountError;
+
+    const totalNumTweets = tweetCountData || 0;
+
+    set({
+      loadCommunityArchiveUserProgress: {
+        status: "loadingTweets",
+        totalNumTweets,
+        tweetsLoaded: 0,
+      },
+    });
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let allTweets: any[] = [];
     let page = 0;
@@ -96,6 +134,14 @@ export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
         allTweets = allTweets.concat(pageTweets);
         if (pageTweets.length < pageSize) break;
         page += 1;
+
+        set({
+          loadCommunityArchiveUserProgress: {
+            status: "loadingTweets",
+            totalNumTweets,
+            tweetsLoaded: allTweets.length,
+          },
+        });
       } else {
         break;
       }
@@ -107,6 +153,12 @@ export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
 
     await db.tweets.clear();
     await db.tweets.bulkAdd(tweets);
+
+    set({
+      loadCommunityArchiveUserProgress: {
+        status: "loadingProfile",
+      },
+    });
 
     const { data: profileData } = await supabase
       .schema("public")
@@ -120,6 +172,12 @@ export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
 
     await db.profiles.add(profile);
 
+    set({
+      loadCommunityArchiveUserProgress: {
+        status: "loadingAccount",
+      },
+    });
+
     const { data: accountData } = await supabase
       .schema("public")
       .from("account")
@@ -130,6 +188,12 @@ export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
     const account = mapKeysDeep(accountData, snakeToCamelCase) as Account;
 
     await db.accounts.add(account);
+
+    set({
+      loadCommunityArchiveUserProgress: {
+        status: "loadingFollowing",
+      },
+    });
 
     const { data: followingData } = await supabase
       .schema("public")
@@ -145,6 +209,12 @@ export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
 
     await db.following.bulkAdd(following);
 
+    set({
+      loadCommunityArchiveUserProgress: {
+        status: "loadingFollower",
+      },
+    });
+
     const { data: followerData } = await supabase
       .schema("public")
       .from("followers")
@@ -157,6 +227,12 @@ export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
     }));
 
     await db.follower.bulkAdd(follower);
+
+    set({
+      loadCommunityArchiveUserProgress: {
+        status: "applyWordLists",
+      },
+    });
 
     // apply filters
     const filterMatchesToAdd = [];
@@ -171,8 +247,13 @@ export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
     }
     await db.filterTweetIds.bulkAdd(filterMatchesToAdd);
 
+    set({
+      loadCommunityArchiveUserProgress: null,
+    });
+
     set({ viewingMyArchive: false, dbHasTweets: true });
   },
+  loadCommunityArchiveUserProgress: null,
 
   downloadArchive: async () => {
     // Fetch all relevant data from the database
