@@ -66,10 +66,7 @@ export const createLlmQuerySlice: StateCreator<
       }
     );
 
-    const batches = getBatches(
-      filteredTweetsSubsetToAnalyse,
-      QUERY_BATCH_SIZE,
-    );
+    const batches = getBatches(filteredTweetsSubsetToAnalyse, QUERY_BATCH_SIZE);
 
     const queuedTime = performance.now();
     set({
@@ -97,11 +94,26 @@ export const createLlmQuerySlice: StateCreator<
           startTime,
         });
 
-        const queryResult = await submitQuery(
-          batch,
-          { systemPrompt: batchSystemPrompt, prompt: query },
-          account
-        );
+        let retries = 3;
+        let queryResult: Awaited<ReturnType<typeof submitQuery>> | null = null;
+
+        while (retries > 0 && queryResult === null) {
+          try {
+            queryResult = await submitQuery(
+              batch,
+              { systemPrompt: batchSystemPrompt, prompt: query },
+              account
+            );
+          } catch (e) {
+            console.log(e);
+            console.log("retrying...");
+            retries--;
+          }
+        }
+
+        if (!queryResult) {
+          throw new Error(`Query failed after ${retries} retries!`);
+        }
 
         const tweetTexts = extractTweetTexts(queryResult.result);
 
@@ -127,17 +139,40 @@ export const createLlmQuerySlice: StateCreator<
           .flat()
           .map((tweetText) => ({ full_text: tweetText }));
 
-        // submit query to create the final result based on the collected texts
-        const result = await submitQuery(
-          collectedTweetTexts,
-          { systemPrompt: finalSystemPrompt, prompt: query },
-          account
+        console.log(
+          `submitting final query with ${collectedTweetTexts.length} tweets`
         );
+
+        let finalQueryRetries = 3;
+        let finalQueryResult: Awaited<ReturnType<typeof submitQuery>> | null =
+          null;
+
+        while (finalQueryRetries > 0 && finalQueryResult === null) {
+          try {
+            // submit query to create the final result based on the collected texts
+            finalQueryResult = await submitQuery(
+              collectedTweetTexts,
+              { systemPrompt: finalSystemPrompt, prompt: query },
+              account
+            );
+          } catch (e) {
+            console.log(e);
+            console.log("retrying...");
+            finalQueryRetries--;
+          }
+        }
+
+        if (!finalQueryResult) {
+          throw new Error(
+            `Final query failed after ${finalQueryRetries} retries!`
+          );
+        }
+
         const finalTime = performance.now();
         const totalRunTime = finalTime - queuedTime!;
 
         const newQueryResult = {
-          ...result,
+          ...finalQueryResult,
           id: queryId,
           totalRunTime,
           rangeSelectionType,

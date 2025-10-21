@@ -77,11 +77,28 @@ export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
   },
   loadCommunityArchiveUser: async (accountId) => {
     // Fetch all required data from Supabase
-    const { data: tweets } = await supabase
-      .schema("public")
-      .from("tweets")
-      .select("*")
-      .eq("account_id", accountId);
+    // Page through all tweets for this account
+    let allTweets: any[] = [];
+    let page = 0;
+    const pageSize = 1000;
+    while (true) {
+      const { data: pageTweets, error } = await supabase
+        .schema("public")
+        .from("tweets")
+        .select("*")
+        .eq("account_id", accountId)
+        .range(page * pageSize, (page + 1) * pageSize - 1);
+
+      if (error) throw error;
+      if (pageTweets && pageTweets.length > 0) {
+        allTweets = allTweets.concat(pageTweets);
+        if (pageTweets.length < pageSize) break;
+        page += 1;
+      } else {
+        break;
+      }
+    }
+    const tweets = allTweets;
 
     await db.tweets.clear();
     await db.tweets.bulkAdd(
