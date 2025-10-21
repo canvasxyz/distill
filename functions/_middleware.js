@@ -4,28 +4,52 @@ export const onRequest = async ({ request, env }) => {
   const expectedUser = env.BASIC_AUTH_USER
   const expectedPass = env.BASIC_AUTH_PASS
 
+  let credentials = null
+
+  if (auth?.startsWith("Basic ")) {
+    try {
+      const [, b64] = auth.split(" ", 2)
+      const decoded = atob(b64)
+      const separatorIndex = decoded.indexOf(":")
+
+      if (separatorIndex !== -1) {
+        credentials = {
+          user: decoded.slice(0, separatorIndex),
+          pass: decoded.slice(separatorIndex + 1),
+        }
+      }
+    } catch (error) {
+      credentials = null
+    }
+  }
+
   if (url.searchParams.get("logout") === "1") {
+    if (
+      credentials &&
+      credentials.user === expectedUser &&
+      credentials.pass === expectedPass
+    ) {
+      return Response.redirect(`${url.origin}/`, 302)
+    }
+
     return new Response("Logged out", {
       status: 401,
       headers: { "WWW-Authenticate": 'Basic realm="Protected"' },
     })
   }
 
-  // Require Basic auth header
-  if (!auth?.startsWith("Basic ")) {
+  // Require valid Basic auth credentials
+  if (!credentials) {
     return new Response("Unauthorized", {
       status: 401,
       headers: { "WWW-Authenticate": 'Basic realm="Protected"' },
     })
   }
 
-  // Decode and verify
-  const [, b64] = auth.split(" ")
-  const [user, pass] = atob(b64).split(":")
-
-  console.log({ user, pass, expectedUser, expectedPass })
-
-  if (user !== expectedUser || pass !== expectedPass) {
+  if (
+    credentials.user !== expectedUser ||
+    credentials.pass !== expectedPass
+  ) {
     const logoutUrl = new URL(request.url)
     logoutUrl.searchParams.set("logout", "1")
 
