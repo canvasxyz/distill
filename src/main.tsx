@@ -9,6 +9,12 @@ import { IncludedTweetsView } from "./views/IncludedTweetsView.tsx";
 import { ExcludedTweetsView } from "./views/ExcludedTweetsView.tsx";
 import { FilteredTweetsView } from "./views/FilteredTweetsView.tsx";
 import { AllTweetsView } from "./views/AllTweetsView.tsx";
+import { EchoProvider } from "@merit-systems/echo-react-sdk";
+
+const echoAppId = import.meta.env.VITE_ECHO_APP_ID;
+if (!echoAppId) {
+  throw new Error("VITE_ECHO_APP_ID is not set in environment variables");
+}
 
 const router = createHashRouter([
   {
@@ -26,6 +32,8 @@ const router = createHashRouter([
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <EchoProvider config={{ appId: echoAppId }}>
+      <RouterProvider router={router} />
+    </EchoProvider>
   </StrictMode>
 );

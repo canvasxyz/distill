@@ -28,7 +28,8 @@ export type LlmQuerySlice = {
     filteredTweetsToAnalyse: Tweet[],
     query: string,
     rangeSelectionType: RangeSelectionType,
-    rangeArgs: { startDate: string; endDate: string }
+    rangeArgs: { startDate: string; endDate: string },
+    token: string
   ) => void;
   updateBatchStatus: (batchId: number, status: BatchStatus) => void;
 };
@@ -53,7 +54,8 @@ export const createLlmQuerySlice: StateCreator<
     filteredTweetsToAnalyse: Tweet[],
     query: string,
     rangeSelectionType,
-    { startDate, endDate }
+    { startDate, endDate },
+    token
   ) => {
     const queryId = uuidv7();
 
@@ -94,37 +96,40 @@ export const createLlmQuerySlice: StateCreator<
           startTime,
         });
 
-        let retries = 3;
         let queryResult: Awaited<ReturnType<typeof submitQuery>> | null = null;
 
-        while (retries > 0 && queryResult === null) {
-          try {
-            queryResult = await submitQuery(
-              batch,
-              { systemPrompt: batchSystemPrompt, prompt: query },
-              account
-            );
-          } catch (e) {
-            console.log(e);
-            console.log("retrying...");
-            retries--;
-          }
+        try {
+          queryResult = await submitQuery(
+            batch,
+            { systemPrompt: batchSystemPrompt, prompt: query },
+            account,
+            token
+          );
+        } catch (e) {
+          console.log(e);
         }
-
-        if (!queryResult) {
-          throw new Error(`Query failed after ${retries} retries!`);
-        }
-
-        const tweetTexts = extractTweetTexts(queryResult.result);
 
         const endTime = performance.now();
-        updateBatchStatus(i, {
-          status: "done",
-          result: tweetTexts,
-          startTime,
-          endTime,
-          runTime: endTime - startTime,
-        });
+
+        if (queryResult) {
+          const tweetTexts = extractTweetTexts(queryResult.result);
+          updateBatchStatus(i, {
+            status: "done",
+            result: tweetTexts,
+            startTime,
+            endTime,
+            runTime: endTime - startTime,
+          });
+        } else {
+          console.log(`failed to process batch ${i}`);
+          updateBatchStatus(i, {
+            status: "done",
+            result: [],
+            startTime,
+            endTime,
+            runTime: endTime - startTime,
+          });
+        }
 
         // if the job is done, then trigger the final query
         const { batchStatuses } = get();
@@ -153,7 +158,8 @@ export const createLlmQuerySlice: StateCreator<
             finalQueryResult = await submitQuery(
               collectedTweetTexts,
               { systemPrompt: finalSystemPrompt, prompt: query },
-              account
+              account,
+              token
             );
           } catch (e) {
             console.log(e);

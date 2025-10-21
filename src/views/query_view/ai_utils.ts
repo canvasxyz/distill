@@ -66,15 +66,20 @@ export function makePromptMessages(
   ];
 }
 
-export const serverUrl = "https://tweet-analysis-worker.bob-wbb.workers.dev";
-
 export async function submitQuery(
   tweetsSample: { full_text: string }[],
   query: Query,
-  account: Account
+  account: Account,
+  token: string
 ) {
   const startTime = performance.now();
-  const model = "Qwen/Qwen3-Next-80B-A3B-Instruct";
+  const model = "gpt-5-mini";
+
+  const openai = new OpenAI({
+    apiKey: token, // Your JWT token acts as the API key
+    baseURL: "https://echo.router.merit.systems", // Echo's proxy endpoint
+    dangerouslyAllowBrowser: true, // Safe because token is user-scoped
+  });
 
   const messages = makePromptMessages(tweetsSample, query, account);
   const aiParams: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming =
@@ -83,12 +88,7 @@ export async function submitQuery(
       messages,
     };
 
-  const classificationResponse = await fetch(serverUrl, {
-    method: "POST",
-    body: JSON.stringify({ params: aiParams }),
-    headers: { "Content-Type": "application/json" },
-  });
-  const data = await classificationResponse.json();
+  const data = await openai.chat.completions.create(aiParams);
 
   const endTime = performance.now();
   const runTime = endTime - startTime;

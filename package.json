@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@merit-systems/echo-react-sdk": "^1.0.38",
     "@supabase/supabase-js": "^2.76.1",
     "dexie": "^4.2.0",
     "dexie-react-hooks": "^4.2.0",
