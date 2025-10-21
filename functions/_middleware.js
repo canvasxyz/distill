@@ -1,14 +1,14 @@
 export const onRequest = async ({ request, env }) => {
-  const url = new URL(request.url);
-  const auth = request.headers.get("authorization");
-  const expectedUser = env.BASIC_AUTH_USER;
-  const expectedPass = env.BASIC_AUTH_PASS;
+  const url = new URL(request.url)
+  const auth = request.headers.get("authorization")
+  const expectedUser = env.BASIC_AUTH_USER
+  const expectedPass = env.BASIC_AUTH_PASS
 
   if (url.searchParams.get("logout") === "1") {
     return new Response("Logged out", {
       status: 401,
       headers: { "WWW-Authenticate": 'Basic realm="Protected"' },
-    });
+    })
   }
 
   // Require Basic auth header
@@ -16,15 +16,18 @@ export const onRequest = async ({ request, env }) => {
     return new Response("Unauthorized", {
       status: 401,
       headers: { "WWW-Authenticate": 'Basic realm="Protected"' },
-    });
+    })
   }
 
   // Decode and verify
-  const [, b64] = auth.split(" ");
-  const [user, pass] = atob(b64).split(":");
+  const [, b64] = auth.split(" ")
+  const [user, pass] = atob(b64).split(":")
+
+  console.log(user, pass, expectedUser, expectedPass)
+
   if (user !== expectedUser || pass !== expectedPass) {
-    const logoutUrl = new URL(request.url);
-    logoutUrl.searchParams.set("logout", "1");
+    const logoutUrl = new URL(request.url)
+    logoutUrl.searchParams.set("logout", "1")
 
     return new Response(
       `<!DOCTYPE html>
@@ -49,8 +52,8 @@ export const onRequest = async ({ request, env }) => {
           "Cache-Control": "no-store",
         },
       },
-    );
+    )
   }
 
-  return await fetch(request);
-};
+  return await fetch(request)
+}
