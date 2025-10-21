@@ -23,7 +23,7 @@ export const onRequest = async ({ request, env }) => {
   const [, b64] = auth.split(" ")
   const [user, pass] = atob(b64).split(":")
 
-  console.log(user, pass, expectedUser, expectedPass)
+  console.log({ user, pass, expectedUser, expectedPass })
 
   if (user !== expectedUser || pass !== expectedPass) {
     const logoutUrl = new URL(request.url)
