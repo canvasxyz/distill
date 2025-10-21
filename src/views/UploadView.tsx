@@ -1,6 +1,7 @@
 import React, { useRef } from "react";
 import { useStore } from "../state/store";
 import { Navigate } from "react-router";
+import { useCommunityArchiveAccounts } from "../hooks/useUsers";
 
 export function UploadPanel() {
   const { ingestTwitterArchive } = useStore();
@@ -14,13 +15,13 @@ export function UploadPanel() {
       await ingestTwitterArchive(file);
     }
   };
+  const otherUserAccounts = useCommunityArchiveAccounts();
 
   return (
     <div
       style={{
         maxWidth: "768px",
         margin: "auto",
-        border: "1px solid black",
         padding: "20px",
         marginTop: "100px",
         borderRadius: "10px",
@@ -73,6 +74,78 @@ export function UploadPanel() {
           onChange={handleFileUpload}
           style={{ display: "none" }}
         />
+      </div>
+      <h3>... or select a user from Community Archive</h3>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr",
+          gap: "8px",
+          marginTop: "16px",
+          alignItems: "center",
+        }}
+      >
+        <div></div>
+        <div style={{ fontWeight: "bold" }}>Username</div>
+        <div style={{ fontWeight: "bold" }}>Tweets</div>
+        <div style={{ fontWeight: "bold" }}>Followers</div>
+        <div></div>
+        {(otherUserAccounts || []).map((account, idx) => (
+          <>
+            <div key={`avatar-${idx}`}>
+              {account.profile && account.profile.avatarMediaUrl ? (
+                <img
+                  src={account.profile.avatarMediaUrl}
+                  onError={(e) =>
+                    (e.target.src =
+                      "https://www.community-archive.org/_next/image?url=%2Fplaceholder.jpg&w=3840&q=75")
+                  }
+                  style={{
+                    width: "36px",
+                    height: "36px",
+                    borderRadius: "50%",
+                    objectFit: "cover",
+                    border: "1px solid #ccc",
+                  }}
+                />
+              ) : (
+                <div
+                  style={{
+                    width: "36px",
+                    height: "36px",
+                    borderRadius: "50%",
+                    backgroundColor: "#ddd",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "20px",
+                    color: "#888",
+                  }}
+                >
+                  ?
+                </div>
+              )}
+            </div>
+            <div key={`username-${idx}`}>{account.username}</div>
+            <div key={`tweets-${idx}`}>{account.numTweets}</div>
+            <div key={`followers-${idx}`}>{account.numFollowers}</div>
+            <div key={`select-${idx}`}>
+              <button
+                style={{
+                  padding: "4px 10px",
+                  borderRadius: "5px",
+                  border: "1px solid #1976d2",
+                  background: "#1976d2",
+                  color: "#fff",
+                  cursor: "pointer",
+                  fontWeight: 500,
+                }}
+              >
+                Select
+              </button>
+            </div>
+          </>
+        ))}
       </div>
     </div>
   );
