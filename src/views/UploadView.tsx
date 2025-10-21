@@ -4,8 +4,9 @@ import { Navigate } from "react-router";
 import { useCommunityArchiveAccounts } from "../hooks/useUsers";
 
 export function UploadPanel() {
-  const { ingestTwitterArchive } = useStore();
+  const { ingestTwitterArchive, loadCommunityArchiveUser } = useStore();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const otherUserAccounts = useCommunityArchiveAccounts();
 
   const handleFileUpload = async (
     event: React.ChangeEvent<HTMLInputElement>
@@ -15,7 +16,11 @@ export function UploadPanel() {
       await ingestTwitterArchive(file);
     }
   };
-  const otherUserAccounts = useCommunityArchiveAccounts();
+
+  const selectCommunityArchiveUser = (accountId: string) => {
+    // call something in the store
+    loadCommunityArchiveUser(accountId);
+  };
 
   return (
     <div
@@ -140,6 +145,7 @@ export function UploadPanel() {
                   cursor: "pointer",
                   fontWeight: 500,
                 }}
+                onClick={() => selectCommunityArchiveUser(account.accountId)}
               >
                 Select
               </button>

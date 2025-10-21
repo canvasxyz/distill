@@ -1,3 +1,11 @@
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[];
+
 export const sumNumbers = (values: number[]) =>
   values.reduce((v1, v2) => v1 + v2, 0);
 
@@ -27,3 +35,15 @@ export function getBatches<T>(tweetsToAnalyse: T[], batchSize: number) {
 
   return batches;
 }
+
+export const snakeToCamelCase = (s: string) =>
+  s.replace(/_([a-z])/g, (_match, letter) => letter.toUpperCase());
+
+export const mapKeysDeep = (obj: Json, fn: (key: string) => string): Json =>
+  Array.isArray(obj)
+    ? obj.map((item) => mapKeysDeep(item, fn))
+    : obj && typeof obj === "object"
+      ? Object.fromEntries(
+          Object.entries(obj).map(([k, v]) => [fn(k), mapKeysDeep(v, fn)])
+        )
+      : obj;

@@ -19,7 +19,7 @@ export type Profile = {
   headerMediaUrl: string;
 };
 
-export type ProfileWithId = { profileId: string } & Profile;
+export type ProfileWithId = { accountId: string } & Profile;
 
 export type Following = { accountId: string; userLink: string };
 export type Follower = { accountId: string; userLink: string };

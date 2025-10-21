@@ -39,6 +39,8 @@ export const processTwitterArchive = async (
   let following;
   let follower;
 
+  let accountId;
+
   for (const entry of Object.values(zipInfo.entries)) {
     const entryNameParts = entry.name.split("/");
     const lastEntryNamePart = entryNameParts[entryNameParts.length - 1];
@@ -60,11 +62,11 @@ export const processTwitterArchive = async (
         tweets = (parsedData as { tweet: Tweet }[]).map((entry) => entry.tweet);
       } else if (lastEntryNamePart === "account.js") {
         account = (parsedData as { account: Account }[])[0].account;
+        accountId = account.accountId;
       } else if (lastEntryNamePart === "profile.js") {
-        const profileId = uuidv7();
         profile = {
           ...(parsedData as { profile: Profile }[])[0].profile,
-          profileId,
+          accountId,
         };
       } else if (lastEntryNamePart === "following.js") {
         // add following

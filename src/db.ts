@@ -26,7 +26,7 @@ class AppDatabase extends Dexie {
       accounts: "accountId",
       follower: "accountId",
       following: "accountId",
-      profiles: "profileId",
+      profiles: "accountId",
       tweets: "id,created_at",
       excludedTweetIds: "id",
       filterTweetIds: "[filterName+id]",

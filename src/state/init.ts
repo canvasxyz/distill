@@ -4,6 +4,9 @@ import { filters } from "../filtering/filters";
 import { processTwitterArchive } from "../processTwitterArchive";
 import { db } from "../db";
 import { strToU8, zipSync } from "fflate";
+import { supabase } from "../supabase";
+import { mapKeysDeep, snakeToCamelCase } from "../utils";
+import type { Account, ProfileWithId, Tweet } from "../types";
 
 export type InitSlice = {
   init: () => Promise<void>;
@@ -11,7 +14,10 @@ export type InitSlice = {
   clearDatabase: () => Promise<void>;
   appIsReady: boolean;
   ingestTwitterArchive: (file: File) => Promise<void>;
+  loadCommunityArchiveUser: (accountId: string) => Promise<void>;
   downloadArchive: () => Promise<void>;
+  // are we viewing the user's own uploaded archive or an archive from the community archive supabase api?
+  viewingMyArchive: boolean;
 };
 
 export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
@@ -65,8 +71,77 @@ export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
     await db.filterTweetIds.bulkAdd(filterMatchesToAdd);
 
     set(() => ({
+      viewingMyArchive: true,
       dbHasTweets: true,
     }));
+  },
+  loadCommunityArchiveUser: async (accountId) => {
+    // Fetch all required data from Supabase
+    const { data: tweets } = await supabase
+      .schema("public")
+      .from("tweets")
+      .select("*")
+      .eq("account_id", accountId);
+
+    await db.tweets.clear();
+    await db.tweets.bulkAdd(
+      (tweets || []).map((tweet) => ({
+        ...tweet,
+        id: tweet.tweet_id,
+      })) as Tweet[]
+    );
+
+    const { data: profileData } = await supabase
+      .schema("public")
+      .from("profile")
+      .select("*")
+      .eq("account_id", accountId)
+      .maybeSingle();
+
+    await db.profiles.clear();
+    const profile = mapKeysDeep(profileData, snakeToCamelCase) as ProfileWithId;
+
+    await db.profiles.add(profile);
+
+    const { data: accountData } = await supabase
+      .schema("public")
+      .from("account")
+      .select("*")
+      .eq("account_id", accountId)
+      .maybeSingle();
+    await db.accounts.clear();
+    const account = mapKeysDeep(accountData, snakeToCamelCase) as Account;
+
+    await db.accounts.add(account);
+
+    const { data: followingData } = await supabase
+      .schema("public")
+      .from("following")
+      .select("*")
+      .eq("account_id", accountId);
+    await db.following.clear();
+
+    const following = (followingData || []).map((entry) => ({
+      accountId: entry.following_account_id,
+      userLink: "",
+    }));
+
+    await db.following.bulkAdd(following);
+
+    const { data: followerData } = await supabase
+      .schema("public")
+      .from("followers")
+      .select("*")
+      .eq("account_id", accountId);
+    await db.follower.clear();
+    const follower = (followerData || []).map((entry) => ({
+      accountId: entry.follower_account_id,
+      userLink: "",
+    }));
+
+    await db.follower.bulkAdd(follower);
+
+    set({ viewingMyArchive: false, dbHasTweets: true });
   },
 
   downloadArchive: async () => {
@@ -138,4 +213,5 @@ export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   },
+  viewingMyArchive: false,
 });
