@@ -89,6 +89,7 @@ export const getClassification = async (text: string, model: string) => {
         ],
         response_format: classifyResponseFormat,
       },
+      provider: "deepinfra",
     }),
     headers: { "Content-Type": "application/json" },
   });

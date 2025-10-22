@@ -98,9 +98,10 @@ export async function submitQuery({
 
   const classificationResponse = await fetch(serverUrl, {
     method: "POST",
-    body: JSON.stringify({ params: aiParams }),
+    body: JSON.stringify({ params: aiParams, provider: "cerebras" }),
     headers: { "Content-Type": "application/json" },
   });
+
   const data = await classificationResponse.json();
 
   const endTime = performance.now();

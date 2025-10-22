@@ -56,7 +56,7 @@ export const createLlmQuerySlice: StateCreator<
       rangeSelection,
     );
 
-    const model = "openai/gpt-oss-120b";
+    const model = "gpt-oss-120b";
 
     const batches = getBatches(filteredTweetsSubsetToAnalyse, QUERY_BATCH_SIZE);
 
