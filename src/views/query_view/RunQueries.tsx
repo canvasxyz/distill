@@ -25,7 +25,7 @@ import remarkGfm from "remark-gfm";
 import { useTweetCounts } from "./useTweetCounts";
 import { TweetFrequencyGraph } from "../../components/TweetFrequencyGraph";
 import { BatchTweetsModal } from "./BatchTweetsModal";
-import { QUERY_BATCH_SIZE } from "../../constants";
+import { MAX_ARCHIVE_SIZE, QUERY_BATCH_SIZE } from "../../constants";
 
 export function RunQueries() {
   const [exampleQueriesModalIsOpen, setExampleQueriesModalIsOpen] =
@@ -78,7 +78,15 @@ export function RunQueries() {
 
   const handleRunQuery = (queryText: string) => {
     if (queryText === "" || queryText.trim() === "") return;
-    submit(filteredTweetsToAnalyse, queryText, rangeSelection);
+
+    if (filteredTweetsToAnalyse.length > MAX_ARCHIVE_SIZE) {
+      submit(filteredTweetsToAnalyse, queryText, {
+        type: "random-sample",
+        sampleSize: MAX_ARCHIVE_SIZE,
+      });
+    } else {
+      submit(filteredTweetsToAnalyse, queryText, rangeSelection);
+    }
   };
 
   const tweetsSelectedForQuery = useMemo(() => {
