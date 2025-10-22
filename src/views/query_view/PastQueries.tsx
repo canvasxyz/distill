@@ -142,6 +142,10 @@ function PastQueryItem({ query }: { query: QueryResult }) {
               <span style={{ color: "#bf4962", fontWeight: 500 }}>Model:</span>{" "}
               {query.model}
             </span>
+            <span>
+              <span style={{ color: "#bf4962", fontWeight: 500 }}>Tokens:</span>{" "}
+              {query.totalTokens}
+            </span>
           </div>
         </div>
       )}
