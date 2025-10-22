@@ -1,7 +1,7 @@
 import { useStore } from "../../state/store";
 
 import { useState } from "react";
-import type { QueryResult } from "./ai_utils";
+import type { QueryResult, RangeSelection } from "./ai_utils";
 import { CopyButton } from "./ResultsBox";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -23,6 +23,16 @@ function formatDateTime(dateStr?: string) {
       minute: "2-digit",
     })
   );
+}
+
+function formatRangeSelection(rangeSelection: RangeSelection) {
+  return rangeSelection.type === "date-range"
+    ? `${formatDateTime(rangeSelection.startDate)} - ${formatDateTime(
+        rangeSelection.endDate,
+      )}`
+    : rangeSelection.type === "random-sample"
+      ? `random sample of ${rangeSelection.sampleSize} tweets`
+      : "whole archive";
 }
 
 function PastQueryItem({ query }: { query: QueryResult }) {
@@ -65,11 +75,7 @@ function PastQueryItem({ query }: { query: QueryResult }) {
             marginLeft: "auto",
           }}
         >
-          {query.rangeSelectionType === "date-range"
-            ? `${formatDateTime(query.startDate)} - ${formatDateTime(
-                query.endDate,
-              )}`
-            : query.rangeSelectionType.replace("-", " ")}
+          {formatRangeSelection(query.rangeSelection)}
         </span>
         <span
           style={{
@@ -124,11 +130,7 @@ function PastQueryItem({ query }: { query: QueryResult }) {
             </span>
             <span>
               <span style={{ color: "#baac4e", fontWeight: 500 }}>Range:</span>{" "}
-              {query.rangeSelectionType === "date-range"
-                ? `${formatDateTime(query.startDate)} - ${formatDateTime(
-                    query.endDate,
-                  )}`
-                : query.rangeSelectionType.replace("-", " ")}
+              {formatRangeSelection(query.rangeSelection)}
             </span>
             <span>
               <span style={{ color: "#4e52ba", fontWeight: 500 }}>

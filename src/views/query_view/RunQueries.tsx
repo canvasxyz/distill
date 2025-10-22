@@ -1,5 +1,5 @@
 import {
-  type RangeSelectionType,
+  type RangeSelection,
   replaceAccountName,
   selectSubset,
 } from "./ai_utils";
@@ -45,9 +45,6 @@ export function RunQueries() {
     queryResult,
   } = useStore();
 
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-
   const filteredTweetsToAnalyse = useMemo(
     () =>
       (allTweets || []).filter((tweet) => {
@@ -64,8 +61,9 @@ export function RunQueries() {
 
   const tweetCounts = useTweetCounts(filteredTweetsToAnalyse);
 
-  const [rangeSelectionType, setRangeSelectionType] =
-    useState<RangeSelectionType>("whole-archive");
+  const [rangeSelection, setRangeSelection] = useState<RangeSelection>({
+    type: "whole-archive",
+  });
 
   const [currentProgress, totalProgress] = useMemo(() => {
     if (batchStatuses === null) return [0, 1];
@@ -80,21 +78,12 @@ export function RunQueries() {
 
   const handleRunQuery = (queryText: string) => {
     if (queryText === "" || queryText.trim() === "") return;
-    submit(filteredTweetsToAnalyse, queryText, rangeSelectionType, {
-      startDate,
-      endDate,
-    });
+    submit(filteredTweetsToAnalyse, queryText, rangeSelection);
   };
 
   const tweetsSelectedForQuery = useMemo(() => {
-    if (rangeSelectionType === "date-range" && (!startDate || !endDate)) {
-      return [];
-    }
-    return selectSubset(filteredTweetsToAnalyse, rangeSelectionType, {
-      startDate,
-      endDate,
-    });
-  }, [filteredTweetsToAnalyse, rangeSelectionType, startDate, endDate]);
+    return selectSubset(filteredTweetsToAnalyse, rangeSelection);
+  }, [filteredTweetsToAnalyse, rangeSelection]);
 
   const batchCount = useMemo(() => {
     if (tweetsSelectedForQuery.length === 0) return 0;
@@ -223,12 +212,10 @@ export function RunQueries() {
             type="radio"
             disabled={isProcessing}
             name="archiveMode"
-            checked={rangeSelectionType === "whole-archive"}
+            checked={rangeSelection.type === "whole-archive"}
             onChange={(e) => {
               if (e.target.checked) {
-                setRangeSelectionType("whole-archive");
-                setStartDate("");
-                setEndDate("");
+                setRangeSelection({ type: "whole-archive" });
               }
             }}
             style={{ accentColor: "#007bff", marginTop: "2px" }}
@@ -248,9 +235,14 @@ export function RunQueries() {
             type="radio"
             disabled={isProcessing}
             name="archiveMode"
-            checked={rangeSelectionType === "date-range"}
+            checked={rangeSelection.type === "date-range"}
             onChange={(e) => {
-              if (e.target.checked) setRangeSelectionType("date-range");
+              if (e.target.checked)
+                setRangeSelection({
+                  type: "date-range",
+                  startDate: "",
+                  endDate: "",
+                });
             }}
             style={{ accentColor: "#007bff", marginTop: "2px" }}
           />
@@ -267,12 +259,13 @@ export function RunQueries() {
             type="radio"
             disabled={isProcessing}
             name="archiveMode"
-            checked={rangeSelectionType === "random-sample"}
+            checked={rangeSelection.type === "random-sample"}
             onChange={(e) => {
               if (e.target.checked) {
-                setRangeSelectionType("random-sample");
-                setStartDate("");
-                setEndDate("");
+                setRangeSelection({
+                  type: "random-sample",
+                  sampleSize: QUERY_BATCH_SIZE,
+                });
               }
             }}
             style={{ marginTop: "2px" }}
@@ -280,14 +273,17 @@ export function RunQueries() {
           Random Sample
         </label>
       </div>
-      {rangeSelectionType === "date-range" && (
+      {rangeSelection.type === "date-range" && (
         <TweetFrequencyGraph
           tweetCounts={tweetCounts}
-          startDate={startDate}
-          endDate={endDate}
+          startDate={rangeSelection.startDate}
+          endDate={rangeSelection.endDate}
           onRangeSelect={(newStartDate, newEndDate) => {
-            setStartDate(newStartDate);
-            setEndDate(newEndDate);
+            setRangeSelection({
+              type: "date-range",
+              startDate: newStartDate,
+              endDate: newEndDate,
+            });
           }}
         />
       )}

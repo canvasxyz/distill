@@ -8,7 +8,7 @@ import {
   submitQuery,
   type BatchStatus,
   type QueryResult,
-  type RangeSelectionType,
+  type RangeSelection,
 } from "../views/query_view/ai_utils";
 import PQueue from "p-queue";
 import type { Tweet } from "../types";
@@ -27,8 +27,7 @@ export type LlmQuerySlice = {
   submit: (
     filteredTweetsToAnalyse: Tweet[],
     query: string,
-    rangeSelectionType: RangeSelectionType,
-    rangeArgs: { startDate: string; endDate: string },
+    rangeSelection: RangeSelection,
   ) => void;
   updateBatchStatus: (batchId: number, status: BatchStatus) => void;
 };
@@ -49,21 +48,12 @@ export const createLlmQuerySlice: StateCreator<
   startedProcessingTime: null,
   llmQueryQueue,
 
-  submit: (
-    filteredTweetsToAnalyse: Tweet[],
-    query: string,
-    rangeSelectionType,
-    { startDate, endDate },
-  ) => {
+  submit: (filteredTweetsToAnalyse: Tweet[], query: string, rangeSelection) => {
     const queryId = uuidv7();
 
     const filteredTweetsSubsetToAnalyse = selectSubset(
       filteredTweetsToAnalyse,
-      rangeSelectionType,
-      {
-        startDate,
-        endDate,
-      },
+      rangeSelection,
     );
 
     const model = "openai/gpt-oss-120b";
@@ -194,9 +184,7 @@ export const createLlmQuerySlice: StateCreator<
           ...finalQueryResult,
           id: queryId,
           totalRunTime,
-          rangeSelectionType,
-          startDate,
-          endDate,
+          rangeSelection,
           batchStatuses,
           totalEstimatedCost,
           totalTokens,

@@ -2,14 +2,13 @@ import type { ChatCompletionMessageParam } from "openai/resources";
 import type { Account, Tweet } from "../../types";
 import OpenAI from "openai";
 import { pickSampleNoRepeats } from "../../utils";
-import { QUERY_BATCH_SIZE } from "../../constants";
 
 export type Query = { prompt: string; systemPrompt?: string };
 
-export type RangeSelectionType =
-  | "whole-archive"
-  | "date-range"
-  | "random-sample";
+export type RangeSelection =
+  | { type: "whole-archive" }
+  | { type: "date-range"; startDate: string; endDate: string }
+  | { type: "random-sample"; sampleSize: number };
 
 export type BatchStatus =
   | {
@@ -36,9 +35,7 @@ export type QueryResult = {
   totalRunTime: number;
   runTime: number;
   messages: ChatCompletionMessageParam[];
-  rangeSelectionType: RangeSelectionType;
-  startDate?: string;
-  endDate?: string;
+  rangeSelection: RangeSelection;
   batchStatuses: Record<string, BatchStatus>;
   totalEstimatedCost: number;
   totalTokens: number;
@@ -131,14 +128,13 @@ export const extractTweetTexts = (queryResult: string) => {
 
 export const selectSubset = (
   tweets: Tweet[],
-  rangeSelectionType: RangeSelectionType,
-  { startDate, endDate }: { startDate: string; endDate: string },
+  rangeSelection: RangeSelection,
 ) => {
-  if (rangeSelectionType === "whole-archive") {
+  if (rangeSelection.type === "whole-archive") {
     return tweets;
-  } else if (rangeSelectionType === "date-range") {
-    const startDateTime = new Date(startDate);
-    const endDateTime = new Date(endDate);
+  } else if (rangeSelection.type === "date-range") {
+    const startDateTime = new Date(rangeSelection.startDate);
+    const endDateTime = new Date(rangeSelection.endDate);
     endDateTime.setMonth(endDateTime.getMonth() + 1); // Include the entire end month
 
     return tweets.filter((tweet) => {
@@ -148,6 +144,6 @@ export const selectSubset = (
     });
   } else {
     // random sample
-    return pickSampleNoRepeats(tweets, QUERY_BATCH_SIZE);
+    return pickSampleNoRepeats(tweets, rangeSelection.sampleSize);
   }
 };
