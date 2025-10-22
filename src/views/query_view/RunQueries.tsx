@@ -79,7 +79,10 @@ export function RunQueries() {
   const handleRunQuery = (queryText: string) => {
     if (queryText === "" || queryText.trim() === "") return;
 
-    if (filteredTweetsToAnalyse.length > MAX_ARCHIVE_SIZE) {
+    if (
+      rangeSelection.type === "whole-archive" &&
+      filteredTweetsToAnalyse.length > MAX_ARCHIVE_SIZE
+    ) {
       submit(filteredTweetsToAnalyse, queryText, {
         type: "random-sample",
         sampleSize: MAX_ARCHIVE_SIZE,
