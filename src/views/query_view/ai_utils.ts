@@ -18,6 +18,13 @@ export type BatchStatus =
       endTime: number;
       runTime: number;
       result: string[];
+      usage: {
+        completion_tokens: number;
+        estimated_cost: number;
+        prompt_tokens: number;
+        prompt_tokens_details: null; // only used with prompt caching
+        total_tokens: number;
+      };
     }
   | { status: "pending"; startTime: number }
   | { status: "queued" };
@@ -33,6 +40,8 @@ export type QueryResult = {
   startDate?: string;
   endDate?: string;
   batchStatuses: Record<string, BatchStatus>;
+  totalEstimatedCost: number;
+  totalTokens: number;
 };
 
 export const batchSystemPrompt =
@@ -98,6 +107,7 @@ export async function submitQuery(
     result: data.choices[0].message.content as string,
     messages,
     runTime,
+    usage: data.usage,
   };
 }
 

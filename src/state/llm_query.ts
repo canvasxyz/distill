@@ -124,6 +124,7 @@ export const createLlmQuerySlice: StateCreator<
           startTime,
           endTime,
           runTime: endTime - startTime,
+          usage: queryResult.usage,
         });
 
         // if the job is done, then trigger the final query
@@ -171,6 +172,20 @@ export const createLlmQuerySlice: StateCreator<
         const finalTime = performance.now();
         const totalRunTime = finalTime - queuedTime!;
 
+        // collect the "usage" field from all of the batches
+
+        let totalEstimatedCost = 0;
+        let totalTokens = 0;
+        for (const batchStatus of Object.values(batchStatuses)) {
+          if (batchStatus.status === "done") {
+            totalEstimatedCost += batchStatus.usage.estimated_cost;
+            totalTokens += batchStatus.usage.total_tokens;
+          }
+        }
+
+        totalEstimatedCost += finalQueryResult.usage.estimated_cost;
+        totalTokens += finalQueryResult.usage.total_tokens;
+
         const newQueryResult = {
           ...finalQueryResult,
           id: queryId,
@@ -179,6 +194,8 @@ export const createLlmQuerySlice: StateCreator<
           startDate,
           endDate,
           batchStatuses,
+          totalEstimatedCost,
+          totalTokens,
         };
 
         db.queryResults.add(newQueryResult);
