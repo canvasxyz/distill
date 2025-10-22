@@ -130,6 +130,16 @@ function PastQueryItem({ query }: { query: QueryResult }) {
                   )}`
                 : query.rangeSelectionType.replace("-", " ")}
             </span>
+            <span>
+              <span style={{ color: "#4e52ba", fontWeight: 500 }}>
+                Provider:
+              </span>{" "}
+              {query.provider}
+            </span>
+            <span>
+              <span style={{ color: "#bf4962", fontWeight: 500 }}>Model:</span>{" "}
+              {query.model}
+            </span>
           </div>
         </div>
       )}

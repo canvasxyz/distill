@@ -42,6 +42,8 @@ export type QueryResult = {
   batchStatuses: Record<string, BatchStatus>;
   totalEstimatedCost: number;
   totalTokens: number;
+  provider: string;
+  model: string;
 };
 
 export const batchSystemPrompt =
@@ -77,13 +79,18 @@ export function makePromptMessages(
 
 export const serverUrl = "https://tweet-analysis-worker.bob-wbb.workers.dev";
 
-export async function submitQuery(
-  tweetsSample: { full_text: string }[],
-  query: Query,
-  account: Account,
-) {
+export async function submitQuery({
+  tweetsSample,
+  query,
+  account,
+  model,
+}: {
+  tweetsSample: { full_text: string }[];
+  query: Query;
+  account: Account;
+  model: string;
+}) {
   const startTime = performance.now();
-  const model = "google/gemini-2.0-flash-001";
 
   const messages = makePromptMessages(tweetsSample, query, account);
   const aiParams: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming =

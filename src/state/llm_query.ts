@@ -66,6 +66,8 @@ export const createLlmQuerySlice: StateCreator<
       },
     );
 
+    const model = "openai/gpt-oss-120b";
+
     const batches = getBatches(filteredTweetsSubsetToAnalyse, QUERY_BATCH_SIZE);
 
     const queuedTime = performance.now();
@@ -99,11 +101,12 @@ export const createLlmQuerySlice: StateCreator<
 
         while (retries > 0 && queryResult === null) {
           try {
-            queryResult = await submitQuery(
-              batch,
-              { systemPrompt: batchSystemPrompt, prompt: query },
+            queryResult = await submitQuery({
+              tweetsSample: batch,
+              query: { systemPrompt: batchSystemPrompt, prompt: query },
               account,
-            );
+              model,
+            });
           } catch (e) {
             console.log(e);
             console.log("retrying...");
@@ -151,11 +154,12 @@ export const createLlmQuerySlice: StateCreator<
         while (finalQueryRetries > 0 && finalQueryResult === null) {
           try {
             // submit query to create the final result based on the collected texts
-            finalQueryResult = await submitQuery(
-              collectedTweetTexts,
-              { systemPrompt: finalSystemPrompt, prompt: query },
+            finalQueryResult = await submitQuery({
+              tweetsSample: collectedTweetTexts,
+              query: { systemPrompt: finalSystemPrompt, prompt: query },
               account,
-            );
+              model,
+            });
           } catch (e) {
             console.log(e);
             console.log("retrying...");
@@ -196,6 +200,8 @@ export const createLlmQuerySlice: StateCreator<
           batchStatuses,
           totalEstimatedCost,
           totalTokens,
+          model,
+          provider: "deepinfra",
         };
 
         db.queryResults.add(newQueryResult);
