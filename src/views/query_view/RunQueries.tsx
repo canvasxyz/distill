@@ -232,7 +232,11 @@ export function RunQueries() {
             style={{ accentColor: "#007bff", marginTop: "2px" }}
           />
           Whole Archive (
-          {filteredTweetsToAnalyse ? filteredTweetsToAnalyse.length : "-"}{" "}
+          {filteredTweetsToAnalyse
+            ? filteredTweetsToAnalyse.length > MAX_ARCHIVE_SIZE
+              ? `random sample of ${MAX_ARCHIVE_SIZE}`
+              : filteredTweetsToAnalyse.length
+            : "-"}{" "}
           tweets)
         </label>
         <label
@@ -281,7 +285,7 @@ export function RunQueries() {
             }}
             style={{ marginTop: "2px" }}
           />
-          Random Sample
+          Random Sample ({QUERY_BATCH_SIZE} tweets)
         </label>
       </div>
       {rangeSelection.type === "date-range" && (
