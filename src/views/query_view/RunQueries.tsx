@@ -62,7 +62,8 @@ export function RunQueries() {
   const tweetCounts = useTweetCounts(filteredTweetsToAnalyse);
 
   const [rangeSelection, setRangeSelection] = useState<RangeSelection>({
-    type: "whole-archive",
+    type: "last-tweets",
+    numTweets: MAX_ARCHIVE_SIZE,
   });
 
   const [currentProgress, totalProgress] = useMemo(() => {
@@ -79,17 +80,7 @@ export function RunQueries() {
   const handleRunQuery = (queryText: string) => {
     if (queryText === "" || queryText.trim() === "") return;
 
-    if (
-      rangeSelection.type === "whole-archive" &&
-      filteredTweetsToAnalyse.length > MAX_ARCHIVE_SIZE
-    ) {
-      submit(filteredTweetsToAnalyse, queryText, {
-        type: "random-sample",
-        sampleSize: MAX_ARCHIVE_SIZE,
-      });
-    } else {
-      submit(filteredTweetsToAnalyse, queryText, rangeSelection);
-    }
+    submit(filteredTweetsToAnalyse, queryText, rangeSelection);
   };
 
   const tweetsSelectedForQuery = useMemo(() => {
@@ -223,21 +214,42 @@ export function RunQueries() {
             type="radio"
             disabled={isProcessing}
             name="archiveMode"
-            checked={rangeSelection.type === "whole-archive"}
+            checked={rangeSelection.type === "last-tweets"}
             onChange={(e) => {
               if (e.target.checked) {
-                setRangeSelection({ type: "whole-archive" });
+                setRangeSelection({
+                  type: "last-tweets",
+                  numTweets: MAX_ARCHIVE_SIZE,
+                });
               }
             }}
             style={{ accentColor: "#007bff", marginTop: "2px" }}
           />
-          Whole Archive (
-          {filteredTweetsToAnalyse
-            ? filteredTweetsToAnalyse.length > MAX_ARCHIVE_SIZE
-              ? `random sample of ${MAX_ARCHIVE_SIZE}`
-              : filteredTweetsToAnalyse.length
-            : "-"}{" "}
-          tweets)
+          Last {MAX_ARCHIVE_SIZE} tweets
+        </label>
+        <label
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+          }}
+        >
+          <input
+            type="radio"
+            disabled={isProcessing}
+            name="archiveMode"
+            checked={rangeSelection.type === "random-sample"}
+            onChange={(e) => {
+              if (e.target.checked) {
+                setRangeSelection({
+                  type: "random-sample",
+                  sampleSize: MAX_ARCHIVE_SIZE,
+                });
+              }
+            }}
+            style={{ marginTop: "2px" }}
+          />
+          Random Sample ({MAX_ARCHIVE_SIZE} tweets)
         </label>
         <label
           style={{
@@ -262,30 +274,6 @@ export function RunQueries() {
             style={{ accentColor: "#007bff", marginTop: "2px" }}
           />
           Select Range
-        </label>
-        <label
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "6px",
-          }}
-        >
-          <input
-            type="radio"
-            disabled={isProcessing}
-            name="archiveMode"
-            checked={rangeSelection.type === "random-sample"}
-            onChange={(e) => {
-              if (e.target.checked) {
-                setRangeSelection({
-                  type: "random-sample",
-                  sampleSize: QUERY_BATCH_SIZE,
-                });
-              }
-            }}
-            style={{ marginTop: "2px" }}
-          />
-          Random Sample ({QUERY_BATCH_SIZE} tweets)
         </label>
       </div>
       {rangeSelection.type === "date-range" && (

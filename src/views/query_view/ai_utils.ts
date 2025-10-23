@@ -6,7 +6,7 @@ import { pickSampleNoRepeats } from "../../utils";
 export type Query = { prompt: string; systemPrompt?: string };
 
 export type RangeSelection =
-  | { type: "whole-archive" }
+  | { type: "last-tweets"; numTweets: number }
   | { type: "date-range"; startDate: string; endDate: string }
   | { type: "random-sample"; sampleSize: number };
 
@@ -131,8 +131,12 @@ export const selectSubset = (
   tweets: Tweet[],
   rangeSelection: RangeSelection,
 ) => {
-  if (rangeSelection.type === "whole-archive") {
-    return tweets;
+  if (rangeSelection.type === "last-tweets") {
+    // return the last N tweets
+    const numTweets = rangeSelection.numTweets;
+    // Defensive: if numTweets is undefined or not a number, return all tweets
+    if (typeof numTweets !== "number" || numTweets <= 0) return tweets;
+    return tweets.slice(-numTweets);
   } else if (rangeSelection.type === "date-range") {
     const startDateTime = new Date(rangeSelection.startDate);
     const endDateTime = new Date(rangeSelection.endDate);
