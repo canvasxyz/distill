@@ -132,11 +132,15 @@ export const selectSubset = (
   rangeSelection: RangeSelection,
 ) => {
   if (rangeSelection.type === "last-tweets") {
+    // Sort tweets by created_at date in ascending order (older first)
+    const tweetsSorted = [...tweets].sort(
+      (a, b) =>
+        new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+    );
     // return the last N tweets
     const numTweets = rangeSelection.numTweets;
-    // Defensive: if numTweets is undefined or not a number, return all tweets
-    if (typeof numTweets !== "number" || numTweets <= 0) return tweets;
-    return tweets.slice(-numTweets);
+
+    return tweetsSorted.slice(-numTweets);
   } else if (rangeSelection.type === "date-range") {
     const startDateTime = new Date(rangeSelection.startDate);
     const endDateTime = new Date(rangeSelection.endDate);

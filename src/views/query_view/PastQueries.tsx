@@ -33,7 +33,7 @@ function formatRangeSelection(rangeSelection: RangeSelection) {
       )}`
     : rangeSelection.type === "random-sample"
       ? `random sample of ${rangeSelection.sampleSize} tweets`
-      : "whole archive";
+      : `latest ${rangeSelection.numTweets} tweets`;
 }
 
 function PastQueryItem({ query }: { query: QueryResult }) {
