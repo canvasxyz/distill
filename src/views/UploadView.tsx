@@ -105,7 +105,7 @@ export function UploadPanel() {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr",
+            gridTemplateColumns: "1fr 1fr 1fr 1fr",
             gap: "8px",
             marginTop: "16px",
             alignItems: "center",
@@ -114,7 +114,6 @@ export function UploadPanel() {
           <div></div>
           <div style={{ fontWeight: "bold" }}>Username</div>
           <div style={{ fontWeight: "bold" }}>Tweets</div>
-          <div style={{ fontWeight: "bold" }}>Followers</div>
           <div></div>
           {(otherUserAccounts || []).map((account, idx) => (
             <>
@@ -154,8 +153,9 @@ export function UploadPanel() {
                 )}
               </div>
               <div key={`username-${idx}`}>{account.username}</div>
-              <div key={`tweets-${idx}`}>{account.numTweets}</div>
-              <div key={`followers-${idx}`}>{account.numFollowers}</div>
+              <div key={`tweets-${idx}`}>
+                {account.numTweets.toLocaleString()}
+              </div>
               <div key={`select-${idx}`}>
                 <button
                   style={{
