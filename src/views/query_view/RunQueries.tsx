@@ -350,43 +350,56 @@ export function RunQueries() {
           <ResultsBox>
             <div
               style={{
-                position: "absolute",
-                top: "8px",
-                right: "8px",
                 display: "flex",
-                gap: "10px",
+                flexDirection: "row",
               }}
             >
-              <button
+              <div
+                style={{ display: "flex", flexDirection: "column", gap: "4px" }}
+              >
+                <h4 style={{ margin: 0 }}>{queryResult.query}</h4>
+                <span style={{ fontStyle: "italic", fontSize: "smaller" }}>
+                  {" "}
+                  completed in {(queryResult.totalRunTime / 1000).toFixed(
+                    2,
+                  )}{" "}
+                  seconds, {queryResult.totalTokens} tokens
+                </span>
+              </div>
+              <div
                 style={{
-                  border: "1px solidrgb(150, 234, 153)",
-                  borderRadius: "4px",
-                  padding: "4px 8px",
-                  background: "#fff",
-                  color: "#388e3c",
-                  fontSize: "12px",
-                  fontWeight: "bold",
-                  cursor: "pointer",
-                  transition: "all 0.2s ease",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = "#e7f6e7";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = "#fff";
-                }}
-                onClick={() => {
-                  setShowBatchTweetsModal(true);
+                  display: "flex",
+                  gap: "10px",
+                  marginLeft: "auto",
                 }}
               >
-                Show Evidence
-              </button>
-              <CopyButton text={queryResult.result} />
+                <button
+                  style={{
+                    border: "1px solidrgb(150, 234, 153)",
+                    borderRadius: "4px",
+                    padding: "4px 8px",
+                    background: "#fff",
+                    color: "#388e3c",
+                    fontSize: "12px",
+                    fontWeight: "bold",
+                    cursor: "pointer",
+                    transition: "all 0.2s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "#e7f6e7";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "#fff";
+                  }}
+                  onClick={() => {
+                    setShowBatchTweetsModal(true);
+                  }}
+                >
+                  Show Evidence
+                </button>
+                <CopyButton text={queryResult.result} />
+              </div>
             </div>
-            <h4 style={{ marginTop: "0px" }}>
-              {queryResult.query} (completed in{" "}
-              {(queryResult.totalRunTime / 1000).toFixed(2)} seconds
-            </h4>
             <Markdown remarkPlugins={[remarkGfm]}>
               {queryResult.result}
             </Markdown>
