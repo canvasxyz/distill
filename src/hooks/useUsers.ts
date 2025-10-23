@@ -37,7 +37,6 @@ export const useCommunityArchiveAccounts = () => {
         .select("*, profile(*)")
         .order("num_followers", { ascending: false });
 
-      console.log(data);
       // field names in the community archive are in snake case, while the twitter archive uses camel case
       setAccounts(
         data ? (mapKeysDeep(data, snakeToCamelCase) as Result) : null,

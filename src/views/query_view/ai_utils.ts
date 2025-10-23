@@ -62,14 +62,14 @@ export function makePromptMessages(
       role: "system" as const,
       content: `${replaceAccountName(query.systemPrompt || finalSystemPrompt, account.username)}
 
-  ${replaceAccountName(query.prompt, account.username)}`,
+      ${tweetsSample
+        .map((tweet) => `<Post">${tweet.full_text}</Post>`)
+        .join("\n")}`,
     },
 
     {
       role: "user" as const,
-      content: tweetsSample
-        .map((tweet) => `<Post">${tweet.full_text}</Post>`)
-        .join("\n"),
+      content: replaceAccountName(query.prompt, account.username),
     },
   ];
 }
@@ -82,8 +82,10 @@ export async function submitQuery(params: {
   account: Account;
   model: string;
   provider: "deepinfra" | "openrouter" | "cerebras";
+  openrouterProvider?: string;
 }) {
-  const { tweetsSample, query, account, model, provider } = params;
+  const { tweetsSample, query, account, model, provider, openrouterProvider } =
+    params;
   const startTime = performance.now();
 
   const messages = makePromptMessages(tweetsSample, query, account);
@@ -91,6 +93,7 @@ export async function submitQuery(params: {
     {
       model,
       messages,
+      provider: openrouterProvider && { only: [openrouterProvider] },
     };
 
   const classificationResponse = await fetch(serverUrl, {

@@ -56,8 +56,9 @@ export const createLlmQuerySlice: StateCreator<
       rangeSelection,
     );
 
-    const model = "gpt-oss-120b";
-    const provider = "cerebras";
+    const model = "openai/gpt-oss-120b";
+    const provider = "openrouter";
+    const openrouterProvider = "groq";
 
     const batches = getBatches(filteredTweetsSubsetToAnalyse, QUERY_BATCH_SIZE);
 
@@ -98,6 +99,7 @@ export const createLlmQuerySlice: StateCreator<
               account,
               model,
               provider,
+              openrouterProvider,
             });
           } catch (e) {
             console.log(e);
@@ -152,6 +154,7 @@ export const createLlmQuerySlice: StateCreator<
               account,
               model,
               provider,
+              openrouterProvider,
             });
           } catch (e) {
             console.log(e);
@@ -192,7 +195,9 @@ export const createLlmQuerySlice: StateCreator<
           totalEstimatedCost,
           totalTokens,
           model,
-          provider,
+          provider: openrouterProvider
+            ? `${provider}-${openrouterProvider}`
+            : provider,
         };
 
         db.queryResults.add(newQueryResult);
