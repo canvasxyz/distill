@@ -76,17 +76,14 @@ export function makePromptMessages(
 
 export const serverUrl = "https://tweet-analysis-worker.bob-wbb.workers.dev";
 
-export async function submitQuery({
-  tweetsSample,
-  query,
-  account,
-  model,
-}: {
+export async function submitQuery(params: {
   tweetsSample: { full_text: string }[];
   query: Query;
   account: Account;
   model: string;
+  provider: "deepinfra" | "openrouter" | "cerebras";
 }) {
+  const { tweetsSample, query, account, model, provider } = params;
   const startTime = performance.now();
 
   const messages = makePromptMessages(tweetsSample, query, account);
@@ -98,7 +95,7 @@ export async function submitQuery({
 
   const classificationResponse = await fetch(serverUrl, {
     method: "POST",
-    body: JSON.stringify({ params: aiParams, provider: "cerebras" }),
+    body: JSON.stringify({ params: aiParams, provider }),
     headers: { "Content-Type": "application/json" },
   });
 

@@ -57,6 +57,7 @@ export const createLlmQuerySlice: StateCreator<
     );
 
     const model = "gpt-oss-120b";
+    const provider = "cerebras";
 
     const batches = getBatches(filteredTweetsSubsetToAnalyse, QUERY_BATCH_SIZE);
 
@@ -96,6 +97,7 @@ export const createLlmQuerySlice: StateCreator<
               query: { systemPrompt: batchSystemPrompt, prompt: query },
               account,
               model,
+              provider,
             });
           } catch (e) {
             console.log(e);
@@ -149,6 +151,7 @@ export const createLlmQuerySlice: StateCreator<
               query: { systemPrompt: finalSystemPrompt, prompt: query },
               account,
               model,
+              provider,
             });
           } catch (e) {
             console.log(e);
@@ -189,7 +192,7 @@ export const createLlmQuerySlice: StateCreator<
           totalEstimatedCost,
           totalTokens,
           model,
-          provider: "deepinfra",
+          provider,
         };
 
         db.queryResults.add(newQueryResult);
