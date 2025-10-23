@@ -26,6 +26,7 @@ import { useTweetCounts } from "./useTweetCounts";
 import { TweetFrequencyGraph } from "../../components/TweetFrequencyGraph";
 import { BatchTweetsModal } from "./BatchTweetsModal";
 import { MAX_ARCHIVE_SIZE, QUERY_BATCH_SIZE } from "../../constants";
+import { stripThink } from "../../utils";
 
 export function RunQueries() {
   const [exampleQueriesModalIsOpen, setExampleQueriesModalIsOpen] =
@@ -389,7 +390,7 @@ export function RunQueries() {
               </div>
             </div>
             <Markdown remarkPlugins={[remarkGfm]}>
-              {queryResult.result}
+              {stripThink(queryResult.result)}
             </Markdown>
           </ResultsBox>
         </>

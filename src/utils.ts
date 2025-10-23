@@ -47,3 +47,6 @@ export const mapKeysDeep = (obj: Json, fn: (key: string) => string): Json =>
           Object.entries(obj).map(([k, v]) => [fn(k), mapKeysDeep(v!, fn)]),
         )
       : obj;
+
+export const stripThink = (text: string) =>
+  text.replace(/<think>[\s\S]*?<\/think>/gi, "");

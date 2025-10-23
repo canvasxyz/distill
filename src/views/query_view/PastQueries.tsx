@@ -5,6 +5,7 @@ import type { QueryResult, RangeSelection } from "./ai_utils";
 import { CopyButton } from "./ResultsBox";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { stripThink } from "../../utils";
 
 function formatDateTime(dateStr?: string) {
   if (!dateStr) return "";
@@ -110,7 +111,9 @@ function PastQueryItem({ query }: { query: QueryResult }) {
             }}
           >
             <CopyButton text={query.result} />
-            <Markdown remarkPlugins={[remarkGfm]}>{query.result}</Markdown>
+            <Markdown remarkPlugins={[remarkGfm]}>
+              {stripThink(query.result)}
+            </Markdown>
           </div>
           <div
             style={{
