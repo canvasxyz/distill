@@ -81,7 +81,7 @@ export async function submitQuery(params: {
   query: Query;
   account: Account;
   model: string;
-  provider: "deepinfra" | "openrouter" | "cerebras";
+  provider: "deepinfra" | "openrouter" | "cerebras" | "groq";
   openrouterProvider?: string;
 }) {
   const { tweetsSample, query, account, model, provider, openrouterProvider } =
