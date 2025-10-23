@@ -32,7 +32,7 @@ export type LlmQuerySlice = {
   updateBatchStatus: (batchId: number, status: BatchStatus) => void;
 };
 
-const concurrency = 30;
+const concurrency = 5;
 const llmQueryQueue = new PQueue({ concurrency });
 
 export const createLlmQuerySlice: StateCreator<
@@ -56,9 +56,9 @@ export const createLlmQuerySlice: StateCreator<
       rangeSelection,
     );
 
-    const model = "openai/gpt-oss-120b";
-    const provider = "openrouter";
-    const openrouterProvider = "groq";
+    const model = "gpt-oss-120b";
+    const provider = "cerebras";
+    const openrouterProvider = undefined;
 
     const batches = getBatches(filteredTweetsSubsetToAnalyse, QUERY_BATCH_SIZE);
 
@@ -118,6 +118,7 @@ export const createLlmQuerySlice: StateCreator<
         updateBatchStatus(i, {
           status: "done",
           result: tweetTexts,
+          outputText: queryResult.result,
           startTime,
           endTime,
           runTime: endTime - startTime,

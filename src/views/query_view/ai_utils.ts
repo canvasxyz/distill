@@ -17,6 +17,7 @@ export type BatchStatus =
       endTime: number;
       runTime: number;
       result: string[];
+      outputText: string;
       usage: {
         completion_tokens: number;
         estimated_cost: number;
@@ -62,14 +63,14 @@ export function makePromptMessages(
       role: "system" as const,
       content: `${replaceAccountName(query.systemPrompt || finalSystemPrompt, account.username)}
 
-      ${tweetsSample
-        .map((tweet) => `<Post">${tweet.full_text}</Post>`)
-        .join("\n")}`,
+        ${replaceAccountName(query.prompt, account.username)}`,
     },
 
     {
       role: "user" as const,
-      content: replaceAccountName(query.prompt, account.username),
+      content: tweetsSample
+        .map((tweet) => `<Post">${tweet.full_text}</Post>`)
+        .join("\n"),
     },
   ];
 }
