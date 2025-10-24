@@ -26,7 +26,8 @@ function formatDateTime(dateStr?: string) {
   );
 }
 
-function formatRangeSelection(rangeSelection: RangeSelection) {
+function formatRangeSelection(rangeSelection?: RangeSelection) {
+  if (!rangeSelection) return "latest tweets";
   return rangeSelection.type === "date-range"
     ? `${formatDateTime(rangeSelection.startDate)} - ${formatDateTime(
         rangeSelection.endDate,
