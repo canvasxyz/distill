@@ -74,148 +74,183 @@ export const createLlmQuerySlice: StateCreator<
 
     const { llmQueryQueue, account, updateBatchStatus } = get();
 
-    if (!account) return;
+    // If there is no account, reset view state and exit early
+    if (!account) {
+      set({
+        isProcessing: false,
+        startedProcessingTime: null,
+        currentRunningQuery: null,
+        batchStatuses: {},
+      });
+      return;
+    }
 
     for (let i = 0; i < batches.length; i++) {
       const batchId = i;
       const batch = batches[batchId];
 
       llmQueryQueue.add(async () => {
-        const startTime = performance.now();
+        try {
+          const startTime = performance.now();
 
-        updateBatchStatus(i, {
-          status: "pending",
-          startTime,
-        });
+          updateBatchStatus(i, {
+            status: "pending",
+            startTime,
+          });
 
-        let retries = 3;
-        let queryResult: Awaited<ReturnType<typeof submitQuery>> | null = null;
+          let retries = 3;
+          let queryResult: Awaited<ReturnType<typeof submitQuery>> | null =
+            null;
 
-        while (retries > 0 && queryResult === null) {
-          try {
-            queryResult = await submitQuery({
-              tweetsSample: batch,
-              query: { systemPrompt: batchSystemPrompt, prompt: query },
-              account,
-              model,
-              provider,
-              openrouterProvider,
-            });
-          } catch (e) {
-            console.log(e);
-            console.log("retrying...");
-            retries--;
+          while (retries > 0 && queryResult === null) {
+            try {
+              queryResult = await submitQuery({
+                tweetsSample: batch,
+                query: { systemPrompt: batchSystemPrompt, prompt: query },
+                account,
+                model,
+                provider,
+                openrouterProvider,
+              });
+            } catch (e) {
+              console.log(e);
+              console.log("retrying...");
+              retries--;
+            }
           }
-        }
 
-        if (!queryResult) {
-          throw new Error(`Query failed after ${retries} retries!`);
-        }
-
-        const tweetTexts = extractTweetTexts(queryResult.result);
-
-        const endTime = performance.now();
-        updateBatchStatus(i, {
-          status: "done",
-          result: tweetTexts,
-          outputText: queryResult.result,
-          startTime,
-          endTime,
-          runTime: endTime - startTime,
-          usage: queryResult.usage,
-        });
-
-        // if the job is done, then trigger the final query
-        const { batchStatuses } = get();
-        for (const batchStatus of Object.values(batchStatuses)) {
-          if (batchStatus.status !== "done") return;
-        }
-
-        const collectedTweetTexts = Object.values(
-          batchStatuses as unknown as { result: string }[],
-        )
-          .map((batchStatus) => batchStatus.result)
-          .flat()
-          .map((tweetText) => ({ full_text: tweetText }));
-
-        console.log(
-          `submitting final query with ${collectedTweetTexts.length} tweets`,
-        );
-
-        let finalQueryRetries = 3;
-        let finalQueryResult: Awaited<ReturnType<typeof submitQuery>> | null =
-          null;
-
-        while (finalQueryRetries > 0 && finalQueryResult === null) {
-          try {
-            // submit query to create the final result based on the collected texts
-            finalQueryResult = await submitQuery({
-              tweetsSample: collectedTweetTexts,
-              query: { systemPrompt: finalSystemPrompt, prompt: query },
-              account,
-              model,
-              provider,
-              openrouterProvider,
-            });
-          } catch (e) {
-            console.log(e);
-            console.log("retrying...");
-            finalQueryRetries--;
+          if (!queryResult) {
+            throw new Error(`Query failed after ${retries} retries!`);
           }
-        }
 
-        if (!finalQueryResult) {
-          throw new Error(
-            `Final query failed after ${finalQueryRetries} retries!`,
+          const tweetTexts = extractTweetTexts(queryResult.result);
+
+          const endTime = performance.now();
+          updateBatchStatus(i, {
+            status: "done",
+            result: tweetTexts,
+            outputText: queryResult.result,
+            startTime,
+            endTime,
+            runTime: endTime - startTime,
+            usage: queryResult.usage,
+          });
+
+          // if the job is done, then trigger the final query
+          const {
+            batchStatuses,
+            isProcessing: stillProcessing,
+            currentRunningQuery,
+          } = get();
+          // If processing has been cancelled/reset, do not proceed to final query
+          if (!stillProcessing || currentRunningQuery !== query) return;
+          for (const batchStatus of Object.values(batchStatuses)) {
+            if (batchStatus.status !== "done") return;
+          }
+
+          const collectedTweetTexts = Object.values(
+            batchStatuses as unknown as { result: string }[],
+          )
+            .map((batchStatus) => batchStatus.result)
+            .flat()
+            .map((tweetText) => ({ full_text: tweetText }));
+
+          console.log(
+            `submitting final query with ${collectedTweetTexts.length} tweets`,
           );
-        }
 
-        const finalTime = performance.now();
-        const totalRunTime = finalTime - queuedTime!;
+          let finalQueryRetries = 3;
+          let finalQueryResult: Awaited<ReturnType<typeof submitQuery>> | null =
+            null;
 
-        // collect the "usage" field from all of the batches
-
-        let totalEstimatedCost = 0;
-        let totalTokens = 0;
-        for (const batchStatus of Object.values(batchStatuses)) {
-          if (batchStatus.status === "done") {
-            totalEstimatedCost += batchStatus.usage.estimated_cost;
-            totalTokens += batchStatus.usage.total_tokens;
+          while (finalQueryRetries > 0 && finalQueryResult === null) {
+            try {
+              // submit query to create the final result based on the collected texts
+              finalQueryResult = await submitQuery({
+                tweetsSample: collectedTweetTexts,
+                query: { systemPrompt: finalSystemPrompt, prompt: query },
+                account,
+                model,
+                provider,
+                openrouterProvider,
+              });
+            } catch (e) {
+              console.log(e);
+              console.log("retrying...");
+              finalQueryRetries--;
+            }
           }
+
+          if (!finalQueryResult) {
+            throw new Error(
+              `Final query failed after ${finalQueryRetries} retries!`,
+            );
+          }
+
+          const finalTime = performance.now();
+          const totalRunTime = finalTime - queuedTime!;
+
+          // collect the "usage" field from all of the batches
+
+          let totalEstimatedCost = 0;
+          let totalTokens = 0;
+          for (const batchStatus of Object.values(batchStatuses)) {
+            if (batchStatus.status === "done") {
+              totalEstimatedCost += batchStatus.usage.estimated_cost;
+              totalTokens += batchStatus.usage.total_tokens;
+            }
+          }
+
+          totalEstimatedCost += finalQueryResult.usage.estimated_cost;
+          totalTokens += finalQueryResult.usage.total_tokens;
+
+          const newQueryResult = {
+            ...finalQueryResult,
+            id: queryId,
+            totalRunTime,
+            rangeSelection,
+            batchStatuses,
+            totalEstimatedCost,
+            totalTokens,
+            model,
+            provider: openrouterProvider
+              ? `${provider}-${openrouterProvider}`
+              : provider,
+          };
+
+          db.queryResults.add(newQueryResult);
+
+          set({
+            queryResult: newQueryResult,
+            isProcessing: false,
+            batchStatuses: {},
+            currentRunningQuery: null,
+            startedProcessingTime: null,
+          });
+        } catch (error) {
+          console.error("LLM query failed:", error);
+          try {
+            // Clear any pending tasks in the queue to stop further processing
+            get().llmQueryQueue.clear();
+          } catch (e) {
+            // ignore queue clear errors
+          }
+          // Reset UI-related state so the button and view recover
+          set({
+            isProcessing: false,
+            startedProcessingTime: null,
+            currentRunningQuery: null,
+            batchStatuses: {},
+          });
         }
-
-        totalEstimatedCost += finalQueryResult.usage.estimated_cost;
-        totalTokens += finalQueryResult.usage.total_tokens;
-
-        const newQueryResult = {
-          ...finalQueryResult,
-          id: queryId,
-          totalRunTime,
-          rangeSelection,
-          batchStatuses,
-          totalEstimatedCost,
-          totalTokens,
-          model,
-          provider: openrouterProvider
-            ? `${provider}-${openrouterProvider}`
-            : provider,
-        };
-
-        db.queryResults.add(newQueryResult);
-
-        set({
-          queryResult: newQueryResult,
-          isProcessing: false,
-          batchStatuses: {},
-          currentRunningQuery: null,
-          startedProcessingTime: null,
-        });
       });
     }
   },
 
   updateBatchStatus: (batchId: number, newBatchStatus: BatchStatus) => {
-    const { batchStatuses } = get();
+    const { batchStatuses, isProcessing } = get();
+    // Ignore updates if processing has been cancelled/reset
+    if (!isProcessing) return;
     set((state) => ({
       ...state,
       batchStatuses: { ...batchStatuses, [batchId]: newBatchStatus },
