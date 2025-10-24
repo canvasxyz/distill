@@ -59,7 +59,47 @@ export const createLlmQuerySlice: StateCreator<
       rangeSelection,
     );
 
-    const [model, provider, oprProvider] = ["gpt-oss-120b", "cerebras", null];
+    // gpt-oss-120b is the lowest cost and fastest Cerebras model.
+    // Rate limits around 500 tweets/sec, or one query/10 sec.
+    //
+    // $0.35/mtok = $0.012/query
+    // 65-131k context window
+    // 1m TPM, 1k RPM, no daily limit
+
+    // Need to implement:
+    // - Login and auth
+    // - Per user cooldown every 10 sec
+    // - Routing to multiple models (llama-3.3-70b, gpt-oss-120b, qwen-3-235b-a22b-instruct-2507)
+    //   gets us to one query/3 sec
+
+    // concurrency = 5
+    const config = ["gpt-oss-120b", "cerebras", null]; // fast - 10 seconds for 10k
+    // const config = ["llama-3.3-70b", "cerebras", null]; // fast - 10 seconds for 10k
+    // const config = ["qwen-3-235b-a22b-instruct-2507", "cerebras", null]; // slow - 20 seconds for 10k
+    // const config = ["qwen-3-32b", "cerebras", null]; // slow - 15 seconds for 10k
+
+    // concurrency = 5
+    // const config = ["google/gemini-2.0-flash-001", "deepinfra", null]; // slow - 15-30 seconds for 10k
+    // const config = ["Qwen/Qwen3-Next-80B-A3B-Instruct", "deepinfra", null]; // slowest - 30+ seconds for 10k
+
+    // concurrency = 5
+    // const config = [
+    //   "google/gemini-2.5-flash-lite",
+    //   "openrouter",
+    //   "google-vertex",
+    // ]; // did not finish
+    // const config = [
+    //   "google/gemini-2.5-flash-lite-preview-09-2025",
+    //   "openrouter",
+    //   "google-vertex/global",
+    // ]; // slow - 30-60 seconds for 10k
+    // const config = [
+    //   "google/gemini-2.5-flash-preview-09-2025",
+    //   "openrouter",
+    //   "google-vertex/global",
+    // ]; // slow - 30-60 seconds for 10k
+
+    const [model, provider, oprProvider] = config;
 
     const batches = getBatches(filteredTweetsSubsetToAnalyse, QUERY_BATCH_SIZE);
 
