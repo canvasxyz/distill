@@ -23,6 +23,7 @@ export type LlmQuerySlice = {
   startedProcessingTime: number | null;
   currentRunningQuery: string | null;
   batchStatuses: Record<string, BatchStatus>;
+  errorMessage: string | null;
   llmQueryQueue: PQueue;
   submit: (
     filteredTweetsToAnalyse: Tweet[],
@@ -30,6 +31,7 @@ export type LlmQuerySlice = {
     rangeSelection: RangeSelection,
   ) => void;
   updateBatchStatus: (batchId: number, status: BatchStatus) => void;
+  setQueryError: (msg: string | null) => void;
 };
 
 const concurrency = 5;
@@ -46,6 +48,7 @@ export const createLlmQuerySlice: StateCreator<
   currentRunningQuery: null,
   isProcessing: false,
   startedProcessingTime: null,
+  errorMessage: null,
   llmQueryQueue,
 
   submit: (filteredTweetsToAnalyse: Tweet[], query: string, rangeSelection) => {
@@ -56,9 +59,7 @@ export const createLlmQuerySlice: StateCreator<
       rangeSelection,
     );
 
-    const model = "gpt-oss-120b";
-    const provider = "cerebras";
-    const openrouterProvider = undefined;
+    const [model, provider, oprProvider] = ["gpt-oss-120b", "cerebras", null];
 
     const batches = getBatches(filteredTweetsSubsetToAnalyse, QUERY_BATCH_SIZE);
 
@@ -70,6 +71,7 @@ export const createLlmQuerySlice: StateCreator<
       startedProcessingTime: queuedTime,
       currentRunningQuery: query,
       isProcessing: true,
+      errorMessage: null,
     });
 
     const { llmQueryQueue, account, updateBatchStatus } = get();
@@ -81,6 +83,7 @@ export const createLlmQuerySlice: StateCreator<
         startedProcessingTime: null,
         currentRunningQuery: null,
         batchStatuses: {},
+        // keep errorMessage as-is; account is handled higher up in UI
       });
       return;
     }
@@ -110,7 +113,7 @@ export const createLlmQuerySlice: StateCreator<
                 account,
                 model,
                 provider,
-                openrouterProvider,
+                oprProvider,
               });
             } catch (e) {
               console.log(e);
@@ -172,7 +175,7 @@ export const createLlmQuerySlice: StateCreator<
                 account,
                 model,
                 provider,
-                openrouterProvider,
+                oprProvider,
               });
             } catch (e) {
               console.log(e);
@@ -213,9 +216,7 @@ export const createLlmQuerySlice: StateCreator<
             totalEstimatedCost,
             totalTokens,
             model,
-            provider: openrouterProvider
-              ? `${provider}-${openrouterProvider}`
-              : provider,
+            provider: oprProvider ? `${provider}-${oprProvider}` : provider,
           };
 
           db.queryResults.add(newQueryResult);
@@ -226,6 +227,7 @@ export const createLlmQuerySlice: StateCreator<
             batchStatuses: {},
             currentRunningQuery: null,
             startedProcessingTime: null,
+            errorMessage: null,
           });
         } catch (error) {
           console.error("LLM query failed:", error);
@@ -241,6 +243,8 @@ export const createLlmQuerySlice: StateCreator<
             startedProcessingTime: null,
             currentRunningQuery: null,
             batchStatuses: {},
+            errorMessage:
+              (error as Error)?.message || "Query failed. Please try again.",
           });
         }
       });
@@ -256,4 +260,5 @@ export const createLlmQuerySlice: StateCreator<
       batchStatuses: { ...batchStatuses, [batchId]: newBatchStatus },
     }));
   },
+  setQueryError: (msg: string | null) => set({ errorMessage: msg }),
 });

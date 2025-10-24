@@ -44,6 +44,8 @@ export function RunQueries() {
     isProcessing,
     currentRunningQuery,
     queryResult,
+    errorMessage,
+    setQueryError,
   } = useStore();
 
   const filteredTweetsToAnalyse = useMemo(
@@ -317,6 +319,22 @@ export function RunQueries() {
           </span>
         )}
       </div>
+      {errorMessage && (
+        <div
+          role="alert"
+          style={{
+            background: "#fde8e8",
+            border: "1px solid #f5c2c7",
+            color: "#842029",
+            padding: "10px 12px",
+            marginTop: "6px",
+            borderRadius: 6,
+          }}
+          onClick={() => setQueryError(null)}
+        >
+          {errorMessage}
+        </div>
+      )}
 
       {isProcessing && currentRunningQuery && (
         <ResultsBox>
