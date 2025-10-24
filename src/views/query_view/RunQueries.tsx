@@ -48,6 +48,23 @@ export function RunQueries() {
     setQueryError,
   } = useStore();
 
+  const hasReplies = useMemo(
+    () => (allTweets || []).some((t) => Boolean(t.in_reply_to_user_id)),
+    [allTweets],
+  );
+  const hasRetweets = useMemo(
+    () => (allTweets || []).some((t) => t.full_text.startsWith("RT ")),
+    [allTweets],
+  );
+
+  // Keep UI state intuitive: if none exist, ensure toggles are off
+  useEffect(() => {
+    if (!hasReplies && includeReplies) setIncludeReplies(false);
+  }, [hasReplies]);
+  useEffect(() => {
+    if (!hasRetweets && includeRetweets) setIncludeRetweets(false);
+  }, [hasRetweets]);
+
   const filteredTweetsToAnalyse = useMemo(
     () =>
       (allTweets || []).filter((tweet) => {
@@ -212,7 +229,7 @@ export function RunQueries() {
         <label style={{ display: "flex", alignItems: "center", gap: "6px" }}>
           <input
             type="checkbox"
-            disabled={isProcessing}
+            disabled={isProcessing || !hasReplies}
             checked={includeReplies}
             onChange={(e) => setIncludeReplies(e.target.checked)}
           />
@@ -221,7 +238,7 @@ export function RunQueries() {
         <label style={{ display: "flex", alignItems: "center", gap: "6px" }}>
           <input
             type="checkbox"
-            disabled={isProcessing}
+            disabled={isProcessing || !hasRetweets}
             checked={includeRetweets}
             onChange={(e) => setIncludeRetweets(e.target.checked)}
           />
