@@ -80,7 +80,8 @@ export const createLlmQuerySlice: StateCreator<
 
     // concurrency = 5
     // const config = ["google/gemini-2.0-flash-001", "deepinfra", null]; // slow - 15-30 seconds for 10k
-    // const config = ["Qwen/Qwen3-Next-80B-A3B-Instruct", "deepinfra", null]; // slowest - 30+ seconds for 10k
+    // const config = ["openai/gpt-oss-120b", "deepinfra", null]; // mxfp4, slowest - 30-60 seconds for 10k
+    // const config = ["Qwen/Qwen3-Next-80B-A3B-Instruct", "deepinfra", null]; // bfloat16, slowest - 30+ seconds for 10k
 
     // concurrency = 5
     // const config = [
