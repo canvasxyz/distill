@@ -64,6 +64,21 @@ export function RunQueries() {
 
   const tweetCounts = useTweetCounts(filteredTweetsToAnalyse);
 
+  const formatCompact = (n: number) => {
+    try {
+      const s = new Intl.NumberFormat("en", {
+        notation: "compact",
+        maximumFractionDigits: 1,
+      }).format(n);
+      // Use lowercase suffix to match "10k" style
+      return s.replace("K", "k").replace("M", "m").replace("G", "g");
+    } catch {
+      if (n >= 1_000_000) return `${Math.round(n / 1_000_000)}m`;
+      if (n >= 1_000) return `${Math.round(n / 1_000)}k`;
+      return String(n);
+    }
+  };
+
   const [rangeSelection, setRangeSelection] = useState<RangeSelection>({
     type: "last-tweets",
     numTweets: MAX_ARCHIVE_SIZE,
@@ -201,7 +216,7 @@ export function RunQueries() {
             checked={includeReplies}
             onChange={(e) => setIncludeReplies(e.target.checked)}
           />
-          Include replies
+          Replies
         </label>
         <label style={{ display: "flex", alignItems: "center", gap: "6px" }}>
           <input
@@ -210,7 +225,7 @@ export function RunQueries() {
             checked={includeRetweets}
             onChange={(e) => setIncludeRetweets(e.target.checked)}
           />
-          Include retweets
+          Retweets
         </label>
         <label style={{ display: "flex", alignItems: "center", gap: "6px" }}>
           <input
@@ -228,31 +243,7 @@ export function RunQueries() {
             }}
             style={{ accentColor: "#007bff", marginTop: "2px" }}
           />
-          Last {MAX_ARCHIVE_SIZE} tweets
-        </label>
-        <label
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "6px",
-          }}
-        >
-          <input
-            type="radio"
-            disabled={isProcessing}
-            name="archiveMode"
-            checked={rangeSelection.type === "random-sample"}
-            onChange={(e) => {
-              if (e.target.checked) {
-                setRangeSelection({
-                  type: "random-sample",
-                  sampleSize: MAX_ARCHIVE_SIZE,
-                });
-              }
-            }}
-            style={{ marginTop: "2px" }}
-          />
-          Random Sample ({MAX_ARCHIVE_SIZE} tweets)
+          Last {formatCompact(MAX_ARCHIVE_SIZE)}
         </label>
         <label
           style={{
@@ -276,7 +267,31 @@ export function RunQueries() {
             }}
             style={{ accentColor: "#007bff", marginTop: "2px" }}
           />
-          Select Range
+          Custom range
+        </label>
+        <label
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+          }}
+        >
+          <input
+            type="radio"
+            disabled={isProcessing}
+            name="archiveMode"
+            checked={rangeSelection.type === "random-sample"}
+            onChange={(e) => {
+              if (e.target.checked) {
+                setRangeSelection({
+                  type: "random-sample",
+                  sampleSize: MAX_ARCHIVE_SIZE,
+                });
+              }
+            }}
+            style={{ marginTop: "2px" }}
+          />
+          Random sample
         </label>
       </div>
       {rangeSelection.type === "date-range" && (
