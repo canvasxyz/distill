@@ -42,6 +42,7 @@ export function RunQueries() {
     submit,
     batchStatuses,
     isProcessing,
+    startedProcessingTime,
     currentRunningQuery,
     queryResult,
     errorMessage,
@@ -380,6 +381,9 @@ export function RunQueries() {
           <ProgressBar
             currentProgress={currentProgress}
             totalProgress={totalProgress}
+            startedAtMs={startedProcessingTime}
+            isProcessing={isProcessing}
+            numBatches={batchCount || totalProgress}
           />
         </ResultsBox>
       )}

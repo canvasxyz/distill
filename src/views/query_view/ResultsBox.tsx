@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
 export const CopyButton = ({ text }: { text: string }) => {
   const [copied, setCopied] = useState(false);
@@ -76,10 +76,41 @@ export const ProgressLabel = ({
 export function ProgressBar({
   currentProgress,
   totalProgress,
+  startedAtMs,
+  numBatches,
+  isProcessing,
 }: {
   currentProgress: number;
   totalProgress: number;
+  startedAtMs?: number | null;
+  numBatches?: number;
+  isProcessing?: boolean;
 }) {
+  const [nowMs, setNowMs] = useState<number>(0);
+  // const timerRef = useRef<number | null>(null);
+
+  const shouldEase = Boolean(isProcessing) && Boolean(startedAtMs)  
+  useEffect(() => {
+    if (!shouldEase) return
+    const timer = setInterval(() => setNowMs(performance.now()), 20)
+    return () => clearInterval(timer)
+  }, [shouldEase]);
+
+  let easedFraction = 0;
+  if (shouldEase) {
+    const EASING_DURATION_MS = 45000; // 45s
+    const easeOutCubic = (t: number) => 1 -  Math.pow(1 - t, 3);
+
+    const t = Math.max(0, Math.min(1, (nowMs - (startedAtMs as number)) / EASING_DURATION_MS));
+    const eased = easeOutCubic(t);
+    const divisor = numBatches && numBatches > 0 ? numBatches : totalProgress;
+    const maxEaseFrac = divisor > 0 ? 1 / divisor : 0;
+    easedFraction = eased * maxEaseFrac;
+  }
+
+  const baseFraction = totalProgress > 0 ? currentProgress / totalProgress : 0;
+  const widthFraction = Math.min(1, baseFraction + easedFraction);
+
   return (
     <>
       <div
@@ -93,7 +124,7 @@ export function ProgressBar({
       >
         <div
           style={{
-            width: `${(currentProgress / totalProgress) * 100}%`,
+            width: `${widthFraction * 100}%`,
             height: "100%",
             backgroundColor: "#4CAF50",
             transition: "width 0.3s ease",
