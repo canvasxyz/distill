@@ -85,7 +85,7 @@ export const createLlmQuerySlice: StateCreator<
 
     // config = ["google/gemini-2.5-flash-lite", "openrouter", "google-vertex"]; // sometimes fails
 
-    const [model, provider, oprProvider] = config;
+    const [model, provider, openrouterProvider] = config;
 
     const batches = getBatches(filteredTweetsSubsetToAnalyse, QUERY_BATCH_SIZE);
 
@@ -139,7 +139,7 @@ export const createLlmQuerySlice: StateCreator<
                 account,
                 model,
                 provider,
-                openrouterProvider: oprProvider,
+                openrouterProvider: openrouterProvider,
               });
             } catch (e) {
               console.log(e);
@@ -201,7 +201,7 @@ export const createLlmQuerySlice: StateCreator<
                 account,
                 model,
                 provider,
-                openrouterProvider: oprProvider,
+                openrouterProvider: openrouterProvider,
               });
             } catch (e) {
               console.log(e);
@@ -242,7 +242,9 @@ export const createLlmQuerySlice: StateCreator<
             totalEstimatedCost,
             totalTokens,
             model,
-            provider: oprProvider ? `${provider}-${oprProvider}` : provider,
+            provider: openrouterProvider
+              ? `${provider}-${openrouterProvider}`
+              : provider,
           };
 
           db.queryResults.add(newQueryResult);

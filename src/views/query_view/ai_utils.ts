@@ -91,11 +91,11 @@ export async function submitQuery(params: {
 
   const messages = makePromptMessages(tweetsSample, query, account);
   const aiParams: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming & {
-    provider: { only: string[] } | null;
+    provider?: { only: string[] };
   } = {
     model,
     messages,
-    provider: openrouterProvider ? { only: [openrouterProvider] } : null,
+    provider: openrouterProvider ? { only: [openrouterProvider] } : undefined,
   };
 
   const classificationResponse = await fetch(serverUrl, {
