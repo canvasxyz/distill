@@ -74,12 +74,12 @@ export const createLlmQuerySlice: StateCreator<
 
     let config: LLMQueryConfig;
 
-    config = ["gpt-oss-120b", "cerebras", null]; // fast - 10 seconds for 10k
+    // config = ["gpt-oss-120b", "cerebras", null]; // fast - 10 seconds for 10k
     // config = ["llama-3.3-70b", "cerebras", null]; // fast - 10 seconds for 10k
     // config = ["qwen-3-235b-a22b-instruct-2507", "cerebras", null]; // slow - 20 seconds for 10k
     // config = ["qwen-3-32b", "cerebras", null]; // slow - 15 seconds for 10k
 
-    // config = ["google/gemini-2.0-flash-001", "deepinfra", null]; // slow - 15-30 seconds for 10k
+    config = ["google/gemini-2.0-flash-001", "deepinfra", null]; // slow - 15-30 seconds for 10k
     // config = ["openai/gpt-oss-120b", "deepinfra", null]; // mxfp4, slowest - 30-60 seconds for 10k
     // config = ["Qwen/Qwen3-Next-80B-A3B-Instruct", "deepinfra", null]; // bfloat16, slowest - 30+ seconds for 10k
 
