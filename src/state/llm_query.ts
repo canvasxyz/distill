@@ -15,7 +15,7 @@ import type { Tweet } from "../types";
 import { getBatches } from "../utils";
 import { v7 as uuidv7 } from "uuid";
 import { db } from "../db";
-import { QUERY_BATCH_SIZE } from "../constants";
+import { QUERY_BATCH_SIZE, type LLMQueryConfig } from "../constants";
 
 export type LlmQuerySlice = {
   queryResult: QueryResult | null;
@@ -73,7 +73,7 @@ export const createLlmQuerySlice: StateCreator<
     //   gets us to one query/3 sec
 
     // concurrency = 5
-    const config = ["gpt-oss-120b", "cerebras", null]; // fast - 10 seconds for 10k
+    const config: LLMQueryConfig = ["gpt-oss-120b", "cerebras", null]; // fast - 10 seconds for 10k
     // const config = ["llama-3.3-70b", "cerebras", null]; // fast - 10 seconds for 10k
     // const config = ["qwen-3-235b-a22b-instruct-2507", "cerebras", null]; // slow - 20 seconds for 10k
     // const config = ["qwen-3-32b", "cerebras", null]; // slow - 15 seconds for 10k
@@ -154,7 +154,7 @@ export const createLlmQuerySlice: StateCreator<
                 account,
                 model,
                 provider,
-                oprProvider,
+                openrouterProvider: oprProvider,
               });
             } catch (e) {
               console.log(e);
@@ -216,7 +216,7 @@ export const createLlmQuerySlice: StateCreator<
                 account,
                 model,
                 provider,
-                oprProvider,
+                openrouterProvider: oprProvider,
               });
             } catch (e) {
               console.log(e);

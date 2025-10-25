@@ -83,19 +83,20 @@ export async function submitQuery(params: {
   account: Account;
   model: string;
   provider: "deepinfra" | "openrouter" | "cerebras" | "groq";
-  openrouterProvider?: string;
+  openrouterProvider?: string | null | undefined;
 }) {
   const { tweetsSample, query, account, model, provider, openrouterProvider } =
     params;
   const startTime = performance.now();
 
   const messages = makePromptMessages(tweetsSample, query, account);
-  const aiParams: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming =
-    {
-      model,
-      messages,
-      provider: openrouterProvider && { only: [openrouterProvider] },
-    };
+  const aiParams: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming & {
+    provider: { only: string[] } | null;
+  } = {
+    model,
+    messages,
+    provider: openrouterProvider ? { only: [openrouterProvider] } : null,
+  };
 
   const classificationResponse = await fetch(serverUrl, {
     method: "POST",
