@@ -27,6 +27,7 @@ import { TweetFrequencyGraph } from "../../components/TweetFrequencyGraph";
 import { BatchTweetsModal } from "./BatchTweetsModal";
 import { MAX_ARCHIVE_SIZE, QUERY_BATCH_SIZE } from "../../constants";
 import { stripThink } from "../../utils";
+import { AVAILABLE_LLM_CONFIGS } from "../../state/llm_query";
 
 export function RunQueries() {
   const [exampleQueriesModalIsOpen, setExampleQueriesModalIsOpen] =
@@ -47,6 +48,8 @@ export function RunQueries() {
     queryResult,
     errorMessage,
     setQueryError,
+    selectedConfigIndex,
+    setSelectedConfigIndex,
   } = useStore();
 
   const hasReplies = useMemo(
@@ -238,6 +241,7 @@ export function RunQueries() {
           }}
           showShortcut
         />
+
         <div
           style={{
             height: "100%",
@@ -340,6 +344,34 @@ export function RunQueries() {
             Retweets
           </label>
         </div>
+        <div style={{ flex: 1 }} />
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <select
+            id="model-select"
+            disabled={isProcessing}
+            value={selectedConfigIndex}
+            onChange={(e) => setSelectedConfigIndex(Number(e.target.value))}
+            style={{
+              padding: "6px 8px",
+              borderRadius: 6,
+              border: "1px solid #ccc",
+              background: isProcessing ? "#f3f3f3" : "#fff",
+              width: 200,
+            }}
+          >
+            {AVAILABLE_LLM_CONFIGS.map(
+              ([model, provider, openrouterProvider], idx) => (
+                <option
+                  key={`${model}-${provider}-${openrouterProvider || ""}`}
+                  value={idx}
+                >
+                  {model} / {provider}
+                  {openrouterProvider ? ` / ${openrouterProvider}` : ""}
+                </option>
+              ),
+            )}
+          </select>
+        </div>
       </div>
       {rangeSelection.type === "date-range" && (
         <TweetFrequencyGraph
@@ -398,7 +430,12 @@ export function RunQueries() {
               }}
             >
               <div
-                style={{ display: "flex", flexDirection: "column", gap: "4px" }}
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "4px",
+                  flex: 1,
+                }}
               >
                 <h4 style={{ margin: 0 }}>{queryResult.query}</h4>
                 <span style={{ fontStyle: "italic", fontSize: "smaller" }}>

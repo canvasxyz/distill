@@ -17,6 +17,14 @@ import { v7 as uuidv7 } from "uuid";
 import { db } from "../db";
 import { QUERY_BATCH_SIZE, type LLMQueryConfig } from "../constants";
 
+export const AVAILABLE_LLM_CONFIGS: LLMQueryConfig[] = [
+  ["gpt-oss-120b", "cerebras", null],
+  ["llama-3.3-70b", "cerebras", null],
+  ["qwen-3-235b-a22b-instruct-2507", "cerebras", null],
+  ["qwen-3-32b", "cerebras", null],
+  ["google/gemini-2.0-flash-001", "deepinfra", null],
+];
+
 export type LlmQuerySlice = {
   queryResult: QueryResult | null;
   isProcessing: boolean;
@@ -25,6 +33,8 @@ export type LlmQuerySlice = {
   batchStatuses: Record<string, BatchStatus>;
   errorMessage: string | null;
   llmQueryQueue: PQueue;
+  selectedConfigIndex: number;
+  setSelectedConfigIndex: (idx: number) => void;
   submit: (
     filteredTweetsToAnalyse: Tweet[],
     query: string,
@@ -50,6 +60,8 @@ export const createLlmQuerySlice: StateCreator<
   startedProcessingTime: null,
   errorMessage: null,
   llmQueryQueue,
+  selectedConfigIndex: 0,
+  setSelectedConfigIndex: (idx: number) => set({ selectedConfigIndex: idx }),
 
   submit: (filteredTweetsToAnalyse: Tweet[], query: string, rangeSelection) => {
     const queryId = uuidv7();
@@ -59,31 +71,9 @@ export const createLlmQuerySlice: StateCreator<
       rangeSelection,
     );
 
-    // gpt-oss-120b is the lowest cost and fastest Cerebras model.
-    // Rate limits around 500 tweets/sec, or one query/10 sec.
-    //
-    // $0.35/mtok = $0.012/query
-    // 65-131k context window
-    // 1m TPM, 1k RPM, no daily limit
-
-    // Need to implement:
-    // - Login and auth
-    // - Per user cooldown every 10 sec
-    // - Routing to multiple models (llama-3.3-70b, gpt-oss-120b, qwen-3-235b-a22b-instruct-2507)
-    //   gets us to one query/3 sec
-
-    let config: LLMQueryConfig;
-
-    // config = ["gpt-oss-120b", "cerebras", null]; // fast - 10 seconds for 10k
-    // config = ["llama-3.3-70b", "cerebras", null]; // fast - 10 seconds for 10k
-    // config = ["qwen-3-235b-a22b-instruct-2507", "cerebras", null]; // slow - 20 seconds for 10k
-    // config = ["qwen-3-32b", "cerebras", null]; // slow - 15 seconds for 10k
-
-    config = ["google/gemini-2.0-flash-001", "deepinfra", null]; // slow - 15-30 seconds for 10k
-    // config = ["openai/gpt-oss-120b", "deepinfra", null]; // mxfp4, slowest - 30-60 seconds for 10k
-    // config = ["Qwen/Qwen3-Next-80B-A3B-Instruct", "deepinfra", null]; // bfloat16, slowest - 30+ seconds for 10k
-
-    // config = ["google/gemini-2.5-flash-lite", "openrouter", "google-vertex"]; // sometimes fails
+    const { selectedConfigIndex } = get();
+    const config: LLMQueryConfig =
+      AVAILABLE_LLM_CONFIGS[selectedConfigIndex] || AVAILABLE_LLM_CONFIGS[0];
 
     const [model, provider, openrouterProvider] = config;
 
