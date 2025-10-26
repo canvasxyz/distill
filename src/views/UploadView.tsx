@@ -32,16 +32,15 @@ export function UploadPanel() {
         maxWidth: "768px",
         margin: "auto",
         padding: "20px",
-        marginTop: "100px",
         borderRadius: "10px",
       }}
     >
       <h1>Open your archive</h1>
       <p>
         To begin, open your archive. Use the ".zip" file that you received when
-        you requested your archive from Twitter/X. The Twitter Archive Explorer
-        will only look at the account.js, follower.js, following.js, profile.js
-        and tweet(s).js files.
+        you requested your archive from Twitter/X. The Archive Explorer will
+        only look at the account.js, follower.js, following.js, profile.js and
+        tweet(s).js files.
       </p>
       <div
         style={{
@@ -84,13 +83,15 @@ export function UploadPanel() {
           style={{ display: "none" }}
         />
       </div>
+      <br />
+
       <h3>... or select a user from Community Archive</h3>
       {loadCommunityArchiveUserProgress ? (
         <>
           {loadCommunityArchiveUserProgress.status === "starting" &&
-            "Starting..."}
+            "Starting download..."}
           {loadCommunityArchiveUserProgress.status === "loadingTweets" &&
-            `Loading tweets (${loadCommunityArchiveUserProgress.tweetsLoaded}/${loadCommunityArchiveUserProgress.totalNumTweets})`}
+            `Loading tweets... (${loadCommunityArchiveUserProgress.tweetsLoaded}/${loadCommunityArchiveUserProgress.totalNumTweets})`}
           {loadCommunityArchiveUserProgress.status === "loadingProfile" &&
             "Loading profile"}
 
@@ -105,19 +106,18 @@ export function UploadPanel() {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "1fr 1fr 1fr 1fr",
+            gridTemplateColumns: "1fr 1fr 1fr",
             gap: "8px",
             marginTop: "16px",
             alignItems: "center",
           }}
         >
-          <div></div>
-          <div style={{ fontWeight: "bold" }}>Username</div>
-          <div style={{ fontWeight: "bold" }}>Tweets</div>
-          <div></div>
           {(otherUserAccounts || []).map((account, idx) => (
             <>
-              <div key={`avatar-${idx}`}>
+              <div
+                key={`avatar-${idx}`}
+                style={{ display: "flex", alignItems: "center" }}
+              >
                 {account.profile && account.profile.avatarMediaUrl ? (
                   <img
                     src={account.profile.avatarMediaUrl}
@@ -151,12 +151,12 @@ export function UploadPanel() {
                     ?
                   </div>
                 )}
+                <div style={{ marginLeft: 10 }}>{account.username}</div>
               </div>
-              <div key={`username-${idx}`}>{account.username}</div>
-              <div key={`tweets-${idx}`}>
+              <div key={`tweets-${idx}`} style={{ textAlign: "center" }}>
                 {account.numTweets.toLocaleString()}
               </div>
-              <div key={`select-${idx}`}>
+              <div key={`select-${idx}`} style={{ textAlign: "right" }}>
                 <button
                   style={{
                     padding: "4px 10px",

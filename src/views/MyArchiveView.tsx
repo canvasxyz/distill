@@ -117,8 +117,9 @@ function ArchiveSummaryCard() {
             color: "#223259",
             display: "flex",
             alignItems: "center",
-            gap: 10,
+            gap: 6,
             flexWrap: "wrap",
+            marginBottom: -1,
           }}
         >
           <span>{account.accountDisplayName}</span>
@@ -179,14 +180,12 @@ function ArchiveSummaryCard() {
             display: "flex",
             gap: "6px 24px",
             flexWrap: "wrap",
-            color: "#223259",
             fontSize: "1em",
-            fontWeight: 600,
-            marginTop: "4px",
+            color: "#607399",
           }}
         >
-          <span>Total posts: {totalTweetsCount}</span>
-          <span>Tweets: {originalTweetsCount}</span>
+          <span>Total: {totalTweetsCount}</span>
+          <span>Posts: {originalTweetsCount}</span>
           <span>Replies: {repliesCount}</span>
           <span>Retweets: {retweetsCount}</span>
         </div>

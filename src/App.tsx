@@ -19,7 +19,7 @@ function App() {
   }, [init, subscribe, unsubscribe, analysisQueue]);
 
   return (
-    <div style={{ display: "flex", height: "100vh" }}>
+    <div style={{ display: "flex" }}>
       <Sidebar />
       <div style={{ flex: 1 }}>
         <Outlet />
