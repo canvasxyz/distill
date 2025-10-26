@@ -178,6 +178,46 @@ export function RunQueries() {
     textareaRef.current?.focus();
   }, [account, selectedQuery]);
 
+  // Utility: only persist queries that don't reference a different @handle
+  const shouldPersistQuery = (text: string, currentHandle: string) => {
+    if (!text) return true;
+    const handles = (text.match(/@[A-Za-z0-9_]{1,15}/g) || []).map((h) =>
+      h.toLowerCase(),
+    );
+    if (handles.length === 0) return true;
+    const uniq = new Set(handles);
+    uniq.delete(currentHandle.toLowerCase());
+    return uniq.size === 0; // persist only if remaining set is empty
+  };
+
+  // Restore last query from localStorage when account is available
+  useEffect(() => {
+    if (!account) return;
+    try {
+      const saved = localStorage.getItem("llm:lastQuery");
+      const currentHandle = `@${account.username}`.toLowerCase();
+      if (saved && shouldPersistQuery(saved, currentHandle)) {
+        setSelectedQuery((prev) => (prev ? prev : saved));
+      }
+    } catch {
+      // ignore storage errors
+    }
+  }, [account]);
+
+  // Persist query text changes to localStorage when valid for this account
+  useEffect(() => {
+    if (!account) return;
+    try {
+      const currentHandle = `@${account.username}`.toLowerCase();
+      if (shouldPersistQuery(selectedQuery, currentHandle)) {
+        localStorage.setItem("llm:lastQuery", selectedQuery || "");
+      }
+      // else: do not persist queries mentioning other handles
+    } catch {
+      // ignore storage errors
+    }
+  }, [selectedQuery, account]);
+
   if (!account) return <></>;
 
   const totalPostsCount = (allTweets || []).length;

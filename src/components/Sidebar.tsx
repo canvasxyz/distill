@@ -23,6 +23,7 @@ export function Sidebar() {
     numTweetsAnalyzed,
     analysisInProgress,
     allTweets,
+    viewingMyArchive,
     includedTweets,
     excludedTweets,
     tweetsByFilterName,
@@ -44,7 +45,7 @@ export function Sidebar() {
         </LinkButton>
         <LinkButton
           to="/all-tweets"
-          disabled={!allTweets || (allTweets && allTweets.length === 0)}
+          disabled={!viewingMyArchive}
           size="lg"
         >
           Archive Review

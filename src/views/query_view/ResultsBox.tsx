@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 export const CopyButton = ({ text }: { text: string }) => {
   const [copied, setCopied] = useState(false);
@@ -87,7 +87,6 @@ export function ProgressBar({
   isProcessing?: boolean;
 }) {
   const [nowMs, setNowMs] = useState<number>(0);
-  // const timerRef = useRef<number | null>(null);
 
   const shouldEase = Boolean(isProcessing) && Boolean(startedAtMs);
   useEffect(() => {
