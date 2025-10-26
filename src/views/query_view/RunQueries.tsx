@@ -405,8 +405,7 @@ export function RunQueries() {
                   key={`${model}-${provider}-${openrouterProvider || ""}`}
                   value={idx}
                 >
-                  {model} / {provider}
-                  {openrouterProvider ? ` / ${openrouterProvider}` : ""}
+                  {model}
                 </option>
               ),
             )}
