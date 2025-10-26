@@ -136,39 +136,43 @@ function ArchiveSummaryCard() {
             fontSize: "1em",
           }}
         >
-          <span style={{ display: "flex", alignItems: "center" }}>
-            <span
-              role="img"
-              aria-label="Email"
-              style={{
-                marginRight: "5px",
-                fontSize: "1em",
-              }}
-            >
-              📧
+          {account.email && (
+            <span style={{ display: "flex", alignItems: "center" }}>
+              <span
+                role="img"
+                aria-label="Email"
+                style={{
+                  marginRight: "5px",
+                  fontSize: "1em",
+                }}
+              >
+                📧
+              </span>
+              {account.email}
             </span>
-            {account.email}
-          </span>
-          <span style={{ display: "flex", alignItems: "center" }}>
-            <span
-              role="img"
-              aria-label="Calendar"
-              style={{
-                marginRight: "5px",
-                fontSize: "1em",
-              }}
-            >
-              📅
+          )}
+          {account.createdAt && (
+            <span style={{ display: "flex", alignItems: "center" }}>
+              <span
+                role="img"
+                aria-label="Calendar"
+                style={{
+                  marginRight: "5px",
+                  fontSize: "1em",
+                }}
+              >
+                📅
+              </span>
+              <span>
+                Joined{" "}
+                {new Date(account.createdAt).toLocaleDateString(undefined, {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                })}
+              </span>
             </span>
-            <span>
-              Joined{" "}
-              {new Date(account.createdAt).toLocaleDateString(undefined, {
-                year: "numeric",
-                month: "short",
-                day: "numeric",
-              })}
-            </span>
-          </span>
+          )}
         </div>
         <div
           style={{
@@ -201,13 +205,9 @@ function ArchiveSummaryCard() {
           width: "fit-content",
         }}
         onClick={() => {
-          if (
-            confirm(
-              "Close this archive? You will have to upload a ZIP file again.",
-            )
-          ) {
-            clearDatabase();
-          }
+          const message =
+            "Close the archive? You will have to fetch or upload these tweets again.";
+          if (confirm(message)) clearDatabase();
         }}
       >
         Close Archive

@@ -28,7 +28,7 @@ export function RunQueryButton({
       onMouseEnter={
         disabled
           ? undefined
-          : (e) => (e.currentTarget.style.background = "#0056b3")
+          : (e) => (e.currentTarget.style.background = "#0072ef")
       }
       onMouseLeave={
         disabled

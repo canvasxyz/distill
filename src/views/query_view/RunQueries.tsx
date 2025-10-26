@@ -132,7 +132,7 @@ export function RunQueries() {
     padding: "16px",
     background: "#f8f9fa",
     color: "#212529",
-    border: "1px solid #007bff",
+    border: "1px solid #ddd",
     borderRadius: "6px",
     fontSize: "15px",
     fontWeight: 500,
@@ -176,6 +176,12 @@ export function RunQueries() {
   }, [account, selectedQuery]);
 
   if (!account) return <></>;
+
+  const totalPostsCount = (allTweets || []).length;
+  const lastTweetsLabel =
+    totalPostsCount < MAX_ARCHIVE_SIZE
+      ? "All posts"
+      : `Most recent ${formatCompact(MAX_ARCHIVE_SIZE)}`;
 
   return (
     <div
@@ -258,7 +264,7 @@ export function RunQueries() {
               }}
               style={{ accentColor: "#007bff", marginTop: "2px" }}
             />
-            Most recent {formatCompact(MAX_ARCHIVE_SIZE)}
+            {lastTweetsLabel}
           </label>
           <label
             style={{
@@ -469,6 +475,7 @@ export function RunQueries() {
                   display: "flex",
                   justifyContent: "center",
                   width: "100%",
+                  gap: "8px",
                 }}
               >
                 <RunQueryButton
@@ -480,6 +487,33 @@ export function RunQueries() {
                     textareaRef.current?.focus();
                   }}
                 />
+                <button
+                  type="button"
+                  disabled={isProcessing}
+                  style={{
+                    border: "1px solid #d0d5dd",
+                    borderRadius: "4px",
+                    padding: "6px 10px",
+                    background: "#eee",
+                    color: "#555",
+                    cursor: isProcessing ? "not-allowed" : "pointer",
+                    transition: "all 0.2s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    if (isProcessing) return;
+                    e.currentTarget.style.background = "#e2e6ea";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "#eee";
+                  }}
+                  onClick={() => {
+                    if (isProcessing) return;
+                    setSelectedQuery(query);
+                    textareaRef.current?.focus();
+                  }}
+                >
+                  Edit
+                </button>
               </div>
             </div>
           );
@@ -494,7 +528,7 @@ export function RunQueries() {
           }}
           onMouseEnter={(e) => {
             if (isProcessing) return;
-            e.currentTarget.style.background = "#e2e6ea";
+            e.currentTarget.style.background = "#e9eaec";
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.background = "#f8f9fa";

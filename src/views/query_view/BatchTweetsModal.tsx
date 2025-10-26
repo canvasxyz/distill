@@ -67,7 +67,8 @@ export function BatchTweetsModal({
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            marginBottom: 18,
+            paddingBottom: 12,
+            borderBottom: "1px solid #ddd",
           }}
         >
           <h2 style={{ margin: 0, fontSize: 22, flex: 1 }}>Evidence</h2>
@@ -89,7 +90,14 @@ export function BatchTweetsModal({
             &times;
           </button>
         </div>
-        <p>
+        <p
+          style={{
+            fontSize: "0.93em",
+            paddingBottom: 12,
+            marginBottom: 0,
+            borderBottom: "1px solid #ddd",
+          }}
+        >
           <em>
             The below texts are the tweets that were used to generate the final
             result. They are not currently validated against the baseline data

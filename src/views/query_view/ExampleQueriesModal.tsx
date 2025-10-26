@@ -137,7 +137,7 @@ export function ExampleQueriesModal({
                       }}
                       onClick={() => onSelectQuery(queryWithAccountName)}
                     >
-                      Use this
+                      Select
                     </button>
                   )}
                 </li>

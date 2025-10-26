@@ -98,7 +98,7 @@ export function ProgressBar({
 
   let easedFraction = 0;
   if (shouldEase) {
-    const EASING_DURATION_MS = 45000; // 45s
+    const EASING_DURATION_MS = 90000; // 90s
     const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
 
     const t = Math.max(
