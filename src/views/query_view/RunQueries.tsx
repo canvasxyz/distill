@@ -128,8 +128,6 @@ export function RunQueries() {
     return Math.ceil(tweetsSelectedForQuery.length / QUERY_BATCH_SIZE);
   }, [tweetsSelectedForQuery]);
 
-  const shouldShowBatchCount = batchCount > 1;
-
   const featuredQueryCardStyle: CSSProperties = {
     padding: "16px",
     background: "#f8f9fa",
@@ -138,7 +136,6 @@ export function RunQueries() {
     borderRadius: "6px",
     fontSize: "15px",
     fontWeight: 500,
-    cursor: isProcessing ? "not-allowed" : "pointer",
     boxShadow: "0 2px 6px rgba(0,0,0,0.04)",
     transition: "background 0.2s, color 0.2s",
     display: "flex",
@@ -166,6 +163,7 @@ export function RunQueries() {
     justifyContent: "center",
     textAlign: "center",
     minHeight: "52px",
+    gridColumn: "1 / -1",
     opacity: isProcessing ? 0.6 : 1,
   };
 
@@ -222,95 +220,120 @@ export function RunQueries() {
       <div
         style={{
           display: "flex",
-          flexDirection: "row",
           alignItems: "center",
-          gap: "18px",
+          gap: "12px",
+          marginBottom: "10px",
         }}
       >
-        <label style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-          <input
-            type="checkbox"
-            disabled={isProcessing || !hasReplies}
-            checked={includeReplies}
-            onChange={(e) => setIncludeReplies(e.target.checked)}
-          />
-          Replies
-        </label>
-        <label style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-          <input
-            type="checkbox"
-            disabled={isProcessing || !hasRetweets}
-            checked={includeRetweets}
-            onChange={(e) => setIncludeRetweets(e.target.checked)}
-          />
-          Retweets
-        </label>
-        <label style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-          <input
-            type="radio"
-            disabled={isProcessing}
-            name="archiveMode"
-            checked={rangeSelection.type === "last-tweets"}
-            onChange={(e) => {
-              if (e.target.checked) {
-                setRangeSelection({
-                  type: "last-tweets",
-                  numTweets: MAX_ARCHIVE_SIZE,
-                });
-              }
-            }}
-            style={{ accentColor: "#007bff", marginTop: "2px" }}
-          />
-          Last {formatCompact(MAX_ARCHIVE_SIZE)}
-        </label>
-        <label
+        <RunQueryButton
+          disabled={isProcessing}
+          onClick={() => {
+            handleRunQuery(selectedQuery);
+          }}
+          showShortcut
+        />
+        <div
           style={{
+            height: "100%",
             display: "flex",
+            flexDirection: "row",
             alignItems: "center",
-            gap: "6px",
+            gap: "15px",
+            marginLeft: "10px",
           }}
         >
-          <input
-            type="radio"
-            disabled={isProcessing}
-            name="archiveMode"
-            checked={rangeSelection.type === "date-range"}
-            onChange={(e) => {
-              if (e.target.checked)
-                setRangeSelection({
-                  type: "date-range",
-                  startDate: "",
-                  endDate: "",
-                });
+          <label style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <input
+              type="radio"
+              disabled={isProcessing}
+              name="archiveMode"
+              checked={rangeSelection.type === "last-tweets"}
+              onChange={(e) => {
+                if (e.target.checked) {
+                  setRangeSelection({
+                    type: "last-tweets",
+                    numTweets: MAX_ARCHIVE_SIZE,
+                  });
+                }
+              }}
+              style={{ accentColor: "#007bff", marginTop: "2px" }}
+            />
+            Most recent {formatCompact(MAX_ARCHIVE_SIZE)}
+          </label>
+          <label
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
             }}
-            style={{ accentColor: "#007bff", marginTop: "2px" }}
-          />
-          Custom range
-        </label>
-        <label
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "6px",
-          }}
-        >
-          <input
-            type="radio"
-            disabled={isProcessing}
-            name="archiveMode"
-            checked={rangeSelection.type === "random-sample"}
-            onChange={(e) => {
-              if (e.target.checked) {
-                setRangeSelection({
-                  type: "random-sample",
-                  sampleSize: MAX_ARCHIVE_SIZE,
-                });
-              }
+          >
+            <input
+              type="radio"
+              disabled={isProcessing}
+              name="archiveMode"
+              checked={rangeSelection.type === "date-range"}
+              onChange={(e) => {
+                if (e.target.checked)
+                  setRangeSelection({
+                    type: "date-range",
+                    startDate: "",
+                    endDate: "",
+                  });
+              }}
+              style={{ accentColor: "#007bff", marginTop: "2px" }}
+            />
+            Custom range
+          </label>
+          {/* <label
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
             }}
-            style={{ marginTop: "2px" }}
-          />
-          Random sample
-        </label>
+          >
+            <input
+              type="radio"
+              disabled={isProcessing}
+              name="archiveMode"
+              checked={rangeSelection.type === "random-sample"}
+              onChange={(e) => {
+                if (e.target.checked) {
+                  setRangeSelection({
+                    type: "random-sample",
+                    sampleSize: MAX_ARCHIVE_SIZE,
+                  });
+                }
+              }}
+              style={{ marginTop: "2px" }}
+            />
+            Random sample
+          </label> */}
+          <label
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              marginLeft: "8px",
+            }}
+          >
+            <input
+              type="checkbox"
+              disabled={isProcessing || !hasReplies}
+              checked={includeReplies}
+              onChange={(e) => setIncludeReplies(e.target.checked)}
+            />
+            Replies
+          </label>
+          <label style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <input
+              type="checkbox"
+              disabled={isProcessing || !hasRetweets}
+              checked={includeRetweets}
+              onChange={(e) => setIncludeRetweets(e.target.checked)}
+            />
+            Retweets
+          </label>
+        </div>
       </div>
       {rangeSelection.type === "date-range" && (
         <TweetFrequencyGraph
@@ -326,32 +349,6 @@ export function RunQueries() {
           }}
         />
       )}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "flex-start",
-          gap: "12px",
-        }}
-      >
-        <RunQueryButton
-          disabled={isProcessing}
-          onClick={() => {
-            handleRunQuery(selectedQuery);
-          }}
-          showShortcut
-        />
-        {shouldShowBatchCount && (
-          <span
-            style={{
-              fontSize: "13px",
-              color: "#6c757d",
-              marginTop: "7px",
-            }}
-          >
-            {batchCount} batches
-          </span>
-        )}
-      </div>
       {errorMessage && (
         <div
           role="alert"
@@ -371,9 +368,6 @@ export function RunQueries() {
 
       {isProcessing && currentRunningQuery && (
         <ResultsBox>
-          <h4 style={{ marginTop: "0px" }}>
-            Currently processing "{currentRunningQuery}"
-          </h4>
           <ProgressLabel
             currentProgress={currentProgress}
             totalProgress={totalProgress}
@@ -389,12 +383,12 @@ export function RunQueries() {
       )}
       {queryResult && (
         <>
-          <h3 style={{ marginBottom: "10px" }}>Results</h3>
           <ResultsBox>
             <div
               style={{
                 display: "flex",
                 flexDirection: "row",
+                marginBottom: "-6px", // compensate for paragraph margins
               }}
             >
               <div
@@ -409,38 +403,34 @@ export function RunQueries() {
                   seconds, {queryResult.totalTokens} tokens
                 </span>
               </div>
-              <div
-                style={{
-                  display: "flex",
-                  gap: "10px",
-                  marginLeft: "auto",
-                }}
-              >
-                <button
-                  style={{
-                    border: "1px solidrgb(150, 234, 153)",
-                    borderRadius: "4px",
-                    padding: "4px 8px",
-                    background: "#fff",
-                    color: "#388e3c",
-                    fontSize: "12px",
-                    fontWeight: "bold",
-                    cursor: "pointer",
-                    transition: "all 0.2s ease",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = "#e7f6e7";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = "#fff";
-                  }}
-                  onClick={() => {
-                    setShowBatchTweetsModal(true);
-                  }}
-                >
-                  Show Evidence
-                </button>
-                <CopyButton text={queryResult.result} />
+              <div style={{ marginLeft: "6px" }}>
+                <div style={{ display: "flex", gap: "6px", maxHeight: 36 }}>
+                  <button
+                    style={{
+                      border: "1px solid rgb(150, 234, 153)",
+                      borderRadius: "4px",
+                      padding: "4px 8px",
+                      background: "#fff",
+                      color: "#388e3c",
+                      fontSize: "12px",
+                      fontWeight: "bold",
+                      cursor: "pointer",
+                      transition: "all 0.2s ease",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = "#e7f6e7";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = "#fff";
+                    }}
+                    onClick={() => {
+                      setShowBatchTweetsModal(true);
+                    }}
+                  >
+                    Evidence
+                  </button>
+                  <CopyButton text={queryResult.result} />
+                </div>
               </div>
             </div>
             <Markdown remarkPlugins={[remarkGfm]}>
@@ -451,7 +441,7 @@ export function RunQueries() {
       )}
       <div
         style={{
-          marginTop: "32px",
+          marginTop: "6px",
           display: "grid",
           gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
           gap: "12px",
@@ -461,33 +451,7 @@ export function RunQueries() {
         {FEATURED_QUERIES.map((baseQuery) => {
           const query = replaceAccountName(baseQuery, account.username);
           return (
-            <div
-              role="button"
-              key={baseQuery}
-              tabIndex={isProcessing ? -1 : 0}
-              aria-disabled={isProcessing}
-              style={featuredQueryCardStyle}
-              onClick={() => {
-                if (isProcessing) return;
-                setSelectedQuery(query);
-                textareaRef.current?.focus();
-              }}
-              onKeyDown={(e) => {
-                if (isProcessing) return;
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  setSelectedQuery(query);
-                  textareaRef.current?.focus();
-                }
-              }}
-              onMouseEnter={(e) => {
-                if (isProcessing) return;
-                e.currentTarget.style.background = "#e2e6ea";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "#f8f9fa";
-              }}
-            >
+            <div key={baseQuery} style={featuredQueryCardStyle}>
               <div
                 style={{
                   color: "#0056b3",

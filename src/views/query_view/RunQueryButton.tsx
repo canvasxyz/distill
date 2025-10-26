@@ -14,6 +14,7 @@ export function RunQueryButton({
   return (
     <button
       style={{
+        fontSize: "0.94em",
         padding: "6px 16px",
         borderRadius: "5px",
         border: "1px solid #007bff",

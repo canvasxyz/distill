@@ -2,6 +2,7 @@ import { AnalyzeTweetsButton } from "./AnalyzeTweetsButton";
 import { filters } from "../filtering/filters";
 import { LinkButton } from "./LinkButton";
 import { useStore } from "../state/store";
+import { useMatch } from "react-router";
 
 function HorizontalRule() {
   return (
@@ -16,6 +17,7 @@ function HorizontalRule() {
 }
 
 export function Sidebar() {
+  const onQueryPage = useMatch("/")
   const {
     analyzeTweets,
     numTweetsAnalyzed,
@@ -33,47 +35,34 @@ export function Sidebar() {
       style={{
         width: "260px",
         borderRight: "1px solid #ccc",
-        paddingLeft: "10px",
-        paddingRight: "10px",
+        padding: "10px",
       }}
     >
-      <h1 style={{ fontSize: "22px" }}>Twitter Archive Explorer</h1>
       <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-        <LinkButton to="/">Archive Query</LinkButton>
-
-        <HorizontalRule />
-        <LinkButton to="/all-tweets" disabled={!allTweets}>
+        <LinkButton to="/" size="lg">Archive Query</LinkButton>
+        <LinkButton to="/all-tweets" disabled={!allTweets} size="lg">
           Archive Review
         </LinkButton>
+
+        {!onQueryPage && <>
+
         <LinkButton to="/included-tweets" disabled={!allTweets}>
           Included 👍 {includedTweets && `(${includedTweets.length})`}
         </LinkButton>
         <LinkButton to="/excluded-tweets" disabled={!allTweets}>
           Excluded 👎 {excludedTweets && `(${excludedTweets.length})`}
         </LinkButton>
-        <button
-          style={{
-            borderRadius: "5px",
-            padding: "8px 16px",
-            margin: "4px 0 12px",
-            backgroundColor: "#eee",
-            border: "1px solid #ccc",
-            fontSize: "16px",
-            cursor: allTweets ? "pointer" : "not-allowed",
-            width: "100%",
-            textAlign: "center",
-            opacity: allTweets ? 1 : 0.6,
-          }}
-          title="Download"
-          onClick={() => {
-            if (!allTweets) return;
-            downloadArchive();
-          }}
-          disabled={!allTweets}
-        >
-          Download Tweets
-        </button>
-        <HorizontalRule />
+        {filters.map((filter, index) => (
+          <LinkButton
+            key={index}
+            to={`/filters/${filter.name}`}
+            disabled={!allTweets}
+          >
+            {filter.label}{" "}
+            {tweetsByFilterName[filter.name] &&
+              `(${tweetsByFilterName[filter.name].length})`}
+          </LinkButton>
+        ))}
         {analysisInProgress ? (
           <div style={{ width: "100%", margin: "10px 0" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
@@ -108,45 +97,35 @@ export function Sidebar() {
             onClick={() => analyzeTweets()}
           />
         )}
-        {filters.map((filter, index) => (
-          <LinkButton
-            key={index}
-            to={`/filters/${filter.name}`}
-            disabled={!allTweets}
-          >
-            {filter.label}{" "}
-            {tweetsByFilterName[filter.name] &&
-              `(${tweetsByFilterName[filter.name].length})`}
-          </LinkButton>
-        ))}
-        {/* <HorizontalRule/>
-
         <button
           style={{
             borderRadius: "5px",
-            padding: "5px",
-            transition: "background-color 0.1s",
-            textDecoration: "none",
-            color: "black",
-            border: "1px solid blue",
-            backgroundColor: "white",
-            cursor: "pointer",
+            padding: "8px 16px",
+            margin: "4px 0 12px",
+            backgroundColor: "#eee",
+            border: "1px solid #ccc",
+            fontSize: "16px",
+            cursor: allTweets ? "pointer" : "not-allowed",
+            width: "100%",
+            textAlign: "center",
+            opacity: allTweets ? 1 : 0.6,
           }}
-          onMouseEnter={(e) =>
-            (e.currentTarget.style.backgroundColor = "#f0f0f0")
-          }
-          onMouseLeave={(e) =>
-            (e.currentTarget.style.backgroundColor = "white")
-          }
+          title="Download"
+          onClick={() => {
+            if (!allTweets) return;
+            downloadArchive();
+          }}
+          disabled={!allTweets}
         >
-          Download Included Tweets
-        </button> */}
+          Download Tweets
+        </button>
 
         <HorizontalRule />
         <span style={{ fontSize: "0.75em", fontStyle: "italic" }}>
           Note: Twitter Archive Explorer analyzes the text content of tweets,
           not the images or any other linked data (e.g. quoted tweets).
         </span>
+        </>}
       </div>
     </div>
   );

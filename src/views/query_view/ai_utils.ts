@@ -48,7 +48,7 @@ export const batchSystemPrompt =
   "You are a researcher who is looking through an archive of a user's tweets ({account}) trying to answer a question (given in the user prompt). You are trying to collect together all of the tweets that might provide a way to answer that question. Give your reasoning in <Reasoning>...</Reasoning> tags and then return a list of the tweets that you used as evidence with each tweet text wrapped in a <Tweet>...</Tweet> tag. Return at most 20 tweets.";
 
 export const finalSystemPrompt =
-  "You will be given a prompt, followed by a list of tweets. Review the tweets and provide an answer to the prompt.";
+  "You will be given a prompt, followed by a list of tweets. Review the tweets and provide an answer to the prompt. Do not create tables in your response.";
 
 export function replaceAccountName(text: string, accountName: string) {
   return text.replace("{account}", `@${accountName}`);

@@ -89,19 +89,22 @@ export function ProgressBar({
   const [nowMs, setNowMs] = useState<number>(0);
   // const timerRef = useRef<number | null>(null);
 
-  const shouldEase = Boolean(isProcessing) && Boolean(startedAtMs)  
+  const shouldEase = Boolean(isProcessing) && Boolean(startedAtMs);
   useEffect(() => {
-    if (!shouldEase) return
-    const timer = setInterval(() => setNowMs(performance.now()), 20)
-    return () => clearInterval(timer)
+    if (!shouldEase) return;
+    const timer = setInterval(() => setNowMs(performance.now()), 20);
+    return () => clearInterval(timer);
   }, [shouldEase]);
 
   let easedFraction = 0;
   if (shouldEase) {
     const EASING_DURATION_MS = 45000; // 45s
-    const easeOutCubic = (t: number) => 1 -  Math.pow(1 - t, 3);
+    const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
 
-    const t = Math.max(0, Math.min(1, (nowMs - (startedAtMs as number)) / EASING_DURATION_MS));
+    const t = Math.max(
+      0,
+      Math.min(1, (nowMs - (startedAtMs as number)) / EASING_DURATION_MS),
+    );
     const eased = easeOutCubic(t);
     const divisor = numBatches && numBatches > 0 ? numBatches : totalProgress;
     const maxEaseFrac = divisor > 0 ? 1 / divisor : 0;
@@ -144,7 +147,6 @@ export function ResultsBox({ children }: { children: ReactNode }) {
         padding: "16px",
         background: "#f5f5f5",
         position: "relative",
-        marginTop: "18px",
       }}
     >
       {children}

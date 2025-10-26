@@ -227,14 +227,13 @@ export function MyArchiveView() {
           maxHeight: "100vh",
           display: "flex",
           flexDirection: "column",
-          padding: "0 20px",
+          padding: "15px 20px",
           margin: "0 auto",
           maxWidth: "1200px",
         }}
       >
         {hasArchiveLoaded ? (
           <>
-            <h1>My Archive</h1>
             <ArchiveSummaryCard />
             <ModelQuerySection />
           </>

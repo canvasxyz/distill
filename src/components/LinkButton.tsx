@@ -15,6 +15,14 @@ const itemStyle = {
   outline: "none",
 };
 
+const itemStyleSm = {
+  ...itemStyle,
+  borderRadius: "4px",
+  marginLeft: "20px",
+  padding: "10px 18px",
+  fontSize: "1em",
+};
+
 const hoverBackground = "#eaf4fc";
 
 const disabledItemStyle = {
@@ -34,10 +42,12 @@ export const LinkButton = ({
   to,
   children,
   disabled,
+  size = "sm",
 }: {
   to: string;
   children: React.ReactNode;
   disabled?: boolean;
+  size?: "sm" | "lg";
 }) => {
   const linkRef = useRef<HTMLAnchorElement>(null);
 
@@ -57,16 +67,18 @@ export const LinkButton = ({
     return <div style={disabledItemStyle}>{children}</div>;
   }
 
+  const style = size === "sm" ? itemStyleSm : itemStyle;
+
   return (
     <NavLink
       to={to}
       style={({ isActive }) => ({
-        ...itemStyle,
-        background: isActive ? "#e3ebfb" : itemStyle.background,
-        color: isActive ? "#203d65" : itemStyle.color,
+        ...style,
+        background: isActive ? "#e3ebfb" : style.background,
+        color: isActive ? "#203d65" : style.color,
         boxShadow: isActive
           ? "0 1.5px 8px 0px rgba(92, 132, 205, 0.11)"
-          : itemStyle.boxShadow,
+          : style.boxShadow,
       })}
       ref={linkRef}
       onMouseEnter={handleMouseEnter}
