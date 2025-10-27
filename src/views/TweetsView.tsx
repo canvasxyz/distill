@@ -6,8 +6,10 @@ import { UploadView } from "./UploadView";
 import type { Tweet } from "../types";
 import { PseudoLink } from "../components/PseudoLink";
 import { db } from "../db";
+import { useSearchParams } from "react-router";
 
 export function TweetsView({
+  searchParam,
   allTweets,
   tweetsToDisplay,
   title,
@@ -15,6 +17,7 @@ export function TweetsView({
   navigateNext,
   navigatePrevious,
 }: {
+  searchParam: string | null;
   allTweets: Tweet[];
   tweetsToDisplay: Tweet[];
   title: string;
@@ -22,6 +25,7 @@ export function TweetsView({
   navigateNext?: () => void;
   navigatePrevious?: () => void;
 }) {
+  const [, setSearchParams] = useSearchParams();
   const { excludedTweetIdsSet, filterMatchesByTweetId } = useStore();
 
   const [checkedTweets, setCheckedTweets] = useState<{
@@ -101,6 +105,25 @@ export function TweetsView({
             <em>{blurb}</em>
           </div>
         )}
+        <div style={{ marginBottom: "10px" }}>
+          <input
+            type="text"
+            placeholder="Search tweets..."
+            value={searchParam ?? ""}
+            onChange={(e) => {
+              setSearchParams({ search: e.target.value });
+            }}
+            style={{
+              width: "100%",
+              maxWidth: "400px",
+              padding: "6px 8px",
+              marginRight: "10px",
+              border: "1px solid #ccc",
+              borderRadius: "4px",
+              fontSize: "16px",
+            }}
+          />
+        </div>
         <div
           style={{
             display: "flex",
@@ -158,7 +181,8 @@ export function TweetsView({
               <>
                 {Object.keys(checkedTweets).length} tweets are selected.{" "}
                 <PseudoLink onClick={checkAllTweets}>
-                  Select all tweets in {title}.
+                  Select all tweets in {title}
+                  {searchParam && ` matching "${searchParam}"`}.
                 </PseudoLink>
               </>
             )}

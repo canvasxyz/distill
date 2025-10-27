@@ -1,20 +1,29 @@
 import { useStore } from "../state/store";
 import { TweetsView } from "./TweetsView";
-import { useParams } from "react-router";
+import { useParams, useSearchParams } from "react-router";
 import { filters } from "../filtering/filters";
 import { usePagination } from "../hooks/usePagination";
 import { ShowIfTweetsLoaded } from "./ShowIfTweetsLoaded";
+import { useFilterBySearchParam } from "../hooks/useFilterBySearchParam";
 
 function FilteredTweetsViewInner() {
   const params = useParams();
   const { allTweets, filterMatchesByTweetId } = useStore();
 
+  const [searchParams] = useSearchParams();
+  const searchParam = searchParams.get("search");
+
   const filterName = params.filter as string;
-  const filteredTweets = (allTweets || []).filter(
+  const filteredTweetsByFilter = (allTweets || []).filter(
     (tweet) =>
       (filterMatchesByTweetId[tweet.id] || [])
         .map((result) => result.filterName)
         .indexOf(filterName) !== -1,
+  );
+
+  const filteredTweets = useFilterBySearchParam(
+    searchParam,
+    filteredTweetsByFilter,
   );
 
   const {
@@ -30,6 +39,7 @@ function FilteredTweetsViewInner() {
 
   return (
     <TweetsView
+      searchParam={searchParam}
       allTweets={filteredTweets}
       title={filter.label}
       blurb={filter.blurb}

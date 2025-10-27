@@ -14,14 +14,20 @@ export const usePagination = <T>({
   const canNavigateNext = items && offset + limit < items.length;
   const navigateNext = canNavigateNext
     ? () => {
-        setSearchParams({ offset: `${offset + limit}` });
+        setSearchParams((searchParams) => {
+          searchParams.set("offset", `${offset + limit}`);
+          return searchParams;
+        });
       }
     : undefined;
   const canNavigatePrevious = items && offset > 0;
   const navigatePrevious = canNavigatePrevious
     ? () => {
         const newOffset = offset - limit > 0 ? offset - limit : 0;
-        setSearchParams({ offset: `${newOffset}` });
+        setSearchParams((searchParams) => {
+          searchParams.set("offset", `${newOffset}`);
+          return searchParams;
+        });
       }
     : undefined;
 
