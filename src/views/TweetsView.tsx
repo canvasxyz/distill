@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { TweetEntry } from "../components/TweetEntry";
 
 import { useStore } from "../state/store";
@@ -29,6 +29,8 @@ export function TweetsView({
   }>({});
 
   const [selectAllChecked, setSelectAllChecked] = useState(false);
+
+  const listRef = useRef<HTMLDivElement>(null);
 
   const onSelectAllChange = (value: boolean) => {
     setSelectAllChecked(value);
@@ -163,7 +165,7 @@ export function TweetsView({
           </div>
         </div>
 
-        <div style={{ overflowY: "auto", flexGrow: 1 }}>
+        <div style={{ overflowY: "auto", flexGrow: 1 }} ref={listRef}>
           {tweetsToDisplay.map((tweet, index) => (
             <TweetEntry
               isFirst={index === 0}
@@ -215,7 +217,14 @@ export function TweetsView({
           </button>
           <button
             disabled={!navigateNext}
-            onClick={navigateNext}
+            onClick={async () => {
+              if (navigateNext) {
+                navigateNext();
+                if (listRef && listRef.current) {
+                  listRef.current.scrollTop = 0;
+                }
+              }
+            }}
             style={{
               backgroundColor: "white",
               borderRadius: "5px",
