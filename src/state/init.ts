@@ -252,7 +252,7 @@ export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
       loadCommunityArchiveUserProgress: null,
     });
 
-    await db.meta.add({ id: "singleton", viewingMyArchive: false });
+    await db.sessionData.add({ id: "singleton", viewingMyArchive: false });
 
     set({ dbHasTweets: true });
   },
