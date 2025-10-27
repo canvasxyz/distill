@@ -10,6 +10,7 @@ import {
   filterTweetsObservable,
   includedTweetsObservable,
   queryResultsObservable,
+  sessionDataObservable,
 } from "./observables";
 import type { Account, FilterMatch, ProfileWithId, Tweet } from "../types";
 import type { QueryResult } from "../views/query_view/ai_utils";
@@ -93,6 +94,16 @@ export const createSubscriptionSlice: StateCreator<
       error: (error) => console.error(error),
     });
 
+    const sessionDataSubscription = liveQuery(sessionDataObservable).subscribe({
+      next: (sessionData) =>
+        set({
+          viewingMyArchive: sessionData[0]
+            ? sessionData[0].viewingMyArchive
+            : false,
+        }),
+      error: (error) => console.error(error),
+    });
+
     subscriptions.current = [
       accountSubscription,
       profileSubscription,
@@ -101,6 +112,7 @@ export const createSubscriptionSlice: StateCreator<
       excludedTweetsSubscription,
       filterTweetsSubscription,
       queryResultsSubscription,
+      sessionDataSubscription,
     ];
   },
   unsubscribe: () => {

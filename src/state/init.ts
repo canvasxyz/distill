@@ -84,8 +84,9 @@ export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
     }
     await db.filterTweetIds.bulkAdd(filterMatchesToAdd);
 
+    await db.sessionData.add({ id: "singleton", viewingMyArchive: true });
+
     set(() => ({
-      viewingMyArchive: true,
       dbHasTweets: true,
     }));
   },
@@ -251,7 +252,9 @@ export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
       loadCommunityArchiveUserProgress: null,
     });
 
-    set({ viewingMyArchive: false, dbHasTweets: true });
+    await db.meta.add({ id: "singleton", viewingMyArchive: false });
+
+    set({ dbHasTweets: true });
   },
   loadCommunityArchiveUserProgress: null,
 

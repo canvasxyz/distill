@@ -6,6 +6,7 @@ import type {
   ProfileWithId,
   Following,
   Follower,
+  SessionData,
 } from "./types";
 import type { QueryResult } from "./views/query_view/ai_utils";
 
@@ -20,6 +21,8 @@ class AppDatabase extends Dexie {
   filterTweetIds: Dexie.Table<FilterMatch, string>;
   queryResults: Dexie.Table<QueryResult, string>;
 
+  sessionData: Dexie.Table<SessionData, string>;
+
   constructor() {
     super("TweetArchiveExplorerDB");
     this.version(1).stores({
@@ -31,6 +34,7 @@ class AppDatabase extends Dexie {
       excludedTweetIds: "id",
       filterTweetIds: "[filterName+id]",
       queryResults: "id",
+      sessionData: "id",
     });
 
     this.accounts = this.table("accounts");
@@ -41,6 +45,7 @@ class AppDatabase extends Dexie {
     this.excludedTweetIds = this.table("excludedTweetIds");
     this.filterTweetIds = this.table("filterTweetIds");
     this.queryResults = this.table("queryResults");
+    this.sessionData = this.table("sessionData");
   }
 }
 

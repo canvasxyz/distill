@@ -50,3 +50,8 @@ export type FilterMatch = {
   type: "llm" | "regex";
   regexMatch?: RegExpExecArray;
 };
+
+export type SessionData = {
+  id: string;
+  viewingMyArchive: boolean;
+};

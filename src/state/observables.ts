@@ -57,3 +57,5 @@ export const filterTweetsObservable = async () => {
 
 export const queryResultsObservable = async () =>
   await db.queryResults.toArray();
+
+export const sessionDataObservable = async () => await db.sessionData.toArray();
