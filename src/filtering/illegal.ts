@@ -11,6 +11,7 @@ export const illegalWords = [
   "dope",
   "bob hope",
   "crack",
+  "spliff",
 ];
 
 export const illegalWordsRegExp = new RegExp(
