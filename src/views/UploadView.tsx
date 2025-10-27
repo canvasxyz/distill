@@ -10,6 +10,7 @@ import { useMemo } from "react";
 export function UploadPanel() {
   const {
     ingestTwitterArchive,
+    ingestTwitterArchiveProgress,
     loadCommunityArchiveUser,
     loadCommunityArchiveUserProgress,
   } = useStore();
@@ -50,47 +51,76 @@ export function UploadPanel() {
         only look at the account.js, follower.js, following.js, profile.js and
         tweet(s).js files.
       </p>
-      <div
-        style={{
-          textAlign: "center",
-          marginTop: "20px",
-          padding: "20px",
-          border: "2px dashed #007bff",
-          borderRadius: "5px",
-          backgroundColor: "#f9f9f9",
-          cursor: "pointer",
-          transition: "background-color 0.2s",
-        }}
-        onClick={() => {
-          fileInputRef.current?.click();
-        }}
-        onDragOver={(e) => e.preventDefault()}
-        onDrop={async (e) => {
-          e.preventDefault();
-          const file = e.dataTransfer.files[0];
-          if (file && file.type === "application/zip") {
-            await ingestTwitterArchive(file);
+
+      {ingestTwitterArchiveProgress == null ? (
+        <div
+          style={{
+            textAlign: "center",
+            marginTop: "20px",
+            padding: "20px",
+            border: "2px dashed #007bff",
+            borderRadius: "5px",
+            backgroundColor: "#f9f9f9",
+            cursor: "pointer",
+            transition: "background-color 0.2s",
+          }}
+          onClick={() => {
+            fileInputRef.current?.click();
+          }}
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={async (e) => {
+            e.preventDefault();
+            const file = e.dataTransfer.files[0];
+            if (file && file.type === "application/zip") {
+              await ingestTwitterArchive(file);
+            }
+          }}
+          onMouseEnter={(e) =>
+            (e.currentTarget.style.backgroundColor = "#e0e0e0")
           }
-        }}
-        onMouseEnter={(e) =>
-          (e.currentTarget.style.backgroundColor = "#e0e0e0")
-        }
-        onMouseLeave={(e) =>
-          (e.currentTarget.style.backgroundColor = "#f9f9f9")
-        }
-      >
-        <p style={{ margin: "0", color: "#007bff" }}>
-          Drag and drop your Twitter archive (.zip) here or click to open.
-        </p>
-        <input
-          id="file-upload"
-          ref={fileInputRef}
-          type="file"
-          accept=".zip"
-          onChange={handleFileUpload}
-          style={{ display: "none" }}
-        />
-      </div>
+          onMouseLeave={(e) =>
+            (e.currentTarget.style.backgroundColor = "#f9f9f9")
+          }
+        >
+          <p style={{ margin: "0", color: "#007bff" }}>
+            Drag and drop your Twitter archive (.zip) here or click to open.
+          </p>
+          <input
+            id="file-upload"
+            ref={fileInputRef}
+            type="file"
+            accept=".zip"
+            onChange={handleFileUpload}
+            style={{ display: "none" }}
+          />
+        </div>
+      ) : (
+        <div
+          style={{
+            textAlign: "center",
+            marginTop: "20px",
+            padding: "20px",
+            border: "2px dashed rgb(190, 222, 255)",
+            borderRadius: "5px",
+            backgroundColor: "#f9f9f9",
+          }}
+        >
+          {ingestTwitterArchiveProgress.status === "processingArchive" &&
+            "Processing archive..."}
+          {ingestTwitterArchiveProgress.status === "addingAccount" &&
+            "Adding account"}
+          {ingestTwitterArchiveProgress.status === "addingFollowers" &&
+            "Adding followers"}
+          {ingestTwitterArchiveProgress.status === "addingFollowing" &&
+            "Adding following"}
+          {ingestTwitterArchiveProgress.status === "addingProfile" &&
+            "Adding profile"}
+          {ingestTwitterArchiveProgress.status === "addingTweets" &&
+            "Adding tweets"}
+          {ingestTwitterArchiveProgress.status === "applyingFilters" &&
+            "Applying filters"}
+        </div>
+      )}
       <br />
 
       <h3>... or select a user from Community Archive</h3>

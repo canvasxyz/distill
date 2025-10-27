@@ -8,6 +8,15 @@ import { supabase } from "../supabase";
 import { mapKeysDeep, snakeToCamelCase } from "../utils";
 import type { Account, ProfileWithId, Tweet } from "../types";
 
+type IngestTwitterArchiveProgress =
+  | { status: "processingArchive" }
+  | { status: "addingAccount" }
+  | { status: "addingFollowers" }
+  | { status: "addingFollowing" }
+  | { status: "addingProfile" }
+  | { status: "addingTweets" }
+  | { status: "applyingFilters" };
+
 type LoadCommunityArchiveUserProgress =
   | { status: "starting" }
   | {
@@ -27,6 +36,7 @@ export type InitSlice = {
   clearDatabase: () => Promise<void>;
   appIsReady: boolean;
   ingestTwitterArchive: (file: File) => Promise<void>;
+  ingestTwitterArchiveProgress: IngestTwitterArchiveProgress | null;
   loadCommunityArchiveUser: (accountId: string) => Promise<void>;
   loadCommunityArchiveUserProgress: LoadCommunityArchiveUserProgress | null;
   downloadArchive: () => Promise<void>;
@@ -52,25 +62,33 @@ export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
   },
 
   appIsReady: false,
+  ingestTwitterArchiveProgress: null,
   ingestTwitterArchive: async (file: File) => {
+    set({ ingestTwitterArchiveProgress: { status: "processingArchive" } });
     const { account, follower, following, profile, tweets } =
       await processTwitterArchive(file);
 
+    set({ ingestTwitterArchiveProgress: { status: "addingAccount" } });
     await db.accounts.clear();
     await db.accounts.add(account);
 
+    set({ ingestTwitterArchiveProgress: { status: "addingFollowers" } });
     await db.follower.clear();
     await db.follower.bulkAdd(follower);
 
+    set({ ingestTwitterArchiveProgress: { status: "addingFollowing" } });
     await db.following.clear();
     await db.following.bulkAdd(following);
 
+    set({ ingestTwitterArchiveProgress: { status: "addingProfile" } });
     await db.profiles.clear();
     await db.profiles.add(profile);
 
+    set({ ingestTwitterArchiveProgress: { status: "addingTweets" } });
     await db.tweets.clear();
     await db.tweets.bulkAdd(tweets);
 
+    set({ ingestTwitterArchiveProgress: { status: "applyingFilters" } });
     // apply filters
     const filterMatchesToAdd = [];
     for (const tweet of tweets || []) {
@@ -86,6 +104,7 @@ export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
 
     await db.sessionData.add({ id: "singleton", viewingMyArchive: true });
 
+    set({ ingestTwitterArchiveProgress: null });
     set(() => ({
       dbHasTweets: true,
     }));
