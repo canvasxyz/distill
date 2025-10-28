@@ -9,3 +9,6 @@ export const queryResultsObservable = async () =>
   await db.queryResults.toArray();
 
 export const sessionDataObservable = async () => await db.sessionData.toArray();
+
+export const fullTextFuzzySetFieldsObservable = async () =>
+  await db.fullTextFuzzySetFields.toArray();

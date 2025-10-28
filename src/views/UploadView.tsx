@@ -119,6 +119,8 @@ export function UploadPanel() {
             "Adding tweets"}
           {ingestTwitterArchiveProgress.status === "applyingFilters" &&
             "Applying filters"}
+          {ingestTwitterArchiveProgress.status === "generatingTextIndex" &&
+            "Generating text index"}
         </div>
       )}
       <br />
@@ -139,6 +141,8 @@ export function UploadPanel() {
             "Loading followers"}
           {loadCommunityArchiveUserProgress.status === "loadingFollowing" &&
             "Loading following"}
+          {loadCommunityArchiveUserProgress.status === "generatingTextIndex" &&
+            "Generating text index"}
         </>
       ) : (
         <div

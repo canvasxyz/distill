@@ -3,8 +3,10 @@ import type { StoreSlices } from "./types";
 import { processTwitterArchive } from "../processTwitterArchive";
 import { db } from "../db";
 import { supabase } from "../supabase";
-import { mapKeysDeep, snakeToCamelCase } from "../utils";
+import { mapKeysDeep, normalizeText, snakeToCamelCase } from "../utils";
 import type { Account, ProfileWithId, Tweet } from "../types";
+import FuzzySet from "./fuzzyset/fuzzyset";
+import { serialize } from "./fuzzyset/serialize";
 
 type IngestTwitterArchiveProgress =
   | { status: "processingArchive" }
@@ -13,7 +15,8 @@ type IngestTwitterArchiveProgress =
   | { status: "addingFollowing" }
   | { status: "addingProfile" }
   | { status: "addingTweets" }
-  | { status: "applyingFilters" };
+  | { status: "applyingFilters" }
+  | { status: "generatingTextIndex" };
 
 type LoadCommunityArchiveUserProgress =
   | { status: "starting" }
@@ -26,7 +29,8 @@ type LoadCommunityArchiveUserProgress =
   | { status: "loadingAccount" }
   | { status: "loadingFollowing" }
   | { status: "loadingFollower" }
-  | { status: "applyWordLists" };
+  | { status: "applyWordLists" }
+  | { status: "generatingTextIndex" };
 
 export type InitSlice = {
   init: () => Promise<void>;
@@ -85,8 +89,16 @@ export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
     await db.tweets.bulkAdd(tweets);
 
     set({ ingestTwitterArchiveProgress: { status: "applyingFilters" } });
-
     await db.sessionData.add({ id: "singleton", viewingMyArchive: true });
+
+    set({ ingestTwitterArchiveProgress: { status: "generatingTextIndex" } });
+    const fuzzyTexts = tweets.map((tweet) => normalizeText(tweet.full_text));
+    const fuzzySet = FuzzySet(fuzzyTexts);
+
+    await db.fullTextFuzzySetFields.add({
+      id: "singleton",
+      fields: serialize(fuzzySet),
+    });
 
     set({ ingestTwitterArchiveProgress: null });
     set(() => ({
@@ -231,6 +243,17 @@ export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
     }));
 
     await db.follower.bulkAdd(follower);
+
+    set({
+      loadCommunityArchiveUserProgress: { status: "generatingTextIndex" },
+    });
+    const fuzzyTexts = tweets.map((tweet) => normalizeText(tweet.full_text));
+    const fuzzySet = FuzzySet(fuzzyTexts);
+
+    await db.fullTextFuzzySetFields.add({
+      id: "singleton",
+      fields: serialize(fuzzySet),
+    });
 
     set({
       loadCommunityArchiveUserProgress: null,

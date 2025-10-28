@@ -73,7 +73,11 @@ export const createLlmQuerySlice: StateCreator<
 
       const threshold = 0.8;
       const candidates =
-        get().tweetsByFullText!.get(normalizedTweetText, null, threshold) || [];
+        get().tweetsByFullText!.get(
+          normalizedTweetText,
+          undefined,
+          threshold,
+        ) || [];
 
       if (candidates.length === 0) {
         // hallucination!

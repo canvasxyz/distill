@@ -8,13 +8,14 @@ import {
   allTweetsObservable,
   queryResultsObservable,
   sessionDataObservable,
+  fullTextFuzzySetFieldsObservable,
 } from "./observables";
 import type { Account, ProfileWithId, Tweet } from "../types";
 import type { QueryResult } from "../views/query_view/ai_utils";
 import type { StateCreator } from "zustand";
 import type { StoreSlices } from "./types";
-import { normalizeText } from "../utils";
-import FuzzySet from "fuzzyset.js";
+import { deserialize } from "./fuzzyset/serialize.js";
+import type { FuzzySetInstance } from "./fuzzyset/fuzzyset.js";
 
 export type SubscriptionSlice = {
   subscriptions: RefObject<Subscription[]>;
@@ -23,7 +24,7 @@ export type SubscriptionSlice = {
   account: Account | null;
   profile: ProfileWithId | null;
   allTweets: Tweet[];
-  tweetsByFullText: FuzzySet | null;
+  tweetsByFullText: FuzzySetInstance | null;
   queryResults: QueryResult[];
 };
 
@@ -51,11 +52,7 @@ export const createSubscriptionSlice: StateCreator<
 
     const allTweetsSubscription = liveQuery(allTweetsObservable).subscribe({
       next: (newAllTweets) => {
-        const newFs = FuzzySet(
-          newAllTweets.map((tweet) => normalizeText(tweet.full_text)),
-        );
-
-        set({ allTweets: newAllTweets, tweetsByFullText: newFs });
+        set({ allTweets: newAllTweets });
       },
       error: (error) => console.error(error),
     });
@@ -77,12 +74,22 @@ export const createSubscriptionSlice: StateCreator<
       error: (error) => console.error(error),
     });
 
+    const fullTextFuzzySetFieldsSubscription = liveQuery(
+      fullTextFuzzySetFieldsObservable,
+    ).subscribe({
+      next: (results) => {
+        set({ tweetsByFullText: deserialize(results[0].fields) });
+      },
+      error: (error) => console.error(error),
+    });
+
     subscriptions.current = [
       accountSubscription,
       profileSubscription,
       allTweetsSubscription,
       queryResultsSubscription,
       sessionDataSubscription,
+      fullTextFuzzySetFieldsSubscription,
     ];
   },
   unsubscribe: () => {

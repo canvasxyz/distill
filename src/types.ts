@@ -1,3 +1,5 @@
+import type { SerializedFuzzySet } from "./state/fuzzyset/serialize";
+
 export type Account = {
   email: string;
   createdVia: string;
@@ -47,4 +49,9 @@ export type Tweet = {
 export type SessionData = {
   id: string;
   viewingMyArchive: boolean;
+};
+
+export type FuzzySetFields = {
+  id: string;
+  fields: SerializedFuzzySet;
 };
