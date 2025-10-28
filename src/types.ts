@@ -1,5 +1,3 @@
-import type { SerializedFuzzySet } from "./state/fuzzyset/serialize";
-
 export type Account = {
   email: string;
   createdVia: string;

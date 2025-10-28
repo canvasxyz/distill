@@ -4,6 +4,7 @@ import { UploadPanel } from "./UploadView";
 import { ModelQuerySection } from "./query_view/ModelQueryView";
 import { useNavigate } from "react-router";
 import { LoadingView } from "./LoadingView";
+import { FeedbackButtons } from "../components/FeedbackButtons";
 
 function ArchiveSummaryCard() {
   const navigate = useNavigate();
@@ -246,29 +247,30 @@ export function MyArchiveView() {
 
   return (
     <div style={{ height: "100vh", overflowY: "scroll" }}>
-      <div
-        style={{
-          maxHeight: "100vh",
-          display: "flex",
-          flexDirection: "column",
-          padding: "15px 20px",
-          margin: "0 auto",
-          maxWidth: "1200px",
-        }}
-      >
-        {appIsReady ? (
-          dbHasTweets ? (
+      {appIsReady ? (
+        <div
+          style={{
+            maxHeight: "100vh",
+            display: "flex",
+            flexDirection: "column",
+            padding: "15px 20px",
+            margin: "0 auto",
+            maxWidth: "1200px",
+          }}
+        >
+          {dbHasTweets ? (
             <>
               <ArchiveSummaryCard />
               <ModelQuerySection />
+              <FeedbackButtons />
             </>
           ) : (
             <UploadPanel />
-          )
-        ) : (
-          <LoadingView />
-        )}
-      </div>
+          )}
+        </div>
+      ) : (
+        <LoadingView />
+      )}
     </div>
   );
 }
