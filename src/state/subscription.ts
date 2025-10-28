@@ -13,6 +13,8 @@ import type { Account, ProfileWithId, Tweet } from "../types";
 import type { QueryResult } from "../views/query_view/ai_utils";
 import type { StateCreator } from "zustand";
 import type { StoreSlices } from "./types";
+import { normalizeText } from "../utils";
+import FuzzySet from "fuzzyset.js";
 
 export type SubscriptionSlice = {
   subscriptions: RefObject<Subscription[]>;
@@ -21,6 +23,7 @@ export type SubscriptionSlice = {
   account: Account | null;
   profile: ProfileWithId | null;
   allTweets: Tweet[];
+  tweetsByFullText: FuzzySet | null;
   queryResults: QueryResult[];
 };
 
@@ -47,7 +50,13 @@ export const createSubscriptionSlice: StateCreator<
     });
 
     const allTweetsSubscription = liveQuery(allTweetsObservable).subscribe({
-      next: (newAllTweets) => set({ allTweets: newAllTweets }),
+      next: (newAllTweets) => {
+        const newFs = FuzzySet(
+          newAllTweets.map((tweet) => normalizeText(tweet.full_text)),
+        );
+
+        set({ allTweets: newAllTweets, tweetsByFullText: newFs });
+      },
       error: (error) => console.error(error),
     });
 
@@ -86,6 +95,7 @@ export const createSubscriptionSlice: StateCreator<
   account: null,
   profile: null,
   allTweets: [],
+  tweetsByFullText: null,
   excludedTweetIdsSet: new Set(),
   queryResults: [],
 });

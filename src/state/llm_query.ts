@@ -12,7 +12,7 @@ import {
 } from "../views/query_view/ai_utils";
 import PQueue from "p-queue";
 import type { Tweet } from "../types";
-import { getBatches } from "../utils";
+import { getBatches, normalizeText } from "../utils";
 import { v7 as uuidv7 } from "uuid";
 import { db } from "../db";
 import { QUERY_BATCH_SIZE, type LLMQueryConfig } from "../constants";
@@ -35,6 +35,7 @@ export type LlmQuerySlice = {
   llmQueryQueue: PQueue;
   selectedConfigIndex: number;
   setSelectedConfigIndex: (idx: number) => void;
+  getGenuineTweetTexts: (tweetTexts: string[]) => string[];
   submit: (
     filteredTweetsToAnalyse: Tweet[],
     query: string,
@@ -62,6 +63,30 @@ export const createLlmQuerySlice: StateCreator<
   llmQueryQueue,
   selectedConfigIndex: 0,
   setSelectedConfigIndex: (idx: number) => set({ selectedConfigIndex: idx }),
+
+  getGenuineTweetTexts: (tweetTexts: string[]) => {
+    const result = [];
+
+    for (const tweetText of tweetTexts) {
+      // check if the tweet text is in the db
+      const normalizedTweetText = normalizeText(tweetText);
+
+      const threshold = 0.8;
+      const candidates =
+        get().tweetsByFullText!.get(normalizedTweetText, null, threshold) || [];
+
+      if (candidates.length === 0) {
+        // hallucination!
+        console.log(`no match found for "${normalizedTweetText}"`);
+      } else {
+        const candidate = candidates[0];
+        // we should push the value that the generated tweet matched against
+        result.push(candidate[1]);
+      }
+    }
+
+    return result;
+  },
 
   submit: (filteredTweetsToAnalyse: Tweet[], query: string, rangeSelection) => {
     const queryId = uuidv7();
@@ -143,11 +168,12 @@ export const createLlmQuerySlice: StateCreator<
           }
 
           const tweetTexts = extractTweetTexts(queryResult.result);
+          const genuineTweetTexts = get().getGenuineTweetTexts(tweetTexts);
 
           const endTime = performance.now();
           updateBatchStatus(i, {
             status: "done",
-            result: tweetTexts,
+            result: genuineTweetTexts,
             outputText: queryResult.result,
             startTime,
             endTime,
