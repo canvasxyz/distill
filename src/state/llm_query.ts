@@ -153,6 +153,7 @@ export const createLlmQuerySlice: StateCreator<
           let retries = 3;
           let queryResult: Awaited<ReturnType<typeof submitQuery>> | null =
             null;
+          let queryError: unknown;
 
           while (retries > 0 && queryResult === null) {
             try {
@@ -165,14 +166,15 @@ export const createLlmQuerySlice: StateCreator<
                 openrouterProvider: openrouterProvider,
               });
             } catch (e) {
-              console.log(e);
-              console.log("retrying...");
+              queryError = e;
               retries--;
             }
           }
 
           if (!queryResult) {
-            throw new Error(`Query failed after ${retries} retries!`);
+            throw new Error(
+              `Query failed after 3 retries. Error from model provider (${provider}): "${queryError}"`,
+            );
           }
 
           const tweetTexts = extractTweetTexts(queryResult.result);
@@ -210,13 +212,10 @@ export const createLlmQuerySlice: StateCreator<
             }
           }
 
-          console.log(
-            `submitting final query with ${collectedTweetTexts.length} tweets`,
-          );
-
           let finalQueryRetries = 3;
           let finalQueryResult: Awaited<ReturnType<typeof submitQuery>> | null =
             null;
+          let finalQueryError: unknown;
 
           while (finalQueryRetries > 0 && finalQueryResult === null) {
             try {
@@ -232,13 +231,14 @@ export const createLlmQuerySlice: StateCreator<
             } catch (e) {
               console.log(e);
               console.log("retrying...");
+              finalQueryError = e;
               finalQueryRetries--;
             }
           }
 
           if (!finalQueryResult) {
             throw new Error(
-              `Final query failed after ${finalQueryRetries} retries!`,
+              `Query failed after 3 retries. Error from model provider (${provider}): "${finalQueryError}"`,
             );
           }
 

@@ -107,6 +107,11 @@ export async function submitQuery(params: {
     headers: { "Content-Type": "application/json" },
   });
 
+  if (classificationResponse.status !== 200) {
+    const errorText = await classificationResponse.text();
+    throw new Error(errorText);
+  }
+
   const data = await classificationResponse.json();
 
   const endTime = performance.now();
