@@ -1,36 +1,9 @@
-import { AnalyzeTweetsButton } from "./AnalyzeTweetsButton";
-import { filters } from "../filtering/filters";
 import { LinkButton } from "./LinkButton";
 import { useStore } from "../state/store";
-import { useMatch } from "react-router";
-
-function HorizontalRule() {
-  return (
-    <hr
-      style={{
-        margin: "0 0",
-        border: "none",
-        borderTop: "1px solid #ddd",
-      }}
-    />
-  );
-}
 
 export function Sidebar() {
-  const onQueryPage = useMatch("/");
-  const {
-    analyzeTweets,
-    numTweetsAnalyzed,
-    analysisInProgress,
-    allTweets,
-    viewingMyArchive,
-    includedTweets,
-    excludedTweets,
-    tweetsByFilterName,
-    downloadArchive,
-  } = useStore();
+  const { viewingMyArchive } = useStore();
 
-  const totalNumTweets = (allTweets || []).length;
   return (
     <div
       style={{
@@ -46,93 +19,6 @@ export function Sidebar() {
         <LinkButton to="/all-tweets" disabled={!viewingMyArchive} size="lg">
           Archive Review
         </LinkButton>
-
-        {!onQueryPage && (
-          <>
-            <LinkButton to="/included-tweets" disabled={!allTweets}>
-              Included 👍 {includedTweets && `(${includedTweets.length})`}
-            </LinkButton>
-            <LinkButton to="/excluded-tweets" disabled={!allTweets}>
-              Excluded 👎 {excludedTweets && `(${excludedTweets.length})`}
-            </LinkButton>
-            {filters.map((filter, index) => (
-              <LinkButton
-                key={index}
-                to={`/filters/${filter.name}`}
-                disabled={!allTweets}
-              >
-                {filter.label}{" "}
-                {tweetsByFilterName[filter.name] &&
-                  `(${tweetsByFilterName[filter.name].length})`}
-              </LinkButton>
-            ))}
-            {analysisInProgress ? (
-              <div style={{ width: "100%", margin: "10px 0" }}>
-                <div
-                  style={{ display: "flex", alignItems: "center", gap: "10px" }}
-                >
-                  <div
-                    style={{
-                      flex: 1,
-                      height: "16px",
-                      background: "#eee",
-                      borderRadius: "8px",
-                      overflow: "hidden",
-                      position: "relative",
-                      minWidth: "60px",
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: `${totalNumTweets ? (numTweetsAnalyzed / totalNumTweets) * 100 : 0}%`,
-                        height: "100%",
-                        background: "#4caf50",
-                        transition: "width 0.3s",
-                      }}
-                    />
-                  </div>
-                  <span style={{ fontSize: "13px", minWidth: "90px" }}>
-                    {numTweetsAnalyzed}/{totalNumTweets} analyzed
-                  </span>
-                </div>
-              </div>
-            ) : (
-              <AnalyzeTweetsButton
-                canAnalyse={!!allTweets}
-                onClick={() => analyzeTweets()}
-              />
-            )}
-            <button
-              style={{
-                borderRadius: "5px",
-                padding: "8px 16px",
-                margin: "4px 0 12px",
-                backgroundColor: "#eee",
-                border: "1px solid #ccc",
-                fontSize: "16px",
-                cursor: allTweets ? "pointer" : "not-allowed",
-                width: "100%",
-                textAlign: "center",
-                opacity: allTweets ? 1 : 0.6,
-              }}
-              title="Download"
-              onClick={() => {
-                if (!allTweets) return;
-                downloadArchive();
-              }}
-              disabled={!allTweets}
-            >
-              Download Tweets
-            </button>
-
-            <HorizontalRule />
-            <span style={{ fontSize: "0.75em", fontStyle: "italic" }}>
-              Note: Twitter Archive Explorer analyzes the text content of
-              tweets, not the images or any other linked data (e.g. quoted
-              tweets).
-            </span>
-          </>
-        )}
       </div>
       {/* Floating Feedback button at the bottom-left of the sidebar */}
       <a

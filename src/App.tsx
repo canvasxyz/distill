@@ -5,7 +5,7 @@ import { useEffect } from "react";
 import { useStore } from "./state/store";
 
 function App() {
-  const { init, subscribe, unsubscribe, analysisQueue } = useStore();
+  const { init, subscribe, unsubscribe } = useStore();
 
   useEffect(() => {
     init();
@@ -13,10 +13,8 @@ function App() {
 
     return () => {
       unsubscribe();
-      // clear any in-progress jobs if the page hot reloads
-      analysisQueue.clear();
     };
-  }, [init, subscribe, unsubscribe, analysisQueue]);
+  }, [init, subscribe, unsubscribe]);
 
   return (
     <div style={{ display: "flex" }}>

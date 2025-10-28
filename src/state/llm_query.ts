@@ -252,7 +252,7 @@ export const createLlmQuerySlice: StateCreator<
           try {
             // Clear any pending tasks in the queue to stop further processing
             get().llmQueryQueue.clear();
-          } catch (e) {
+          } catch {
             // ignore queue clear errors
           }
           // Reset UI-related state so the button and view recover

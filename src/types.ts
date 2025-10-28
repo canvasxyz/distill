@@ -44,13 +44,6 @@ export type Tweet = {
   raw_json: string;
 };
 
-export type FilterMatch = {
-  id: string;
-  filterName: string;
-  type: "llm" | "regex";
-  regexMatch?: RegExpExecArray;
-};
-
 export type SessionData = {
   id: string;
   viewingMyArchive: boolean;

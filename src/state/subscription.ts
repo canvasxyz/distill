@@ -6,13 +6,10 @@ import {
   accountObservable,
   profileObservable,
   allTweetsObservable,
-  excludedTweetsObservable,
-  filterTweetsObservable,
-  includedTweetsObservable,
   queryResultsObservable,
   sessionDataObservable,
 } from "./observables";
-import type { Account, FilterMatch, ProfileWithId, Tweet } from "../types";
+import type { Account, ProfileWithId, Tweet } from "../types";
 import type { QueryResult } from "../views/query_view/ai_utils";
 import type { StateCreator } from "zustand";
 import type { StoreSlices } from "./types";
@@ -24,11 +21,6 @@ export type SubscriptionSlice = {
   account: Account | null;
   profile: ProfileWithId | null;
   allTweets: Tweet[];
-  includedTweets: Tweet[];
-  excludedTweets: Tweet[];
-  excludedTweetIdsSet: Set<string>;
-  tweetsByFilterName: Record<string, Tweet[]>;
-  filterMatchesByTweetId: Record<string, FilterMatch[]>;
   queryResults: QueryResult[];
 };
 
@@ -59,34 +51,6 @@ export const createSubscriptionSlice: StateCreator<
       error: (error) => console.error(error),
     });
 
-    const includedTweetsSubscription = liveQuery(
-      includedTweetsObservable,
-    ).subscribe({
-      next: (newIncludedTweets) => set({ includedTweets: newIncludedTweets }),
-      error: (error) => console.error(error),
-    });
-
-    const excludedTweetsSubscription = liveQuery(
-      excludedTweetsObservable,
-    ).subscribe({
-      next: (newExcludedTweets) =>
-        set({
-          excludedTweets: newExcludedTweets,
-          excludedTweetIdsSet: new Set(
-            newExcludedTweets.map((tweet) => tweet.id),
-          ),
-        }),
-      error: (error) => console.error(error),
-    });
-
-    const filterTweetsSubscription = liveQuery(
-      filterTweetsObservable,
-    ).subscribe({
-      next: ({ tweetsByFilterName, filterMatchesByTweetId }) =>
-        set({ tweetsByFilterName, filterMatchesByTweetId }),
-      error: (error) => console.error(error),
-    });
-
     const queryResultsSubscription = liveQuery(
       queryResultsObservable,
     ).subscribe({
@@ -108,9 +72,6 @@ export const createSubscriptionSlice: StateCreator<
       accountSubscription,
       profileSubscription,
       allTweetsSubscription,
-      includedTweetsSubscription,
-      excludedTweetsSubscription,
-      filterTweetsSubscription,
       queryResultsSubscription,
       sessionDataSubscription,
     ];
@@ -125,10 +86,6 @@ export const createSubscriptionSlice: StateCreator<
   account: null,
   profile: null,
   allTweets: [],
-  includedTweets: [],
-  excludedTweets: [],
   excludedTweetIdsSet: new Set(),
-  tweetsByFilterName: {},
-  filterMatchesByTweetId: {},
   queryResults: [],
 });
