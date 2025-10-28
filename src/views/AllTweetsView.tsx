@@ -3,10 +3,10 @@ import { TweetsView } from "./TweetsView";
 import { ShowIfTweetsLoaded } from "./ShowIfTweetsLoaded";
 import { useStore } from "../state/store";
 import { useFilterBySearchParam } from "../hooks/useFilterBySearchParam";
-import { useSearchParams } from "react-router";
+import { Navigate, useSearchParams } from "react-router";
 
 function AllTweetsViewInner() {
-  const { allTweets } = useStore();
+  const { allTweets, viewingMyArchive } = useStore();
 
   const [params] = useSearchParams();
   const searchParam = params.get("search");
@@ -17,6 +17,10 @@ function AllTweetsViewInner() {
     items: filteredTweets,
     limit: 20,
   });
+
+  if (!viewingMyArchive) {
+    return <Navigate to="/" />;
+  }
 
   return (
     <TweetsView
