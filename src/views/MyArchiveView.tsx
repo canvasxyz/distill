@@ -2,8 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 import { useStore } from "../state/store";
 import { UploadPanel } from "./UploadView";
 import { ModelQuerySection } from "./query_view/ModelQueryView";
+import { useNavigate } from "react-router";
 
 function ArchiveSummaryCard() {
+  const navigate = useNavigate();
+
   const { account, allTweets, clearDatabase, profile } = useStore();
   const [showProfilePicture, setShowProfilePicture] = useState(false);
 
@@ -190,6 +193,25 @@ function ArchiveSummaryCard() {
           <span>Retweets: {retweetsCount}</span>
         </div>
       </div>
+      <button
+        style={{
+          borderRadius: "5px",
+          marginLeft: "18px",
+          marginBottom: "-2px",
+          padding: "6px 16px",
+          backgroundColor: "#e5f0ff",
+          border: "1px solid #9bc1f7",
+          fontSize: "16px",
+          cursor: "pointer",
+          color: "#194486",
+          width: "fit-content",
+        }}
+        onClick={() => {
+          navigate("/all-tweets");
+        }}
+      >
+        View Tweets
+      </button>
       <button
         style={{
           borderRadius: "5px",
