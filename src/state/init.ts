@@ -97,7 +97,7 @@ export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
 
     await db.fullTextFuzzySetFields.add({
       id: "singleton",
-      fields: serialize(fuzzySet),
+      fields: JSON.stringify(serialize(fuzzySet)),
     });
 
     set({ ingestTwitterArchiveProgress: null });
@@ -252,7 +252,7 @@ export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
 
     await db.fullTextFuzzySetFields.add({
       id: "singleton",
-      fields: serialize(fuzzySet),
+      fields: JSON.stringify(serialize(fuzzySet)),
     });
 
     set({

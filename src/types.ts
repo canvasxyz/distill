@@ -53,5 +53,5 @@ export type SessionData = {
 
 export type FuzzySetFields = {
   id: string;
-  fields: SerializedFuzzySet;
+  fields: string;
 };

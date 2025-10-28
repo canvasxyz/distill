@@ -78,7 +78,7 @@ export const createSubscriptionSlice: StateCreator<
       fullTextFuzzySetFieldsObservable,
     ).subscribe({
       next: (results) => {
-        set({ tweetsByFullText: deserialize(results[0].fields) });
+        set({ tweetsByFullText: deserialize(JSON.parse(results[0].fields)) });
       },
       error: (error) => console.error(error),
     });
