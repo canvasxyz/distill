@@ -51,7 +51,6 @@ export function ModelQuerySection() {
           </button>
         ))}
       </div>
-
       {activeTab === "run-queries" && <RunQueries />}
       {activeTab === "past-queries" && <PastQueries />}
     </section>

@@ -6,6 +6,7 @@ import { createHashRouter } from "react-router";
 import { RouterProvider } from "react-router/dom";
 import { MyArchiveView } from "./views/MyArchiveView.tsx";
 import { AllTweetsView } from "./views/AllTweetsView.tsx";
+import { FeedbackButtons } from "./components/FeedbackButtons.tsx";
 
 const router = createHashRouter([
   {
@@ -21,5 +22,6 @@ const router = createHashRouter([
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <RouterProvider router={router} />
+    <FeedbackButtons />
   </StrictMode>,
 );
