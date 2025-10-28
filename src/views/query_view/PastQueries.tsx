@@ -6,6 +6,7 @@ import { CopyButton } from "./ResultsBox";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { stripThink } from "../../utils";
+import { BatchTweetsModal } from "./BatchTweetsModal";
 
 function formatDateTime(dateStr?: string) {
   if (!dateStr) return "";
@@ -39,6 +40,7 @@ function formatRangeSelection(rangeSelection?: RangeSelection) {
 
 function PastQueryItem({ query }: { query: QueryResult }) {
   const [open, setOpen] = useState(false);
+  const [showBatchTweetsModal, setShowBatchTweetsModal] = useState(false);
 
   return (
     <div
@@ -61,7 +63,10 @@ function PastQueryItem({ query }: { query: QueryResult }) {
           gap: "12px",
           fontWeight: 500,
           transition: "background 0.12s",
+          background: undefined,
         }}
+        onMouseEnter={(e) => (e.currentTarget.style.background = "#f7faff")}
+        onMouseLeave={(e) => (e.currentTarget.style.background = "")}
       >
         <span style={{ flexGrow: 1, wordBreak: "break-word" }}>
           {query.query.length > 120
@@ -94,10 +99,7 @@ function PastQueryItem({ query }: { query: QueryResult }) {
         </span>
       </div>
       {open && (
-        <div
-          onClick={() => setOpen((open) => !open)}
-          style={{ padding: "20px" }}
-        >
+        <div style={{ padding: "20px" }}>
           <div
             style={{
               fontFamily: "inherit",
@@ -109,9 +111,47 @@ function PastQueryItem({ query }: { query: QueryResult }) {
               position: "relative",
               marginBottom: "4px",
               minHeight: "32px",
+              display: "flex",
+              flexDirection: "column",
             }}
           >
-            <CopyButton text={query.result} />
+            <div style={{ display: "flex", flexDirection: "row" }}>
+              <div style={{ flex: 1 }} />
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  gap: "10px",
+                  justifyContent: "flex-end",
+                }}
+              >
+                <button
+                  style={{
+                    border: "1px solid rgb(150, 234, 153)",
+                    borderRadius: "4px",
+                    padding: "4px 8px",
+                    background: "#fff",
+                    color: "#388e3c",
+                    fontSize: "12px",
+                    fontWeight: "bold",
+                    cursor: "pointer",
+                    transition: "all 0.2s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "#e7f6e7";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "#fff";
+                  }}
+                  onClick={() => {
+                    setShowBatchTweetsModal(true);
+                  }}
+                >
+                  Evidence
+                </button>
+                <CopyButton text={query.result} />
+              </div>
+            </div>
             <Markdown remarkPlugins={[remarkGfm]}>
               {stripThink(query.result)}
             </Markdown>
@@ -153,6 +193,11 @@ function PastQueryItem({ query }: { query: QueryResult }) {
           </div>
         </div>
       )}
+      <BatchTweetsModal
+        isOpen={showBatchTweetsModal}
+        queryResult={query}
+        onClose={() => setShowBatchTweetsModal(false)}
+      />
     </div>
   );
 }

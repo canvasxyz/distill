@@ -16,7 +16,10 @@ export type BatchStatus =
       startTime: number;
       endTime: number;
       runTime: number;
-      result: string[];
+      groundedTweetTexts: {
+        genuine: string[];
+        hallucinated: string[];
+      };
       outputText: string;
       usage: {
         completion_tokens: number;

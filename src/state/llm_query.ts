@@ -35,7 +35,10 @@ export type LlmQuerySlice = {
   llmQueryQueue: PQueue;
   selectedConfigIndex: number;
   setSelectedConfigIndex: (idx: number) => void;
-  getGenuineTweetTexts: (tweetTexts: string[]) => string[];
+  getGenuineTweetTexts: (tweetTexts: string[]) => {
+    genuine: string[];
+    hallucinated: string[];
+  };
   submit: (
     filteredTweetsToAnalyse: Tweet[],
     query: string,
@@ -65,7 +68,8 @@ export const createLlmQuerySlice: StateCreator<
   setSelectedConfigIndex: (idx: number) => set({ selectedConfigIndex: idx }),
 
   getGenuineTweetTexts: (tweetTexts: string[]) => {
-    const result = [];
+    const genuine = [];
+    const hallucinated = [];
 
     for (const tweetText of tweetTexts) {
       // check if the tweet text is in the db
@@ -81,15 +85,15 @@ export const createLlmQuerySlice: StateCreator<
 
       if (candidates.length === 0) {
         // hallucination!
-        console.log(`no match found for "${normalizedTweetText}"`);
+        hallucinated.push(normalizedTweetText);
       } else {
         const candidate = candidates[0];
         // we should push the value that the generated tweet matched against
-        result.push(candidate[1]);
+        genuine.push(candidate[1]);
       }
     }
 
-    return result;
+    return { genuine, hallucinated };
   },
 
   submit: (filteredTweetsToAnalyse: Tweet[], query: string, rangeSelection) => {
@@ -172,12 +176,12 @@ export const createLlmQuerySlice: StateCreator<
           }
 
           const tweetTexts = extractTweetTexts(queryResult.result);
-          const genuineTweetTexts = get().getGenuineTweetTexts(tweetTexts);
+          const groundedTweetTexts = get().getGenuineTweetTexts(tweetTexts);
 
           const endTime = performance.now();
           updateBatchStatus(i, {
             status: "done",
-            result: genuineTweetTexts,
+            groundedTweetTexts,
             outputText: queryResult.result,
             startTime,
             endTime,
@@ -197,12 +201,14 @@ export const createLlmQuerySlice: StateCreator<
             if (batchStatus.status !== "done") return;
           }
 
-          const collectedTweetTexts = Object.values(
-            batchStatuses as unknown as { result: string }[],
-          )
-            .map((batchStatus) => batchStatus.result)
-            .flat()
-            .map((tweetText) => ({ full_text: tweetText }));
+          const collectedTweetTexts: { full_text: string }[] = [];
+          for (const batchStatus of Object.values(batchStatuses)) {
+            if (batchStatus.status === "done") {
+              for (const tweetText of batchStatus.groundedTweetTexts.genuine) {
+                collectedTweetTexts.push({ full_text: tweetText });
+              }
+            }
+          }
 
           console.log(
             `submitting final query with ${collectedTweetTexts.length} tweets`,
