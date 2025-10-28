@@ -3,6 +3,7 @@ import { useStore } from "../state/store";
 import { UploadPanel } from "./UploadView";
 import { ModelQuerySection } from "./query_view/ModelQueryView";
 import { useNavigate } from "react-router";
+import { LoadingView } from "./LoadingView";
 
 function ArchiveSummaryCard() {
   const navigate = useNavigate();
@@ -241,8 +242,7 @@ function ArchiveSummaryCard() {
 }
 
 export function MyArchiveView() {
-  const { allTweets, account } = useStore();
-  const hasArchiveLoaded = (allTweets?.length || 0) > 0 && !!account;
+  const { appIsReady, dbHasTweets } = useStore();
 
   return (
     <div style={{ height: "100vh", overflowY: "scroll" }}>
@@ -256,13 +256,17 @@ export function MyArchiveView() {
           maxWidth: "1200px",
         }}
       >
-        {hasArchiveLoaded ? (
-          <>
-            <ArchiveSummaryCard />
-            <ModelQuerySection />
-          </>
+        {appIsReady ? (
+          dbHasTweets ? (
+            <>
+              <ArchiveSummaryCard />
+              <ModelQuerySection />
+            </>
+          ) : (
+            <UploadPanel />
+          )
         ) : (
-          <UploadPanel />
+          <LoadingView />
         )}
       </div>
     </div>
