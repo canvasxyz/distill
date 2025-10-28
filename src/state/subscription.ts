@@ -96,6 +96,5 @@ export const createSubscriptionSlice: StateCreator<
   profile: null,
   allTweets: [],
   tweetsByFullText: null,
-  excludedTweetIdsSet: new Set(),
   queryResults: [],
 });
