@@ -2,6 +2,7 @@ import type { ChatCompletionMessageParam } from "openai/resources";
 import type { Account, Tweet } from "../../types";
 import OpenAI from "openai";
 import { pickSampleNoRepeats } from "../../utils";
+import type { LLMQueryProvider } from "../../constants";
 
 export type Query = { prompt: string; systemPrompt?: string };
 
@@ -85,7 +86,7 @@ export async function submitQuery(params: {
   query: Query;
   account: Account;
   model: string;
-  provider: "deepinfra" | "openrouter" | "cerebras" | "groq";
+  provider: LLMQueryProvider;
   openrouterProvider?: string | null | undefined;
 }) {
   const { tweetsSample, query, account, model, provider, openrouterProvider } =
