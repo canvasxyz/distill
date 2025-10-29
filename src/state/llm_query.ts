@@ -19,6 +19,7 @@ import { QUERY_BATCH_SIZE, type LLMQueryConfig } from "../constants";
 
 export const AVAILABLE_LLM_CONFIGS: LLMQueryConfig[] = [
   ["gpt-oss-120b", "cerebras", null],
+  ["gpt-oss-120b", "fireworks", null],
   ["llama-3.3-70b", "cerebras", null],
   ["qwen-3-235b-a22b-instruct-2507", "cerebras", null],
   ["qwen-3-32b", "cerebras", null],
