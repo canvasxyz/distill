@@ -152,7 +152,7 @@ export function RunQueries() {
   };
 
   const browseMoreButtonStyle: CSSProperties = {
-    padding: "12px 20px",
+    padding: "13px 20px",
     background: "#f8f9fa",
     color: "#0056B3",
     border: "1px solid #007bff",
@@ -165,7 +165,6 @@ export function RunQueries() {
     alignItems: "center",
     justifyContent: "center",
     textAlign: "center",
-    minHeight: "52px",
     gridColumn: "1 / -1",
     opacity: isProcessing ? 0.6 : 1,
   };
