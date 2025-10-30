@@ -11,28 +11,6 @@ export type RangeSelection =
   | { type: "date-range"; startDate: string; endDate: string }
   | { type: "random-sample"; sampleSize: number };
 
-export type BatchStatus =
-  | {
-      status: "done";
-      startTime: number;
-      endTime: number;
-      runTime: number;
-      groundedTweetTexts: {
-        genuine: string[];
-        hallucinated: string[];
-      };
-      outputText: string;
-      usage: {
-        completion_tokens: number;
-        estimated_cost: number;
-        prompt_tokens: number;
-        prompt_tokens_details: null; // only used with prompt caching
-        total_tokens: number;
-      };
-    }
-  | { status: "pending"; startTime: number }
-  | { status: "queued" };
-
 export type QueryResult = {
   id: string;
   query: string;
@@ -41,7 +19,7 @@ export type QueryResult = {
   runTime: number;
   messages: ChatCompletionMessageParam[];
   rangeSelection: RangeSelection;
-  batchStatuses: Record<string, BatchStatus>;
+  evidence: { full_text: string }[];
   totalEstimatedCost: number;
   totalTokens: number;
   provider: string;

@@ -16,6 +16,7 @@ import type { StateCreator } from "zustand";
 import type { StoreSlices } from "./types";
 import { deserialize } from "./fuzzyset/serialize.js";
 import type { FuzzySetInstance } from "./fuzzyset/fuzzyset.js";
+import { normalizeText } from "../utils.js";
 
 export type SubscriptionSlice = {
   subscriptions: RefObject<Subscription[]>;
@@ -24,7 +25,8 @@ export type SubscriptionSlice = {
   account: Account | null;
   profile: ProfileWithId | null;
   allTweets: Tweet[];
-  tweetsByFullText: FuzzySetInstance | null;
+  tweetsByNormalizedFullText: Record<string, Tweet[]> | null;
+  tweetsFullTextFuzzySet: FuzzySetInstance | null;
   queryResults: QueryResult[];
 };
 
@@ -52,7 +54,14 @@ export const createSubscriptionSlice: StateCreator<
 
     const allTweetsSubscription = liveQuery(allTweetsObservable).subscribe({
       next: (newAllTweets) => {
-        set({ allTweets: newAllTweets });
+        const tweetsByNormalizedFullText: Record<string, Tweet[]> = {};
+        for (const tweet of newAllTweets) {
+          const normalizedFullText = normalizeText(tweet.full_text);
+          tweetsByNormalizedFullText[normalizedFullText] ||= [];
+          tweetsByNormalizedFullText[normalizedFullText].push(tweet);
+        }
+
+        set({ allTweets: newAllTweets, tweetsByNormalizedFullText });
       },
       error: (error) => console.error(error),
     });
@@ -78,7 +87,9 @@ export const createSubscriptionSlice: StateCreator<
       fullTextFuzzySetFieldsObservable,
     ).subscribe({
       next: (results) => {
-        set({ tweetsByFullText: deserialize(JSON.parse(results[0].fields)) });
+        set({
+          tweetsFullTextFuzzySet: deserialize(JSON.parse(results[0].fields)),
+        });
       },
       error: (error) => console.error(error),
     });
@@ -102,6 +113,7 @@ export const createSubscriptionSlice: StateCreator<
   account: null,
   profile: null,
   allTweets: [],
-  tweetsByFullText: null,
+  tweetsByNormalizedFullText: {},
+  tweetsFullTextFuzzySet: null,
   queryResults: [],
 });

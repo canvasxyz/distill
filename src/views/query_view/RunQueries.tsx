@@ -41,7 +41,6 @@ export function RunQueries() {
     account,
     allTweets,
     submit,
-    batchStatuses,
     isProcessing,
     startedProcessingTime,
     currentRunningQuery,
@@ -106,13 +105,8 @@ export function RunQueries() {
   });
 
   const [currentProgress, totalProgress] = useMemo(() => {
-    if (batchStatuses === null) return [0, 1];
-    const currentProgress = Object.values(batchStatuses).filter(
-      (status) => status.status === "done",
-    ).length;
-    const totalProgress = Object.values(batchStatuses).length;
-    return [currentProgress, totalProgress];
-  }, [batchStatuses]);
+    return [0, 1];
+  }, []);
 
   const [showBatchTweetsModal, setShowBatchTweetsModal] = useState(false);
 

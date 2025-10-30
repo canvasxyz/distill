@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect } from "react";
 import { type QueryResult } from "./ai_utils";
 
 export function BatchTweetsModal({
@@ -19,34 +19,6 @@ export function BatchTweetsModal({
       };
     }
   }, [isOpen]);
-
-  const batchTweets = useMemo(() => {
-    if (!queryResult) return [];
-    return Object.values(queryResult?.batchStatuses)
-      .filter((batchStatus) => batchStatus.status === "done")
-      .map((batchStatus) => batchStatus.groundedTweetTexts.genuine)
-      .flat()
-      .map((tweetText) => ({ full_text: tweetText }));
-  }, [queryResult]);
-
-  const batchHallucinations = useMemo(() => {
-    if (!queryResult) return [];
-    return Object.values(queryResult?.batchStatuses)
-      .filter((batchStatus) => batchStatus.status === "done")
-      .map((batchStatus) => batchStatus.groundedTweetTexts.hallucinated)
-      .flat()
-      .map((tweetText) => ({ full_text: tweetText }));
-  }, [queryResult]);
-
-  const TABS = [
-    { label: "Evidence", key: "evidence", count: batchTweets.length },
-    {
-      label: "Hallucinations",
-      key: "hallucinations",
-      count: batchHallucinations.length,
-    },
-  ];
-  const [activeTab, setActiveTab] = useState(TABS[0].key);
 
   if (!isOpen) return null;
 
@@ -111,9 +83,8 @@ export function BatchTweetsModal({
         <p>
           To generate the query result, Twitter Archive Explorer first extracts
           the most relevant tweets from the user's archive using a large
-          language model. The retrieved tweets are then checked against the
-          archive itself for "hallucinations". Only tweets that are actually
-          present in the archive are used to generate the final result.
+          language model. Only tweets that are actually present in the archive
+          are used to generate the final result.
         </p>
         <p>
           Model: {queryResult?.model} on {queryResult?.provider}
@@ -121,129 +92,48 @@ export function BatchTweetsModal({
 
         <div
           style={{
-            display: "flex",
-            marginTop: "16px",
-            gap: "8px",
+            flex: 1,
+            minHeight: 0,
+            maxHeight: "54vh", // Ensures scrolling space for the list
+            overflowY: "auto",
           }}
         >
-          {TABS.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              style={{
-                background: activeTab === tab.key ? "#f5f5f5" : "transparent",
-                border: "none",
-                borderBottom:
-                  activeTab === tab.key
-                    ? "3px solid #007bff"
-                    : "3px solid transparent",
-                color: activeTab === tab.key ? "#007bff" : "#333",
-                fontWeight: activeTab === tab.key ? "bold" : "normal",
-                padding: "12px 20px",
-                cursor: "pointer",
-                outline: "none",
-                fontSize: "16px",
-                transition: "color 0.2s, border-bottom 0.2s, background 0.2s",
-                borderRadius: "6px 6px 0 0",
-              }}
-            >
-              {tab.label} ({tab.count})
-            </button>
-          ))}
-        </div>
-        {activeTab === "evidence" ? (
-          <div
+          <ul
             style={{
-              flex: 1,
-              minHeight: 0,
-              maxHeight: "54vh", // Ensures scrolling space for the list
-              overflowY: "auto",
+              padding: 0,
+              margin: 0,
+              listStyle: "none",
             }}
           >
-            <ul
-              style={{
-                padding: 0,
-                margin: 0,
-                listStyle: "none",
-              }}
-            >
-              {batchTweets.map((batchTweet, idx) => {
-                return (
-                  <li
-                    key={idx}
+            {queryResult?.evidence.map((batchTweet, idx) => {
+              return (
+                <li
+                  key={idx}
+                  style={{
+                    padding: "10px 0",
+                    borderBottom:
+                      idx !== queryResult?.evidence.length - 1
+                        ? "1px solid #eee"
+                        : undefined,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <span
                     style={{
-                      padding: "10px 0",
-                      borderBottom:
-                        idx !== batchTweets.length - 1
-                          ? "1px solid #eee"
-                          : undefined,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
+                      marginRight: 10,
+                      flex: "1 1 auto",
+                      fontSize: 15,
                     }}
                   >
-                    <span
-                      style={{
-                        marginRight: 10,
-                        flex: "1 1 auto",
-                        fontSize: 15,
-                      }}
-                    >
-                      {batchTweet.full_text}
-                    </span>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        ) : (
-          <>
-            <div
-              style={{
-                flex: 1,
-                minHeight: 0,
-                maxHeight: "54vh", // Ensures scrolling space for the list
-                overflowY: "auto",
-              }}
-            >
-              <ul
-                style={{
-                  padding: 0,
-                  margin: 0,
-                  listStyle: "none",
-                }}
-              >
-                {batchHallucinations.map((batchTweet, idx) => {
-                  return (
-                    <li
-                      key={idx}
-                      style={{
-                        padding: "10px 0",
-                        borderBottom:
-                          idx !== batchTweets.length - 1
-                            ? "1px solid #eee"
-                            : undefined,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      <span
-                        style={{
-                          marginRight: 10,
-                          flex: "1 1 auto",
-                          fontSize: 15,
-                        }}
-                      >
-                        {batchTweet.full_text}
-                      </span>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          </>
-        )}
+                    {batchTweet.full_text}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
       </div>
     </div>
   );
