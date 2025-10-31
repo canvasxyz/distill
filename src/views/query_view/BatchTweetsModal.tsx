@@ -41,7 +41,7 @@ export function BatchTweetsModal({
   const TABS = [
     { label: "Evidence", key: "evidence", count: batchTweets.length },
     {
-      label: "Hallucinations",
+      label: "Possible Hallucinations",
       key: "hallucinations",
       count: batchHallucinations.length,
     },
