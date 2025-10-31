@@ -395,7 +395,7 @@ export function RunQueries() {
               borderRadius: 6,
               border: "1px solid #ccc",
               background: isProcessing ? "#f3f3f3" : "#fff",
-              width: 200,
+              width: 280,
             }}
           >
             {AVAILABLE_LLM_CONFIGS.map(
@@ -404,7 +404,8 @@ export function RunQueries() {
                   key={`${model}-${provider}-${openrouterProvider || ""}`}
                   value={idx}
                 >
-                  {model} - {provider}
+                  {openrouterProvider && "🔀 "}
+                  {model} - {openrouterProvider ?? provider}{" "}
                 </option>
               ),
             )}

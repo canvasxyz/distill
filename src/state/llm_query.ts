@@ -24,6 +24,10 @@ export const AVAILABLE_LLM_CONFIGS: LLMQueryConfig[] = [
   ["qwen-3-235b-a22b-instruct-2507", "cerebras", null],
   ["qwen-3-32b", "cerebras", null],
   ["google/gemini-2.0-flash-001", "deepinfra", null],
+  ["openai/gpt-oss-120b", "openrouter", "cerebras"],
+  ["openai/gpt-oss-120b", "openrouter", "baseten"],
+  ["openai/gpt-oss-120b", "openrouter", "groq"],
+  ["openai/gpt-oss-120b", "openrouter", "sambanova"],
 ];
 
 export type LlmQuerySlice = {
