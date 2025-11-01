@@ -28,6 +28,7 @@ import { BatchTweetsModal } from "./BatchTweetsModal";
 import { MAX_ARCHIVE_SIZE, QUERY_BATCH_SIZE } from "../../constants";
 import { stripThink } from "../../utils";
 import { AVAILABLE_LLM_CONFIGS } from "../../state/llm_query";
+import { Button } from "@radix-ui/themes";
 
 export function RunQueries() {
   const [exampleQueriesModalIsOpen, setExampleQueriesModalIsOpen] =
@@ -47,7 +48,6 @@ export function RunQueries() {
     currentRunningQuery,
     queryResult,
     errorMessage,
-    setQueryError,
     selectedConfigIndex,
     setSelectedConfigIndex,
   } = useStore();
@@ -371,8 +371,8 @@ export function RunQueries() {
                   key={`${model}-${provider}-${openrouterProvider || ""}`}
                   value={idx}
                 >
-                  {recommended && "️⭐️ "}
-                  {openrouterProvider && "🔀 "}
+                  {recommended && "??? "}
+                  {openrouterProvider && "?? "}
                   {model} - {openrouterProvider ?? provider}{" "}
                 </option>
               ),
@@ -454,30 +454,16 @@ export function RunQueries() {
               </div>
               <div style={{ marginLeft: "6px" }}>
                 <div style={{ display: "flex", gap: "6px", maxHeight: 36 }}>
-                  <button
-                    style={{
-                      border: "1px solid rgb(150, 234, 153)",
-                      borderRadius: "4px",
-                      padding: "4px 8px",
-                      background: "#fff",
-                      color: "#388e3c",
-                      fontSize: "12px",
-                      fontWeight: "bold",
-                      cursor: "pointer",
-                      transition: "all 0.2s ease",
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = "#e7f6e7";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = "#fff";
-                    }}
+                  <Button
+                    variant="outline"
+                    color="green"
+                    size="1"
                     onClick={() => {
                       setShowBatchTweetsModal(true);
                     }}
                   >
                     Evidence
-                  </button>
+                  </Button>
                   <CopyButton text={queryResult.result} />
                 </div>
               </div>
@@ -530,25 +516,11 @@ export function RunQueries() {
                     textareaRef.current?.focus();
                   }}
                 />
-                <button
+                <Button
                   type="button"
                   disabled={isProcessing}
-                  style={{
-                    border: "1px solid #d0d5dd",
-                    borderRadius: "4px",
-                    padding: "6px 10px",
-                    background: "#eee",
-                    color: "#555",
-                    cursor: isProcessing ? "not-allowed" : "pointer",
-                    transition: "all 0.2s ease",
-                  }}
-                  onMouseEnter={(e) => {
-                    if (isProcessing) return;
-                    e.currentTarget.style.background = "#e2e6ea";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = "#eee";
-                  }}
+                  variant="soft"
+                  color="gray"
                   onClick={() => {
                     if (isProcessing) return;
                     setSelectedQuery(query);
@@ -556,16 +528,20 @@ export function RunQueries() {
                   }}
                 >
                   Edit
-                </button>
+                </Button>
               </div>
             </div>
           );
         })}
       </div>
       <div style={{ margin: "10px 0", textAlign: "center" }}>
-        <a
+        <button
           disabled={isProcessing}
-          style={browseMoreButtonStyle}
+          style={{
+            ...browseMoreButtonStyle,
+            background: "transparent",
+            border: "none",
+          }}
           onClick={() => {
             if (isProcessing) return;
             setExampleQueriesModalIsOpen(true);
@@ -579,7 +555,7 @@ export function RunQueries() {
           }}
         >
           More examples...
-        </a>
+        </button>
       </div>
       <ExampleQueriesModal
         queries={EXAMPLE_QUERIES}

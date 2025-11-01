@@ -1,11 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router";
 import { useStore } from "../state/store";
 
 export function ArchiveSummarySection() {
-  const navigate = useNavigate();
-
-  const { account, allTweets, clearDatabase, profile, viewingMyArchive } =
+  const { account, allTweets, profile } =
     useStore();
   const [showProfilePicture, setShowProfilePicture] = useState(false);
 
@@ -16,7 +13,7 @@ export function ArchiveSummarySection() {
     });
   }, [profile]);
 
-  const { totalTweetsCount, originalTweetsCount, repliesCount, retweetsCount } =
+  const { totalTweetsCount, repliesCount, retweetsCount } =
     useMemo(() => {
       const tweets = allTweets || [];
       let replies = 0;

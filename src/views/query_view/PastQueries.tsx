@@ -7,6 +7,7 @@ import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { stripThink } from "../../utils";
 import { BatchTweetsModal } from "./BatchTweetsModal";
+import { Button } from "@radix-ui/themes";
 
 function formatDateTime(dateStr?: string) {
   if (!dateStr) return "";
@@ -123,30 +124,16 @@ function PastQueryItem({ query }: { query: QueryResult }) {
                   justifyContent: "flex-end",
                 }}
               >
-                <button
-                  style={{
-                    border: "1px solid rgb(150, 234, 153)",
-                    borderRadius: "4px",
-                    padding: "4px 8px",
-                    background: "#fff",
-                    color: "#388e3c",
-                    fontSize: "12px",
-                    fontWeight: "bold",
-                    cursor: "pointer",
-                    transition: "all 0.2s ease",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = "#e7f6e7";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = "#fff";
-                  }}
+                <Button
+                  variant="outline"
+                  color="green"
+                  size="1"
                   onClick={() => {
                     setShowBatchTweetsModal(true);
                   }}
                 >
                   Evidence
-                </button>
+                </Button>
                 <CopyButton text={query.result} />
               </div>
             </div>

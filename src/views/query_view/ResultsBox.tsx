@@ -1,4 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
+import { Button } from "@radix-ui/themes";
 
 export const CopyButton = ({ text }: { text: string }) => {
   const [copied, setCopied] = useState(false);
@@ -14,31 +15,14 @@ export const CopyButton = ({ text }: { text: string }) => {
   };
 
   return (
-    <button
+    <Button
       onClick={handleCopy}
-      style={{
-        background: copied ? "#4CAF50" : "#fff",
-        border: "1px solid #ccc",
-        borderRadius: "4px",
-        padding: "4px 8px",
-        cursor: "pointer",
-        fontSize: "12px",
-        color: copied ? "#fff" : "#333",
-        transition: "all 0.2s ease",
-      }}
-      onMouseEnter={(e) => {
-        if (!copied) {
-          e.currentTarget.style.background = "#f0f0f0";
-        }
-      }}
-      onMouseLeave={(e) => {
-        if (!copied) {
-          e.currentTarget.style.background = "#fff";
-        }
-      }}
+      variant="outline"
+      color={copied ? "green" : "gray"}
+      size="1"
     >
       {copied ? "Copied!" : "Copy"}
-    </button>
+    </Button>
   );
 };
 

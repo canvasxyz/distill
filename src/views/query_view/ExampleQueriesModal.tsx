@@ -1,6 +1,6 @@
-import { useEffect } from "react";
 import { replaceAccountName } from "./ai_utils";
 import { useStore } from "../../state/store";
+import { Dialog, Button } from "@radix-ui/themes";
 
 export function ExampleQueriesModal({
   isOpen,
@@ -14,82 +14,14 @@ export function ExampleQueriesModal({
   onSelectQuery?: (query: string) => void;
 }) {
   const { account } = useStore();
-  // Prevent scroll on the underlying page when modal is open
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-      return () => {
-        document.body.style.overflow = "";
-      };
-    }
-  }, [isOpen]);
-
-  if (!isOpen) return null;
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        zIndex: 1000,
-        left: 0,
-        top: 0,
-        width: "100vw",
-        height: "100vh",
-        background: "rgba(0,0,0,0.4)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-      onClick={onClose}
-    >
-      <div
-        style={{
-          width: "90%",
-          maxWidth: 768,
-          maxHeight: "80vh",
-          background: "#fff",
-          borderRadius: "12px",
-          boxShadow: "0 2px 16px rgba(0,0,0,0.18)",
-          padding: "32px 24px 24px 24px",
-          position: "relative",
-          display: "flex",
-          flexDirection: "column",
-        }}
-        onClick={(e) => e.stopPropagation()}
-      >
+    <Dialog.Root open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <Dialog.Content style={{ maxWidth: 768 }}>
+        <Dialog.Title>Example Questions</Dialog.Title>
         <div
           style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: 18,
-          }}
-        >
-          <h2 style={{ margin: 0, fontSize: 22, flex: 1 }}>
-            Example Questions
-          </h2>
-          <button
-            style={{
-              border: "none",
-              background: "transparent",
-              fontSize: "22px",
-              cursor: "pointer",
-              color: "#666",
-              fontWeight: "bold",
-              marginLeft: 12,
-              alignSelf: "flex-start",
-            }}
-            onClick={onClose}
-            aria-label="Close modal"
-          >
-            &times;
-          </button>
-        </div>
-        <div
-          style={{
-            flex: 1,
-            minHeight: 0,
-            maxHeight: "54vh", // Ensures scrolling space for the list
+            maxHeight: "54vh",
             overflowY: "auto",
           }}
         >
@@ -123,29 +55,18 @@ export function ExampleQueriesModal({
                     {queryWithAccountName}
                   </span>
                   {onSelectQuery && (
-                    <button
-                      style={{
-                        padding: "6px 14px",
-                        fontSize: 14,
-                        borderRadius: 4,
-                        border: "1px solid #007bff",
-                        background: "#007bff",
-                        color: "white",
-                        cursor: "pointer",
-                        minWidth: 90,
-                        boxSizing: "border-box",
-                      }}
+                    <Button
                       onClick={() => onSelectQuery(queryWithAccountName)}
                     >
                       Select
-                    </button>
+                    </Button>
                   )}
                 </li>
               );
             })}
           </ul>
         </div>
-      </div>
-    </div>
+      </Dialog.Content>
+    </Dialog.Root>
   );
 }

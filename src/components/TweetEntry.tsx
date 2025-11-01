@@ -1,5 +1,6 @@
 import type { Tweet } from "../types";
 import { useStore } from "../state/store";
+import { Badge } from "@radix-ui/themes";
 
 export function TweetEntry({ tweet }: { tweet: Tweet }) {
   const { account } = useStore();
@@ -46,40 +47,12 @@ export function TweetEntry({ tweet }: { tweet: Tweet }) {
         <span>&quot;{tweet.full_text}&quot;</span>
         {/* labels */}
         <div style={{ display: "flex", gap: "10px" }}>
-          <span
-            style={{
-              backgroundColor: "white",
-              border: "1px solid #e0e0e0",
-              borderRadius: "12px",
-              padding: "2px 8px",
-              fontSize: "12px",
-              color: "#333",
-              display: "inline-flex",
-              alignItems: "center",
-              fontWeight: 500,
-              gap: "4px",
-            }}
-            title="Favorites"
-          >
+          <Badge variant="surface" title="Favorites">
             ⭐ {tweet.favorite_count}
-          </span>
-          <span
-            style={{
-              backgroundColor: "white",
-              border: "1px solid #e0e0e0",
-              borderRadius: "12px",
-              padding: "2px 8px",
-              fontSize: "12px",
-              color: "#333",
-              display: "inline-flex",
-              alignItems: "center",
-              fontWeight: 500,
-              gap: "4px",
-            }}
-            title="Retweets"
-          >
+          </Badge>
+          <Badge variant="surface" title="Retweets">
             🔁 {tweet.retweet_count}
-          </span>
+          </Badge>
         </div>
       </div>
     </div>

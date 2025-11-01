@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router";
 import { useStore } from "../state/store";
+import { Button } from "@radix-ui/themes";
 
 export const SidebarActions = () => {
   const navigate = useNavigate();
@@ -14,42 +15,29 @@ export const SidebarActions = () => {
         gap: "10px",
       }}
     >
-      <button
-        style={{
-          display: "block",
-          borderRadius: "5px",
-          padding: "6px 16px",
-          backgroundColor: "#e5f0ff",
-          border: "1px solid #9bc1f799",
-          fontSize: "16px",
-          cursor: "pointer",
-          color: "#194486",
-        }}
+      <Button
+        variant="soft"
+        color="blue"
         onClick={() => {
           navigate("/all-tweets");
         }}
+        style={{ cursor: "pointer" }}
       >
         View Tweets
-      </button>
+      </Button>
 
-      <button
-        style={{
-          borderRadius: "5px",
-          padding: "6px 16px",
-          backgroundColor: "#f8d7da",
-          border: "1px solid #f5c2c7",
-          fontSize: "16px",
-          cursor: "pointer",
-          color: "#721c24",
-        }}
+      <Button
+        variant="soft"
+        color="red"
         onClick={() => {
           const message =
             "Close the archive? You will have to fetch or upload these tweets again.";
           if (confirm(message)) clearDatabase();
         }}
+        style={{ cursor: "pointer" }}
       >
         Close Archive
-      </button>
+      </Button>
     </div>
   );
 };

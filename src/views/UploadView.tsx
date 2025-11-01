@@ -6,6 +6,7 @@ import {
   PINNED_USERNAMES,
 } from "../hooks/useUsers";
 import { useMemo } from "react";
+import { Button } from "@radix-ui/themes";
 
 export function UploadPanel() {
   const {
@@ -225,22 +226,13 @@ export function UploadPanel() {
                       ★
                     </span>
                   )}
-                  <button
-                    style={{
-                      padding: "4px 10px",
-                      borderRadius: "5px",
-                      border: "1px solid #1976d2",
-                      background: "#1976d2",
-                      color: "#fff",
-                      cursor: "pointer",
-                      fontWeight: 500,
-                    }}
+                  <Button
                     onClick={() =>
                       selectCommunityArchiveUser(account.accountId)
                     }
                   >
                     Select
-                  </button>
+                  </Button>
                 </div>
               </>
             );
