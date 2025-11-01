@@ -29,6 +29,10 @@ function App() {
           borderRight: "1px solid #ddd",
           display: "flex",
           flexDirection: "column",
+          position: "sticky",
+          top: 0,
+          height: "100vh",
+          overflowY: "auto",
         }}
       >
         <div style={{ margin: "15px 20px", fontSize: 32 }}>
