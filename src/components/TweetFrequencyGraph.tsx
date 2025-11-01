@@ -51,8 +51,8 @@ export function TweetFrequencyGraph({
   const [dragEnd, setDragEnd] = useState<number | null>(null);
 
   const maxCount = LOG_FUNC(Math.max(...tweetCounts.map((d) => d.count), 1));
-  const graphHeight = 120;
-  const graphWidth = 600;
+  const graphHeight = 100;
+  const graphWidth = 760;
 
   const handleMouseDown = (_e: React.MouseEvent, index: number) => {
     setIsDragging(true);

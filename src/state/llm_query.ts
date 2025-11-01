@@ -19,11 +19,11 @@ import { QUERY_BATCH_SIZE, type LLMQueryConfig } from "../constants";
 
 export const AVAILABLE_LLM_CONFIGS: LLMQueryConfig[] = [
   ["gpt-oss-120b", "cerebras", null],
-  ["gpt-oss-120b", "fireworks", null],
   ["llama-3.3-70b", "cerebras", null],
   ["qwen-3-235b-a22b-instruct-2507", "cerebras", null],
   ["qwen-3-32b", "cerebras", null],
   ["google/gemini-2.0-flash-001", "deepinfra", null],
+  ["gpt-oss-120b", "fireworks", null],
   ["openai/gpt-oss-120b", "openrouter", "cerebras"],
   ["openai/gpt-oss-120b", "openrouter", "baseten"],
   ["openai/gpt-oss-120b", "openrouter", "groq"],
@@ -155,12 +155,12 @@ export const createLlmQuerySlice: StateCreator<
             startTime,
           });
 
-          let retries = 3;
+          let attempts = 3;
           let queryResult: Awaited<ReturnType<typeof submitQuery>> | null =
             null;
           let queryError: unknown;
 
-          while (retries > 0 && queryResult === null) {
+          while (attempts > 0 && queryResult === null) {
             try {
               queryResult = await submitQuery({
                 tweetsSample: batch,
@@ -172,13 +172,13 @@ export const createLlmQuerySlice: StateCreator<
               });
             } catch (e) {
               queryError = e;
-              retries--;
+              attempts--;
             }
           }
 
           if (!queryResult) {
             throw new Error(
-              `Query failed after 3 retries. Error from model provider (${provider}): "${queryError}"`,
+              `Query failed after 3 attempts. Error from model provider (${provider}): "${queryError}"`,
             );
           }
 
@@ -217,12 +217,12 @@ export const createLlmQuerySlice: StateCreator<
             }
           }
 
-          let finalQueryRetries = 3;
+          let finalQueryAttempts = 3;
           let finalQueryResult: Awaited<ReturnType<typeof submitQuery>> | null =
             null;
           let finalQueryError: unknown;
 
-          while (finalQueryRetries > 0 && finalQueryResult === null) {
+          while (finalQueryAttempts > 0 && finalQueryResult === null) {
             try {
               // submit query to create the final result based on the collected texts
               finalQueryResult = await submitQuery({
@@ -237,13 +237,13 @@ export const createLlmQuerySlice: StateCreator<
               console.log(e);
               console.log("retrying...");
               finalQueryError = e;
-              finalQueryRetries--;
+              finalQueryAttempts--;
             }
           }
 
           if (!finalQueryResult) {
             throw new Error(
-              `Query failed after 3 retries. Error from model provider (${provider}): "${finalQueryError}"`,
+              `Query failed after 3 attempts. Error from model provider (${provider}): "${finalQueryError}"`,
             );
           }
 

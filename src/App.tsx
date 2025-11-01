@@ -2,9 +2,14 @@ import { Outlet } from "react-router";
 import "./App.css";
 import { useEffect } from "react";
 import { useStore } from "./state/store";
+import { PastQueries } from "./views/query_view/PastQueries";
+import { ArchiveSummarySection } from "./views/ArchiveSummarySection";
+import { SidebarActions } from "./views/SidebarActions";
+import { useNavigate } from "react-router";
 
 function App() {
   const { init, subscribe, unsubscribe } = useStore();
+  const navigate = useNavigate();
 
   useEffect(() => {
     init();
@@ -16,7 +21,30 @@ function App() {
   }, [init, subscribe, unsubscribe]);
 
   return (
-    <div style={{ display: "flex" }}>
+    <div style={{ height: "100vh", overflowY: "scroll", display: "flex" }}>
+      <div
+        style={{
+          minWidth: 220,
+          borderRight: "1px solid #ddd",
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        <div style={{ margin: "15px 20px", fontSize: 32 }}>
+          <a
+            type="link"
+            onClick={() => navigate("/")}
+            style={{ cursor: "pointer" }}
+          >
+            🔎
+          </a>
+        </div>
+        <div style={{ flex: 1 }}>
+          <PastQueries />
+        </div>
+        <ArchiveSummarySection />
+        <SidebarActions />
+      </div>
       <div style={{ flex: 1 }}>
         <Outlet />
       </div>

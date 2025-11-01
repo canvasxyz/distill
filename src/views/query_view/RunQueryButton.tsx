@@ -37,7 +37,7 @@ export function RunQueryButton({
       }
       disabled={disabled}
     >
-      Run query
+      Query
       {showShortcut && isMacPlatform && (
         <span style={{ marginLeft: 8, fontSize: "0.85em", opacity: 0.8 }}>
           ⌘⏎

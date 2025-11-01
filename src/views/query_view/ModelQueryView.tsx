@@ -4,12 +4,6 @@ import { RunQueries } from "./RunQueries";
 import { PastQueries } from "./PastQueries";
 
 export function ModelQuerySection() {
-  const TABS = [
-    { label: "Run Query", key: "run-queries" },
-    { label: "Past Queries", key: "past-queries" },
-  ];
-  const [activeTab, setActiveTab] = useState(TABS[0].key);
-
   return (
     <section
       style={{
@@ -18,41 +12,7 @@ export function ModelQuerySection() {
         marginBottom: "40px",
       }}
     >
-      <div
-        style={{
-          display: "flex",
-          borderBottom: "1px solid #ddd",
-          marginTop: "16px",
-          gap: "8px",
-        }}
-      >
-        {TABS.map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
-            style={{
-              background: activeTab === tab.key ? "#f5f5f5" : "transparent",
-              border: "none",
-              borderBottom:
-                activeTab === tab.key
-                  ? "3px solid #007bff"
-                  : "3px solid transparent",
-              color: activeTab === tab.key ? "#007bff" : "#333",
-              fontWeight: activeTab === tab.key ? "bold" : "normal",
-              padding: "12px 20px",
-              cursor: "pointer",
-              outline: "none",
-              fontSize: "16px",
-              transition: "color 0.2s, border-bottom 0.2s, background 0.2s",
-              borderRadius: "6px 6px 0 0",
-            }}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
-      {activeTab === "run-queries" && <RunQueries />}
-      {activeTab === "past-queries" && <PastQueries />}
+      <RunQueries />
     </section>
   );
 }

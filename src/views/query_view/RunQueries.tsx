@@ -152,20 +152,10 @@ export function RunQueries() {
   };
 
   const browseMoreButtonStyle: CSSProperties = {
-    padding: "13px 20px",
-    background: "#f8f9fa",
-    color: "#0056B3",
-    border: "1px solid #007bff",
-    borderRadius: "6px",
+    display: "inline",
+    color: "#0056B3cc",
     fontSize: "16px",
     cursor: isProcessing ? "not-allowed" : "pointer",
-    boxShadow: "0 2px 6px rgba(0,0,0,0.04)",
-    transition: "background 0.2s, color 0.2s",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    textAlign: "center",
-    gridColumn: "1 / -1",
     opacity: isProcessing ? 0.6 : 1,
   };
 
@@ -289,6 +279,7 @@ export function RunQueries() {
             alignItems: "center",
             gap: "15px",
             marginLeft: "10px",
+            fontSize: "90%",
           }}
         >
           <label style={{ display: "flex", alignItems: "center", gap: "6px" }}>
@@ -331,14 +322,14 @@ export function RunQueries() {
               }}
               style={{ accentColor: "#007bff", marginTop: "2px" }}
             />
-            Custom range
+            Custom
           </label>
           <label
             style={{
               display: "flex",
               alignItems: "center",
               gap: "6px",
-              marginLeft: "8px",
+              marginLeft: "3px",
             }}
           >
             <input
@@ -413,7 +404,6 @@ export function RunQueries() {
             marginTop: "6px",
             borderRadius: 6,
           }}
-          onClick={() => setQueryError(null)}
         >
           {errorMessage}
         </div>
@@ -570,8 +560,9 @@ export function RunQueries() {
             </div>
           );
         })}
-        <button
-          type="button"
+      </div>
+      <div style={{ margin: "10px 0", textAlign: "center" }}>
+        <a
           disabled={isProcessing}
           style={browseMoreButtonStyle}
           onClick={() => {
@@ -580,14 +571,14 @@ export function RunQueries() {
           }}
           onMouseEnter={(e) => {
             if (isProcessing) return;
-            e.currentTarget.style.background = "#e9eaec";
+            e.currentTarget.style.color = "#0056B3";
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.background = "#f8f9fa";
+            e.currentTarget.style.color = "#0056B3cc";
           }}
         >
-          Browse more examples...
-        </button>
+          More examples...
+        </a>
       </div>
       <ExampleQueriesModal
         queries={EXAMPLE_QUERIES}
