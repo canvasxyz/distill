@@ -118,6 +118,8 @@ function RunQueryItem() {
       >
         Run Query
       </span>
+      {/* empty second line to match PastQueryItem height */}
+      <span style={itemSubtitleBase}></span>
     </SidebarItemContainer>
   );
 }

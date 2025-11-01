@@ -7,6 +7,7 @@ import { stripThink } from "../../utils";
 import { CopyButton } from "./ResultsBox";
 import { BatchTweetsModal } from "./BatchTweetsModal";
 import type { RangeSelection } from "./ai_utils";
+import { db } from "../../db";
 
 function formatDateTime(dateStr?: string) {
   if (!dateStr) return "";
@@ -80,28 +81,67 @@ export function PastQueryDetailView() {
         margin: "0 auto",
       }}
     >
-      <button
-        onClick={() => navigate("/")}
+      <div
         style={{
-          border: "1px solid #ccc",
-          borderRadius: "4px",
-          padding: "8px 16px",
-          background: "#fff",
-          color: "#333",
-          fontSize: "14px",
-          cursor: "pointer",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
           marginBottom: "20px",
-          transition: "background 0.2s",
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.background = "#f5f5f5";
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.background = "#fff";
         }}
       >
-        ← Back Home
-      </button>
+        <button
+          onClick={() => navigate("/")}
+          style={{
+            border: "1px solid #ccc",
+            borderRadius: "4px",
+            padding: "8px 16px",
+            background: "#fff",
+            color: "#333",
+            fontSize: "14px",
+            cursor: "pointer",
+            transition: "background 0.2s",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "#f5f5f5";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "#fff";
+          }}
+        >
+          ← Back Home
+        </button>
+
+        <button
+          aria-label="Delete this query"
+          onClick={async () => {
+            const ok = confirm("Delete this query? This cannot be undone.");
+            if (!ok) return;
+            try {
+              await db.queryResults.delete(query.id);
+            } finally {
+              navigate("/");
+            }
+          }}
+          style={{
+            border: "1px solid #ccc",
+            borderRadius: "4px",
+            padding: "8px 16px",
+            background: "#fff",
+            color: "#333",
+            fontSize: "14px",
+            cursor: "pointer",
+            transition: "background 0.2s",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "#f5f5f5";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "#fff";
+          }}
+        >
+          Delete
+        </button>
+      </div>
 
       <div
         style={{
