@@ -2,7 +2,7 @@ import { Outlet } from "react-router";
 import "./App.css";
 import { useEffect } from "react";
 import { useStore } from "./state/store";
-import { PastQueries } from "./views/query_view/PastQueries";
+import { PastQueries } from "./views/query_view/SidebarQueries";
 import { ArchiveSummarySection } from "./views/ArchiveSummarySection";
 import { SidebarActions } from "./views/SidebarActions";
 import { useNavigate } from "react-router";
@@ -25,6 +25,7 @@ function App() {
       <div
         style={{
           minWidth: 220,
+          maxWidth: 220,
           borderRight: "1px solid #ddd",
           display: "flex",
           flexDirection: "column",

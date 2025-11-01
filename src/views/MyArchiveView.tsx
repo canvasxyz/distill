@@ -1,7 +1,7 @@
 import { useStore } from "../state/store";
 import { UploadPanel } from "./UploadView";
 import { ModelQuerySection } from "./query_view/ModelQueryView";
-import { PastQueries } from "./query_view/PastQueries";
+import { PastQueries } from "./query_view/SidebarQueries";
 import { LoadingView } from "./LoadingView";
 import { FeedbackButtons } from "../components/FeedbackButtons";
 
