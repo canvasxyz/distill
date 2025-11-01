@@ -18,16 +18,16 @@ import { db } from "../db";
 import { QUERY_BATCH_SIZE, type LLMQueryConfig } from "../constants";
 
 export const AVAILABLE_LLM_CONFIGS: LLMQueryConfig[] = [
-  ["gpt-oss-120b", "cerebras", null],
-  ["llama-3.3-70b", "cerebras", null],
-  ["qwen-3-235b-a22b-instruct-2507", "cerebras", null],
-  ["qwen-3-32b", "cerebras", null],
-  ["google/gemini-2.0-flash-001", "deepinfra", null],
-  ["gpt-oss-120b", "fireworks", null],
-  ["openai/gpt-oss-120b", "openrouter", "cerebras"],
-  ["openai/gpt-oss-120b", "openrouter", "baseten"],
-  ["openai/gpt-oss-120b", "openrouter", "groq"],
-  ["openai/gpt-oss-120b", "openrouter", "sambanova"],
+  ["gpt-oss-120b", "cerebras", null, true],
+  ["llama-3.3-70b", "cerebras", null, true],
+  ["qwen-3-235b-a22b-instruct-2507", "cerebras", null, false],
+  ["qwen-3-32b", "cerebras", null, false],
+  ["google/gemini-2.0-flash-001", "deepinfra", null, true],
+  ["gpt-oss-120b", "fireworks", null, false],
+  ["openai/gpt-oss-120b", "openrouter", "cerebras", false],
+  ["openai/gpt-oss-120b", "openrouter", "baseten", false],
+  ["openai/gpt-oss-120b", "openrouter", "groq", false],
+  ["openai/gpt-oss-120b", "openrouter", "sambanova", false],
 ];
 
 export type LlmQuerySlice = {

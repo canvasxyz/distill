@@ -7,4 +7,4 @@ export type LLMQueryProvider =
   | "openrouter"
   | "groq"
   | "fireworks";
-export type LLMQueryConfig = [string, LLMQueryProvider, string | null];
+export type LLMQueryConfig = [string, LLMQueryProvider, string | null, boolean];

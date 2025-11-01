@@ -366,11 +366,12 @@ export function RunQueries() {
             }}
           >
             {AVAILABLE_LLM_CONFIGS.map(
-              ([model, provider, openrouterProvider], idx) => (
+              ([model, provider, openrouterProvider, recommended], idx) => (
                 <option
                   key={`${model}-${provider}-${openrouterProvider || ""}`}
                   value={idx}
                 >
+                  {recommended && "️⭐️ "}
                   {openrouterProvider && "🔀 "}
                   {model} - {openrouterProvider ?? provider}{" "}
                 </option>
