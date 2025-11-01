@@ -1,6 +1,8 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
+import "@radix-ui/themes/styles.css";
+import { Theme } from "@radix-ui/themes";
 import App from "./App.tsx";
 import { createHashRouter } from "react-router";
 import { RouterProvider } from "react-router/dom";
@@ -20,6 +22,14 @@ const router = createHashRouter([
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <Theme
+      appearance="light"
+      accentColor="indigo"
+      grayColor="slate"
+      radius="medium"
+      scaling="95%"
+    >
+      <RouterProvider router={router} />
+    </Theme>
   </StrictMode>,
 );

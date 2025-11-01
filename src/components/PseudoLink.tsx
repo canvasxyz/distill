@@ -1,3 +1,4 @@
+import { Link } from "@radix-ui/themes";
 import type { ReactNode } from "react";
 
 export const PseudoLink = ({
@@ -8,16 +9,18 @@ export const PseudoLink = ({
   onClick: () => void;
 }) => {
   return (
-    <span
-      onClick={onClick}
-      style={{
-        cursor: "pointer",
-        color: "#255cdb",
-        userSelect: "none",
-        fontWeight: "bold",
+    <Link
+      href="#"
+      underline="always"
+      weight="bold"
+      color="indigo"
+      onClick={(event) => {
+        event.preventDefault();
+        onClick();
       }}
+      style={{ cursor: "pointer", userSelect: "none" }}
     >
       {children}
-    </span>
+    </Link>
   );
 };

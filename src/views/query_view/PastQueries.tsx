@@ -1,10 +1,15 @@
-import { useStore } from "../../state/store";
-
 import { useState } from "react";
-import type { QueryResult, RangeSelection } from "./ai_utils";
-import { CopyButton } from "./ResultsBox";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { Badge, Box, Button, Card, Flex, Grid, Text } from "@radix-ui/themes";
+import {
+  CalendarIcon,
+  ClockIcon,
+  LightningBoltIcon,
+} from "@radix-ui/react-icons";
+import { useStore } from "../../state/store";
+import type { QueryResult, RangeSelection } from "./ai_utils";
+import { CopyButton } from "./ResultsBox";
 import { stripThink } from "../../utils";
 import { BatchTweetsModal } from "./BatchTweetsModal";
 
@@ -41,162 +46,104 @@ function PastQueryItem({ query }: { query: QueryResult }) {
   const [showBatchTweetsModal, setShowBatchTweetsModal] = useState(false);
 
   return (
-    <div
-      style={{
-        border: "1px solid #ddd",
-        borderRadius: "6px",
-        background: "#fff",
-        overflow: "hidden",
-        boxShadow: open ? "0px 2px 10px #eee" : undefined,
-      }}
+    <Card
+      variant="surface"
+      role="group"
+      style={{ borderColor: open ? "var(--indigo-a6)" : undefined }}
     >
-      <div
-        onClick={() => setOpen((open) => !open)}
-        style={{
-          cursor: "pointer",
-          padding: "10px 18px",
-          display: "flex",
-          flexDirection: "row",
-          alignItems: "center",
-          gap: "12px",
-          fontWeight: 500,
-          transition: "background 0.12s",
-          background: undefined,
-        }}
-        onMouseEnter={(e) => (e.currentTarget.style.background = "#f7faff")}
-        onMouseLeave={(e) => (e.currentTarget.style.background = "")}
+      <Box
+        onClick={() => setOpen((current) => !current)}
+        style={{ cursor: "pointer", padding: "16px" }}
       >
-        <span style={{ flexGrow: 1, wordBreak: "break-word" }}>
-          {query.query.length > 120
-            ? query.query.slice(0, 120) + "…"
-            : query.query}
-        </span>
-        <span
-          style={{
-            color: "#888",
-            fontSize: "12px",
-            fontWeight: 400,
-            paddingLeft: "10px",
-            marginLeft: "auto",
-          }}
-        >
-          {formatRangeSelection(query.rangeSelection)}
-        </span>
-        <span
-          style={{
-            color: "#aaa",
-            fontSize: "11px",
-            fontWeight: 400,
-            paddingLeft: "12px",
-            flexShrink: 0,
-            minWidth: "90px",
-            textAlign: "right",
-          }}
-        >
-          {formatDateTime(query.id)}
-        </span>
-      </div>
+        <Flex align="center" gap="3" wrap="wrap">
+          <Text weight="medium" style={{ flex: 1, minWidth: "180px" }}>
+            {query.query.length > 120
+              ? `${query.query.slice(0, 120)}…`
+              : query.query}
+          </Text>
+          <Badge color="gray" variant="soft">
+            {formatRangeSelection(query.rangeSelection)}
+          </Badge>
+          <Flex align="center" gap="2">
+            <CalendarIcon aria-hidden />
+            <Text size="1" color="gray">
+              {formatDateTime(query.id)}
+            </Text>
+          </Flex>
+        </Flex>
+      </Box>
       {open && (
-        <div style={{ padding: "20px" }}>
-          <div
+        <Box px="4" pb="4">
+          <Box
+            px="3"
+            py="3"
             style={{
-              fontFamily: "inherit",
-              fontSize: "15px",
-              color: "#0c254d",
-              borderRadius: "4px",
-              border: "1px solid #aaa",
-              padding: "10px 12px",
-              position: "relative",
-              marginBottom: "4px",
-              minHeight: "32px",
-              display: "flex",
-              flexDirection: "column",
+              borderRadius: "var(--radius-3)",
+              border: "1px solid var(--gray-a5)",
+              backgroundColor: "var(--gray-2)",
             }}
           >
-            <div style={{ display: "flex", flexDirection: "row" }}>
-              <div style={{ flex: 1 }} />
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  gap: "10px",
-                  justifyContent: "flex-end",
-                }}
+            <Flex justify="end" gap="2" mb="2">
+              <Button
+                variant="outline"
+                size="2"
+                color="green"
+                onClick={() => setShowBatchTweetsModal(true)}
               >
-                <button
-                  style={{
-                    border: "1px solid rgb(150, 234, 153)",
-                    borderRadius: "4px",
-                    padding: "4px 8px",
-                    background: "#fff",
-                    color: "#388e3c",
-                    fontSize: "12px",
-                    fontWeight: "bold",
-                    cursor: "pointer",
-                    transition: "all 0.2s ease",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = "#e7f6e7";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = "#fff";
-                  }}
-                  onClick={() => {
-                    setShowBatchTweetsModal(true);
-                  }}
-                >
-                  Evidence
-                </button>
-                <CopyButton text={query.result} />
-              </div>
-            </div>
+                Evidence
+              </Button>
+              <CopyButton text={query.result} />
+            </Flex>
             <Markdown remarkPlugins={[remarkGfm]}>
               {stripThink(query.result)}
             </Markdown>
-          </div>
-          <div
-            style={{
-              marginTop: "16px",
-              fontSize: "13px",
-              color: "#888",
-              display: "flex",
-              gap: "20px",
-              flexWrap: "wrap",
-            }}
-          >
-            <span>
-              <span style={{ color: "#62b47a", fontWeight: 500 }}>
-                Total Run Time:
-              </span>{" "}
-              {(query.totalRunTime / 1000).toFixed(2)}s
-            </span>
-            <span>
-              <span style={{ color: "#baac4e", fontWeight: 500 }}>Range:</span>{" "}
+          </Box>
+          <Grid columns={{ initial: "1", sm: "2" }} gap="3" mt="3">
+            <Flex align="center" gap="2">
+              <ClockIcon aria-hidden />
+              <Text size="2" color="gray">
+                <Text as="span" weight="medium" color="green">
+                  Total Run Time:
+                </Text>{" "}
+                {(query.totalRunTime / 1000).toFixed(2)}s
+              </Text>
+            </Flex>
+            <Text size="2" color="gray">
+              <Text as="span" weight="medium" color="gold">
+                Range:
+              </Text>{" "}
               {formatRangeSelection(query.rangeSelection)}
-            </span>
-            <span>
-              <span style={{ color: "#4e52ba", fontWeight: 500 }}>
+            </Text>
+            <Text size="2" color="gray">
+              <Text as="span" weight="medium" color="indigo">
                 Provider:
-              </span>{" "}
+              </Text>{" "}
               {query.provider}
-            </span>
-            <span>
-              <span style={{ color: "#bf4962", fontWeight: 500 }}>Model:</span>{" "}
+            </Text>
+            <Text size="2" color="gray">
+              <Text as="span" weight="medium" color="crimson">
+                Model:
+              </Text>{" "}
               {query.model}
-            </span>
-            <span>
-              <span style={{ color: "#bf4962", fontWeight: 500 }}>Tokens:</span>{" "}
-              {query.totalTokens}
-            </span>
-          </div>
-        </div>
+            </Text>
+            <Flex align="center" gap="2">
+              <LightningBoltIcon aria-hidden />
+              <Text size="2" color="gray">
+                <Text as="span" weight="medium" color="crimson">
+                  Tokens:
+                </Text>{" "}
+                {query.totalTokens}
+              </Text>
+            </Flex>
+          </Grid>
+        </Box>
       )}
       <BatchTweetsModal
         isOpen={showBatchTweetsModal}
         queryResult={query}
         onClose={() => setShowBatchTweetsModal(false)}
       />
-    </div>
+    </Card>
   );
 }
 
@@ -206,18 +153,10 @@ export function PastQueries() {
   if (!account) return <></>;
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: "10px",
-        paddingBottom: "20px",
-        paddingTop: "20px",
-      }}
-    >
+    <Flex direction="column" gap="3">
       {(queryResults || []).map((query) => (
-        <PastQueryItem query={query} />
+        <PastQueryItem key={query.id} query={query} />
       ))}
-    </div>
+    </Flex>
   );
 }

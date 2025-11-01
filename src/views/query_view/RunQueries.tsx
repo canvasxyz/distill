@@ -47,7 +47,6 @@ export function RunQueries() {
     currentRunningQuery,
     queryResult,
     errorMessage,
-    setQueryError,
     selectedConfigIndex,
     setSelectedConfigIndex,
   } = useStore();
@@ -371,8 +370,8 @@ export function RunQueries() {
                   key={`${model}-${provider}-${openrouterProvider || ""}`}
                   value={idx}
                 >
-                  {recommended && "️⭐️ "}
-                  {openrouterProvider && "🔀 "}
+                  {recommended && "??? "}
+                  {openrouterProvider && "?? "}
                   {model} - {openrouterProvider ?? provider}{" "}
                 </option>
               ),
@@ -563,7 +562,7 @@ export function RunQueries() {
         })}
       </div>
       <div style={{ margin: "10px 0", textAlign: "center" }}>
-        <a
+        <button
           disabled={isProcessing}
           style={browseMoreButtonStyle}
           onClick={() => {
@@ -579,7 +578,7 @@ export function RunQueries() {
           }}
         >
           More examples...
-        </a>
+        </button>
       </div>
       <ExampleQueriesModal
         queries={EXAMPLE_QUERIES}

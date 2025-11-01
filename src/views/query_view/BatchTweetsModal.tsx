@@ -1,4 +1,15 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import {
+  Badge,
+  Box,
+  Dialog,
+  Flex,
+  IconButton,
+  ScrollArea,
+  Tabs,
+  Text,
+} from "@radix-ui/themes";
+import { Cross2Icon } from "@radix-ui/react-icons";
 import { type QueryResult } from "./ai_utils";
 
 export function BatchTweetsModal({
@@ -10,15 +21,6 @@ export function BatchTweetsModal({
   isOpen: boolean;
   onClose: () => void;
 }) {
-  // Prevent scroll on the underlying page when modal is open
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-      return () => {
-        document.body.style.overflow = "";
-      };
-    }
-  }, [isOpen]);
 
   const batchTweets = useMemo(() => {
     if (!queryResult) return [];
@@ -51,200 +53,88 @@ export function BatchTweetsModal({
   if (!isOpen) return null;
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        zIndex: 1000,
-        left: 0,
-        top: 0,
-        width: "100vw",
-        height: "100vh",
-        background: "rgba(0,0,0,0.4)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
+    <Dialog.Root
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) onClose();
       }}
-      onClick={onClose}
     >
-      <div
-        style={{
-          width: "90%",
-          maxWidth: 768,
-          maxHeight: "80vh",
-          background: "#fff",
-          borderRadius: "12px",
-          boxShadow: "0 2px 16px rgba(0,0,0,0.18)",
-          padding: "32px 24px 24px 24px",
-          position: "relative",
-          display: "flex",
-          flexDirection: "column",
-        }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            paddingBottom: 12,
-          }}
-        >
-          <h2 style={{ margin: 0, fontSize: 22, flex: 1 }}>Evidence</h2>
-
-          <button
-            style={{
-              border: "none",
-              background: "transparent",
-              fontSize: "22px",
-              cursor: "pointer",
-              color: "#666",
-              fontWeight: "bold",
-              marginLeft: 12,
-              alignSelf: "flex-start",
-            }}
-            onClick={onClose}
+      <Dialog.Content size="4" maxWidth="720px">
+        <Flex align="start" justify="between" mb="3">
+          <Dialog.Title>Evidence</Dialog.Title>
+          <IconButton
+            variant="ghost"
+            color="gray"
+            size="2"
             aria-label="Close modal"
+            onClick={onClose}
           >
-            &times;
-          </button>
-        </div>
-        <p>
+            <Cross2Icon />
+          </IconButton>
+        </Flex>
+        <Dialog.Description size="2" color="gray" mb="3">
           To generate the query result, Twitter Archive Explorer first extracts
-          the most relevant tweets from the user's archive using a large
-          language model. The retrieved tweets are then checked against the
-          archive itself for "hallucinations". Only tweets that are actually
-          present in the archive are used to generate the final result.
-        </p>
-        <p>
+          the most relevant tweets from the user's archive using a large language
+          model. The retrieved tweets are then checked against the archive itself
+          for "hallucinations". Only tweets that are actually present in the archive
+          are used to generate the final result.
+        </Dialog.Description>
+        <Text size="2" color="gray" mb="3">
           Model: {queryResult?.model} on {queryResult?.provider}
-        </p>
-
-        <div
-          style={{
-            display: "flex",
-            marginTop: "16px",
-            gap: "8px",
-          }}
-        >
-          {TABS.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              style={{
-                background: activeTab === tab.key ? "#f5f5f5" : "transparent",
-                border: "none",
-                borderBottom:
-                  activeTab === tab.key
-                    ? "3px solid #007bff"
-                    : "3px solid transparent",
-                color: activeTab === tab.key ? "#007bff" : "#333",
-                fontWeight: activeTab === tab.key ? "bold" : "normal",
-                padding: "12px 20px",
-                cursor: "pointer",
-                outline: "none",
-                fontSize: "16px",
-                transition: "color 0.2s, border-bottom 0.2s, background 0.2s",
-                borderRadius: "6px 6px 0 0",
-              }}
-            >
-              {tab.label} ({tab.count})
-            </button>
-          ))}
-        </div>
-        {activeTab === "evidence" ? (
-          <div
-            style={{
-              flex: 1,
-              minHeight: 0,
-              maxHeight: "54vh", // Ensures scrolling space for the list
-              overflowY: "auto",
-            }}
-          >
-            <ul
-              style={{
-                padding: 0,
-                margin: 0,
-                listStyle: "none",
-              }}
-            >
-              {batchTweets.map((batchTweet, idx) => {
-                return (
-                  <li
+        </Text>
+        <Tabs.Root value={activeTab} onValueChange={setActiveTab}>
+          <Tabs.List mb="3">
+            {TABS.map((tab) => (
+              <Tabs.Trigger key={tab.key} value={tab.key}>
+                <Flex align="center" gap="2">
+                  <Text>{tab.label}</Text>
+                  <Badge radius="full" variant="soft">{tab.count}</Badge>
+                </Flex>
+              </Tabs.Trigger>
+            ))}
+          </Tabs.List>
+          <Tabs.Content value="evidence">
+            <ScrollArea type="auto" style={{ maxHeight: "54vh" }}>
+              <Flex direction="column">
+                {batchTweets.map((batchTweet, idx) => (
+                  <Box
                     key={idx}
+                    py="2"
                     style={{
-                      padding: "10px 0",
                       borderBottom:
                         idx !== batchTweets.length - 1
-                          ? "1px solid #eee"
+                          ? "1px solid var(--gray-a5)"
                           : undefined,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
                     }}
                   >
-                    <span
-                      style={{
-                        marginRight: 10,
-                        flex: "1 1 auto",
-                        fontSize: 15,
-                      }}
-                    >
-                      {batchTweet.full_text}
-                    </span>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        ) : (
-          <>
-            <div
-              style={{
-                flex: 1,
-                minHeight: 0,
-                maxHeight: "54vh", // Ensures scrolling space for the list
-                overflowY: "auto",
-              }}
-            >
-              <ul
-                style={{
-                  padding: 0,
-                  margin: 0,
-                  listStyle: "none",
-                }}
-              >
-                {batchHallucinations.map((batchTweet, idx) => {
-                  return (
-                    <li
-                      key={idx}
-                      style={{
-                        padding: "10px 0",
-                        borderBottom:
-                          idx !== batchTweets.length - 1
-                            ? "1px solid #eee"
-                            : undefined,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      <span
-                        style={{
-                          marginRight: 10,
-                          flex: "1 1 auto",
-                          fontSize: 15,
-                        }}
-                      >
-                        {batchTweet.full_text}
-                      </span>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          </>
-        )}
-      </div>
-    </div>
+                    <Text size="2">{batchTweet.full_text}</Text>
+                  </Box>
+                ))}
+              </Flex>
+            </ScrollArea>
+          </Tabs.Content>
+          <Tabs.Content value="hallucinations">
+            <ScrollArea type="auto" style={{ maxHeight: "54vh" }}>
+              <Flex direction="column">
+                {batchHallucinations.map((batchTweet, idx) => (
+                  <Box
+                    key={idx}
+                    py="2"
+                    style={{
+                      borderBottom:
+                        idx !== batchHallucinations.length - 1
+                          ? "1px solid var(--gray-a5)"
+                          : undefined,
+                    }}
+                  >
+                    <Text size="2">{batchTweet.full_text}</Text>
+                  </Box>
+                ))}
+              </Flex>
+            </ScrollArea>
+          </Tabs.Content>
+        </Tabs.Root>
+      </Dialog.Content>
+    </Dialog.Root>
   );
 }

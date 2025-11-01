@@ -6,6 +6,18 @@ import {
   PINNED_USERNAMES,
 } from "../hooks/useUsers";
 import { useMemo } from "react";
+import {
+  Avatar,
+  Badge,
+  Box,
+  Button,
+  Card,
+  Flex,
+  Grid,
+  Heading,
+  Text,
+} from "@radix-ui/themes";
+import { StarFilledIcon, UploadIcon } from "@radix-ui/react-icons";
 
 export function UploadPanel() {
   const {
@@ -36,218 +48,153 @@ export function UploadPanel() {
   };
 
   return (
-    <div
-      style={{
-        maxWidth: "768px",
-        margin: "auto",
-        padding: "20px",
-        borderRadius: "10px",
-      }}
-    >
-      <h1>Open your archive</h1>
-      <p>
-        To begin, open your archive. Use the ".zip" file that you received when
-        you requested your archive from Twitter/X. The Archive Explorer will
-        only look at the account.js, follower.js, following.js, profile.js and
-        tweet(s).js files.
-      </p>
+    <Box maxWidth="768px" mx="auto" px="4" py="6">
+      <Flex direction="column" gap="5">
+        <Heading size="6">Open your archive</Heading>
+        <Text size="2" color="gray">
+          To begin, open your archive. Use the ".zip" file that you received when
+          you requested your archive from Twitter/X. The Archive Explorer will only
+          look at the account.js, follower.js, following.js, profile.js and
+          tweet(s).js files.
+        </Text>
 
-      {ingestTwitterArchiveProgress == null ? (
-        <div
-          style={{
-            textAlign: "center",
-            marginTop: "20px",
-            padding: "20px",
-            border: "2px dashed #007bff",
-            borderRadius: "5px",
-            backgroundColor: "#f9f9f9",
-            cursor: "pointer",
-            transition: "background-color 0.2s",
-          }}
-          onClick={() => {
-            fileInputRef.current?.click();
-          }}
-          onDragOver={(e) => e.preventDefault()}
-          onDrop={async (e) => {
-            e.preventDefault();
-            const file = e.dataTransfer.files[0];
-            if (file && file.type === "application/zip") {
-              await ingestTwitterArchive(file);
-            }
-          }}
-          onMouseEnter={(e) =>
-            (e.currentTarget.style.backgroundColor = "#e0e0e0")
-          }
-          onMouseLeave={(e) =>
-            (e.currentTarget.style.backgroundColor = "#f9f9f9")
-          }
-        >
-          <p style={{ margin: "0", color: "#007bff" }}>
-            Drag and drop your Twitter archive (.zip) here or click to open.
-          </p>
-          <input
-            id="file-upload"
-            ref={fileInputRef}
-            type="file"
-            accept=".zip"
-            onChange={handleFileUpload}
-            style={{ display: "none" }}
-          />
-        </div>
-      ) : (
-        <div
-          style={{
-            textAlign: "center",
-            marginTop: "20px",
-            padding: "20px",
-            border: "2px dashed rgb(190, 222, 255)",
-            borderRadius: "5px",
-            backgroundColor: "#f9f9f9",
-          }}
-        >
-          {ingestTwitterArchiveProgress.status === "processingArchive" &&
-            "Processing archive..."}
-          {ingestTwitterArchiveProgress.status === "addingAccount" &&
-            "Adding account"}
-          {ingestTwitterArchiveProgress.status === "addingFollowers" &&
-            "Adding followers"}
-          {ingestTwitterArchiveProgress.status === "addingFollowing" &&
-            "Adding following"}
-          {ingestTwitterArchiveProgress.status === "addingProfile" &&
-            "Adding profile"}
-          {ingestTwitterArchiveProgress.status === "addingTweets" &&
-            "Adding tweets"}
-          {ingestTwitterArchiveProgress.status === "applyingFilters" &&
-            "Applying filters"}
-          {ingestTwitterArchiveProgress.status === "generatingTextIndex" &&
-            "Generating text index"}
-        </div>
-      )}
-      <br />
+        {ingestTwitterArchiveProgress == null ? (
+          <Card
+            variant="surface"
+            style={{
+              border: "2px dashed var(--indigo-a6)",
+              backgroundColor: "var(--indigo-2)",
+              cursor: "pointer",
+            }}
+            onClick={() => {
+              fileInputRef.current?.click();
+            }}
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={async (e) => {
+              e.preventDefault();
+              const file = e.dataTransfer.files[0];
+              if (file && file.type === "application/zip") {
+                await ingestTwitterArchive(file);
+              }
+            }}
+          >
+            <Flex direction="column" align="center" gap="3" py="6">
+              <UploadIcon width={32} height={32} />
+              <Text weight="medium" color="indigo">
+                Drag and drop your Twitter archive (.zip) here or click to open.
+              </Text>
+              <Text size="2" color="gray">
+                We will guide you through the upload.
+              </Text>
+            </Flex>
+            <input
+              id="file-upload"
+              ref={fileInputRef}
+              type="file"
+              accept=".zip"
+              onChange={handleFileUpload}
+              style={{ display: "none" }}
+            />
+          </Card>
+        ) : (
+          <Card
+            variant="surface"
+            style={{ padding: "24px", textAlign: "center" }}
+          >
+            <Text weight="medium" color="indigo">
+              {ingestTwitterArchiveProgress.status === "processingArchive" &&
+                "Processing archive..."}
+              {ingestTwitterArchiveProgress.status === "addingAccount" &&
+                "Adding account"}
+              {ingestTwitterArchiveProgress.status === "addingFollowers" &&
+                "Adding followers"}
+              {ingestTwitterArchiveProgress.status === "addingFollowing" &&
+                "Adding following"}
+              {ingestTwitterArchiveProgress.status === "addingProfile" &&
+                "Adding profile"}
+              {ingestTwitterArchiveProgress.status === "addingTweets" &&
+                "Adding tweets"}
+              {ingestTwitterArchiveProgress.status === "applyingFilters" &&
+                "Applying filters"}
+              {ingestTwitterArchiveProgress.status === "generatingTextIndex" &&
+                "Generating text index"}
+            </Text>
+          </Card>
+        )}
 
-      <h3>... or select a user from Community Archive</h3>
-      {loadCommunityArchiveUserProgress ? (
-        <>
-          {loadCommunityArchiveUserProgress.status === "starting" &&
-            "Starting download..."}
-          {loadCommunityArchiveUserProgress.status === "loadingTweets" &&
-            `Loading tweets... (${loadCommunityArchiveUserProgress.tweetsLoaded}/${loadCommunityArchiveUserProgress.totalNumTweets})`}
-          {loadCommunityArchiveUserProgress.status === "loadingProfile" &&
-            "Loading profile"}
-
-          {loadCommunityArchiveUserProgress.status === "loadingAccount" &&
-            "Loading account"}
-          {loadCommunityArchiveUserProgress.status === "loadingFollower" &&
-            "Loading followers"}
-          {loadCommunityArchiveUserProgress.status === "loadingFollowing" &&
-            "Loading following"}
-          {loadCommunityArchiveUserProgress.status === "generatingTextIndex" &&
-            "Generating text index"}
-        </>
-      ) : (
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr 1fr",
-            gap: "8px",
-            marginTop: "16px",
-            alignItems: "center",
-          }}
-        >
-          {(otherUserAccounts || []).map((account, idx) => {
-            const isPinned = pinnedSet.has(
-              (account.username || "").toLowerCase(),
-            );
-            return (
-              <>
-                <div
-                  key={`avatar-${idx}`}
-                  style={{ display: "flex", alignItems: "center" }}
-                >
-                  {account.profile && account.profile.avatarMediaUrl ? (
-                    <img
-                      src={account.profile.avatarMediaUrl}
-                      onError={(e) =>
-                        // @ts-expect-error "..."
-                        (e.target.src =
-                          "https://www.community-archive.org/_next/image?url=%2Fplaceholder.jpg&w=3840&q=75")
-                      }
-                      style={{
-                        width: "36px",
-                        height: "36px",
-                        borderRadius: "50%",
-                        objectFit: "cover",
-                        border: "1px solid #ccc",
-                      }}
-                    />
-                  ) : (
-                    <div
-                      style={{
-                        width: "36px",
-                        height: "36px",
-                        borderRadius: "50%",
-                        backgroundColor: "#ddd",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: "20px",
-                        color: "#888",
-                      }}
-                    >
-                      ?
-                    </div>
-                  )}
-                  <div style={{ marginLeft: 10 }}>{account.username}</div>
-                </div>
-                <div key={`tweets-${idx}`} style={{ textAlign: "center" }}>
-                  {account.numTweets.toLocaleString()}
-                </div>
-                <div
-                  key={`select-${idx}`}
-                  style={{
-                    display: "flex",
-                    justifyContent: "flex-end",
-                    alignItems: "center",
-                    gap: "6px",
-                  }}
-                >
-                  {isPinned && (
-                    <span
-                      title="Pinned"
-                      aria-label="Pinned account"
-                      style={{
-                        color: "#f5b301",
-                        fontSize: "14px",
-                        lineHeight: 1,
-                        marginRight: 4,
-                      }}
-                    >
-                      ★
-                    </span>
-                  )}
-                  <button
-                    style={{
-                      padding: "4px 10px",
-                      borderRadius: "5px",
-                      border: "1px solid #1976d2",
-                      background: "#1976d2",
-                      color: "#fff",
-                      cursor: "pointer",
-                      fontWeight: 500,
-                    }}
-                    onClick={() =>
-                      selectCommunityArchiveUser(account.accountId)
-                    }
-                  >
-                    Select
-                  </button>
-                </div>
-              </>
-            );
-          })}
-        </div>
-      )}
-    </div>
+        <Heading size="4">... or select a user from Community Archive</Heading>
+        {loadCommunityArchiveUserProgress ? (
+          <Card
+            variant="surface"
+            style={{ padding: "24px", textAlign: "center" }}
+          >
+            <Text>
+              {loadCommunityArchiveUserProgress.status === "starting" &&
+                "Starting download..."}
+              {loadCommunityArchiveUserProgress.status === "loadingTweets" &&
+                `Loading tweets... (${loadCommunityArchiveUserProgress.tweetsLoaded}/${loadCommunityArchiveUserProgress.totalNumTweets})`}
+              {loadCommunityArchiveUserProgress.status === "loadingProfile" &&
+                "Loading profile"}
+              {loadCommunityArchiveUserProgress.status === "loadingAccount" &&
+                "Loading account"}
+              {loadCommunityArchiveUserProgress.status === "loadingFollower" &&
+                "Loading followers"}
+              {loadCommunityArchiveUserProgress.status === "loadingFollowing" &&
+                "Loading following"}
+              {loadCommunityArchiveUserProgress.status === "generatingTextIndex" &&
+                "Generating text index"}
+            </Text>
+          </Card>
+        ) : (
+          <Grid columns={{ initial: "1", sm: "2", md: "3" }} gap="3">
+            {(otherUserAccounts || []).map((account) => {
+              const isPinned = pinnedSet.has(
+                (account.username || "").toLowerCase(),
+              );
+              return (
+                <Card key={account.accountId} variant="surface">
+                  <Flex align="center" justify="between" gap="3">
+                    <Flex align="center" gap="3">
+                      <Avatar
+                        src={account.profile?.avatarMediaUrl ?? undefined}
+                        size="3"
+                        radius="full"
+                        fallback={
+                          account.username?.slice(0, 2).toUpperCase() || "?"
+                        }
+                      />
+                      <Box>
+                        <Text weight="medium">{account.username}</Text>
+                        <Text size="1" color="gray">
+                          {account.numTweets.toLocaleString()} tweets
+                        </Text>
+                      </Box>
+                    </Flex>
+                    <Flex align="center" gap="2">
+                      {isPinned && (
+                        <Badge color="amber" variant="soft" radius="full">
+                          <Flex align="center" gap="1">
+                            <StarFilledIcon />
+                            <span>Pinned</span>
+                          </Flex>
+                        </Badge>
+                      )}
+                      <Button
+                        size="2"
+                        variant="solid"
+                        onClick={() => selectCommunityArchiveUser(account.accountId)}
+                      >
+                        Select
+                      </Button>
+                    </Flex>
+                  </Flex>
+                </Card>
+              );
+            })}
+          </Grid>
+        )}
+      </Flex>
+    </Box>
   );
 }
 

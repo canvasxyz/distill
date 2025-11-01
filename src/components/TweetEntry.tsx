@@ -1,87 +1,44 @@
+import { Badge, Card, Flex, Link, Text } from "@radix-ui/themes";
 import type { Tweet } from "../types";
 import { useStore } from "../state/store";
 
 export function TweetEntry({ tweet }: { tweet: Tweet }) {
   const { account } = useStore();
 
-  const borderColor = "#b3ffb5";
-
   return (
-    <div
+    <Card
+      variant="surface"
       style={{
-        backgroundColor: "#e0ffe1",
-        border: `1px solid ${borderColor}`,
-        marginTop: 4,
-        marginLeft: 2,
-        marginRight: 2,
-        marginBottom: 12,
-        borderRadius: "5px",
-        padding: "8px",
-        paddingTop: "8px",
-        paddingBottom: "8px",
-        display: "flex",
-        flexDirection: "row",
+        margin: "8px 0",
+        borderColor: "var(--green-a5)",
+        backgroundColor: "var(--green-2)",
       }}
     >
-      <div
-        style={{
-          marginLeft: "5px",
-          display: "flex",
-          flexDirection: "column",
-          gap: "10px",
-        }}
-      >
-        {/* username */}
-        <div>
-          {account?.accountDisplayName} ·{" "}
-          <a
+      <Flex direction="column" gap="3">
+        <Flex align="center" gap="2" wrap="wrap">
+          <Text weight="medium">{account?.accountDisplayName}</Text>
+          <Text color="gray">·</Text>
+          <Link
             href={`https://x.com/${account?.username}/status/${tweet.id}`}
             target="_blank"
-            style={{ color: "#4287f5" }}
+            rel="noopener noreferrer"
+            color="indigo"
           >
             {new Date(tweet.created_at).toLocaleString()}
-          </a>
-        </div>
-        {/* tweet body */}
-        <span>&quot;{tweet.full_text}&quot;</span>
-        {/* labels */}
-        <div style={{ display: "flex", gap: "10px" }}>
-          <span
-            style={{
-              backgroundColor: "white",
-              border: "1px solid #e0e0e0",
-              borderRadius: "12px",
-              padding: "2px 8px",
-              fontSize: "12px",
-              color: "#333",
-              display: "inline-flex",
-              alignItems: "center",
-              fontWeight: 500,
-              gap: "4px",
-            }}
-            title="Favorites"
-          >
+          </Link>
+        </Flex>
+        <Text as="p" style={{ whiteSpace: "pre-wrap" }}>
+          “{tweet.full_text}”
+        </Text>
+        <Flex gap="2" wrap="wrap">
+          <Badge size="2" radius="full" color="green" variant="soft">
             ⭐ {tweet.favorite_count}
-          </span>
-          <span
-            style={{
-              backgroundColor: "white",
-              border: "1px solid #e0e0e0",
-              borderRadius: "12px",
-              padding: "2px 8px",
-              fontSize: "12px",
-              color: "#333",
-              display: "inline-flex",
-              alignItems: "center",
-              fontWeight: 500,
-              gap: "4px",
-            }}
-            title="Retweets"
-          >
+          </Badge>
+          <Badge size="2" radius="full" color="indigo" variant="soft">
             🔁 {tweet.retweet_count}
-          </span>
-        </div>
-      </div>
-    </div>
+          </Badge>
+        </Flex>
+      </Flex>
+    </Card>
   );
 }
