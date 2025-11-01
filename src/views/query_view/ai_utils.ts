@@ -8,8 +8,7 @@ export type Query = { prompt: string; systemPrompt?: string };
 
 export type RangeSelection =
   | { type: "last-tweets"; numTweets: number }
-  | { type: "date-range"; startDate: string; endDate: string }
-  | { type: "random-sample"; sampleSize: number };
+  | { type: "date-range"; startDate: string; endDate: string };
 
 export type BatchStatus =
   | {

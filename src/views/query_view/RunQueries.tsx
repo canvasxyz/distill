@@ -333,30 +333,6 @@ export function RunQueries() {
             />
             Custom range
           </label>
-          {/* <label
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-            }}
-          >
-            <input
-              type="radio"
-              disabled={isProcessing}
-              name="archiveMode"
-              checked={rangeSelection.type === "random-sample"}
-              onChange={(e) => {
-                if (e.target.checked) {
-                  setRangeSelection({
-                    type: "random-sample",
-                    sampleSize: MAX_ARCHIVE_SIZE,
-                  });
-                }
-              }}
-              style={{ marginTop: "2px" }}
-            />
-            Random sample
-          </label> */}
           <label
             style={{
               display: "flex",
