@@ -56,8 +56,17 @@ export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
 
   dbHasTweets: false,
   clearDatabase: async () => {
-    await db.delete();
-    // refresh page
+    // Clear all archive-related tables but preserve past query results
+    await Promise.all([
+      db.accounts.clear(),
+      db.follower.clear(),
+      db.following.clear(),
+      db.profiles.clear(),
+      db.tweets.clear(),
+      db.sessionData.clear(),
+      db.fullTextFuzzySetFields.clear(),
+    ]);
+    // refresh page to reinitialize state; queryResults remain intact
     location.reload();
   },
 

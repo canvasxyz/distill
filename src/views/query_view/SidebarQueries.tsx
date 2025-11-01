@@ -125,9 +125,7 @@ function RunQueryItem() {
 }
 
 export function PastQueries() {
-  const { account, queryResults } = useStore();
-
-  if (!account) return <></>;
+  const { queryResults } = useStore();
 
   return (
     <div

@@ -45,6 +45,8 @@ export type QueryResult = {
   totalTokens: number;
   provider: string;
   model: string;
+  // The handle that was queried when this result was created (e.g. "@alice")
+  queriedHandle?: string;
 };
 
 export const batchSystemPrompt =

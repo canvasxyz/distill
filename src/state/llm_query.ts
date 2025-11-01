@@ -276,6 +276,7 @@ export const createLlmQuerySlice: StateCreator<
             provider: openrouterProvider
               ? `${provider}-${openrouterProvider}`
               : provider,
+            queriedHandle: `@${account.username}`,
           };
 
           db.queryResults.add(newQueryResult);

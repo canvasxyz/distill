@@ -185,16 +185,23 @@ export function PastQueryDetailView() {
             marginBottom: "12px",
           }}
         >
-          <h2
-            style={{
-              margin: 0,
-              fontSize: "20px",
-              fontWeight: 600,
-              color: "#333",
-            }}
-          >
-            Result
-          </h2>
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            <h2
+              style={{
+                margin: 0,
+                fontSize: "20px",
+                fontWeight: 600,
+                color: "#333",
+              }}
+            >
+              Result
+            </h2>
+            {query.queriedHandle && (
+              <span style={{ color: "#666", fontSize: "12px", marginTop: 4 }}>
+                {query.queriedHandle}
+              </span>
+            )}
+          </div>
           <div
             style={{
               display: "flex",
