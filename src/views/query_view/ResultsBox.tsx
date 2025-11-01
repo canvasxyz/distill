@@ -13,30 +13,14 @@ export const CopyButton = ({ text }: { text: string }) => {
     }
   };
 
+  const baseClasses =
+    "rounded border px-2 py-1 text-xs font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400";
+  const activeClasses = copied
+    ? "border-emerald-500 bg-emerald-500 text-white"
+    : "border-slate-300 bg-white text-slate-700 hover:bg-slate-100";
+
   return (
-    <button
-      onClick={handleCopy}
-      style={{
-        background: copied ? "#4CAF50" : "#fff",
-        border: "1px solid #ccc",
-        borderRadius: "4px",
-        padding: "4px 8px",
-        cursor: "pointer",
-        fontSize: "12px",
-        color: copied ? "#fff" : "#333",
-        transition: "all 0.2s ease",
-      }}
-      onMouseEnter={(e) => {
-        if (!copied) {
-          e.currentTarget.style.background = "#f0f0f0";
-        }
-      }}
-      onMouseLeave={(e) => {
-        if (!copied) {
-          e.currentTarget.style.background = "#fff";
-        }
-      }}
-    >
+    <button onClick={handleCopy} className={`${baseClasses} ${activeClasses}`}>
       {copied ? "Copied!" : "Copy"}
     </button>
   );
@@ -53,20 +37,13 @@ export const ProgressLabel = ({
     totalProgress > 0 && currentProgress >= totalProgress;
 
   return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        marginBottom: "8px",
-      }}
-    >
-      <span style={{ fontSize: "14px", color: "#666" }}>
+    <div className="mb-2 flex items-center justify-between text-sm text-slate-600">
+      <span>
         {allBatchesComplete
           ? "Summarizing results..."
           : "Processing batches..."}
       </span>
-      <span style={{ fontSize: "14px", color: "#666" }}>
+      <span>
         {currentProgress} / {totalProgress}
       </span>
     </div>
@@ -114,40 +91,18 @@ export function ProgressBar({
   const widthFraction = Math.min(1, baseFraction + easedFraction);
 
   return (
-    <>
+    <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200">
       <div
-        style={{
-          width: "100%",
-          height: "8px",
-          backgroundColor: "#e0e0e0",
-          borderRadius: "4px",
-          overflow: "hidden",
-        }}
-      >
-        <div
-          style={{
-            width: `${widthFraction * 100}%`,
-            height: "100%",
-            backgroundColor: "#4CAF50",
-            transition: "width 0.3s ease",
-          }}
-        />
-      </div>
-    </>
+        className="h-full bg-emerald-500 transition-all duration-300"
+        style={{ width: `${widthFraction * 100}%` }}
+      />
+    </div>
   );
 }
 
 export function ResultsBox({ children }: { children: ReactNode }) {
   return (
-    <div
-      style={{
-        border: "1px solid #ccc",
-        borderRadius: "6px",
-        padding: "16px",
-        background: "#f5f5f5",
-        position: "relative",
-      }}
-    >
+    <div className="relative rounded-md border border-slate-300 bg-slate-100 p-4">
       {children}
     </div>
   );

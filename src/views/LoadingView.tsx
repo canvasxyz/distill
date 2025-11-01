@@ -1,39 +1,10 @@
 export function LoadingView() {
   return (
-    <div
-      style={{
-        position: "fixed",
-        height: "100vh",
-        width: "100vw",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        background: "#f7fafd",
-        flexDirection: "column",
-        gap: "24px",
-      }}
-    >
-      <div
-        style={{
-          border: "8px solid #e0eafd",
-          borderTop: "8px solid #4b90e2",
-          borderRadius: "50%",
-          width: "72px",
-          height: "72px",
-          animation: "spin 1.2s linear infinite",
-        }}
-      />
-      <div style={{ fontSize: 22, color: "#26426a", fontWeight: 500 }}>
+    <div className="fixed inset-0 flex min-h-screen w-full flex-col items-center justify-center gap-6 bg-[#f7fafd]">
+      <div className="h-[72px] w-[72px] animate-spin rounded-full border-8 border-[#e0eafd] border-t-[#4b90e2]" />
+      <div className="text-2xl font-medium text-[#26426a]">
         Loading, please wait...
       </div>
-      <style>
-        {`
-          @keyframes spin {
-            0% { transform: rotate(0deg);}
-            100% { transform: rotate(360deg);}
-          }
-        `}
-      </style>
     </div>
   );
 }

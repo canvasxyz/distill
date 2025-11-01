@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+
 import { replaceAccountName } from "./ai_utils";
 import { useStore } from "../../state/store";
 
@@ -14,12 +15,13 @@ export function ExampleQueriesModal({
   onSelectQuery?: (query: string) => void;
 }) {
   const { account } = useStore();
-  // Prevent scroll on the underlying page when modal is open
+
   useEffect(() => {
     if (isOpen) {
+      const originalOverflow = document.body.style.overflow;
       document.body.style.overflow = "hidden";
       return () => {
-        document.body.style.overflow = "";
+        document.body.style.overflow = originalOverflow;
       };
     }
   }, [isOpen]);
@@ -28,78 +30,28 @@ export function ExampleQueriesModal({
 
   return (
     <div
-      style={{
-        position: "fixed",
-        zIndex: 1000,
-        left: 0,
-        top: 0,
-        width: "100vw",
-        height: "100vh",
-        background: "rgba(0,0,0,0.4)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4"
       onClick={onClose}
     >
       <div
-        style={{
-          width: "90%",
-          maxWidth: 768,
-          maxHeight: "80vh",
-          background: "#fff",
-          borderRadius: "12px",
-          boxShadow: "0 2px 16px rgba(0,0,0,0.18)",
-          padding: "32px 24px 24px 24px",
-          position: "relative",
-          display: "flex",
-          flexDirection: "column",
-        }}
+        className="w-full max-w-3xl max-h-[80vh] overflow-hidden rounded-2xl bg-white p-6 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: 18,
-          }}
-        >
-          <h2 style={{ margin: 0, fontSize: 22, flex: 1 }}>
+        <div className="mb-5 flex items-start justify-between gap-4">
+          <h2 className="flex-1 text-2xl font-semibold text-slate-900">
             Example Questions
           </h2>
           <button
-            style={{
-              border: "none",
-              background: "transparent",
-              fontSize: "22px",
-              cursor: "pointer",
-              color: "#666",
-              fontWeight: "bold",
-              marginLeft: 12,
-              alignSelf: "flex-start",
-            }}
+            type="button"
             onClick={onClose}
             aria-label="Close modal"
+            className="rounded-full p-1 text-2xl leading-none text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300"
           >
             &times;
           </button>
         </div>
-        <div
-          style={{
-            flex: 1,
-            minHeight: 0,
-            maxHeight: "54vh", // Ensures scrolling space for the list
-            overflowY: "auto",
-          }}
-        >
-          <ul
-            style={{
-              padding: 0,
-              margin: 0,
-              listStyle: "none",
-            }}
-          >
+        <div className="max-h-[54vh] overflow-y-auto pr-1">
+          <ul className="divide-y divide-slate-200">
             {queries.map((query, idx) => {
               const queryWithAccountName = replaceAccountName(
                 query,
@@ -108,33 +60,15 @@ export function ExampleQueriesModal({
               return (
                 <li
                   key={idx}
-                  style={{
-                    padding: "10px 0",
-                    borderBottom:
-                      idx !== queries.length - 1 ? "1px solid #eee" : undefined,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                  }}
+                  className="flex flex-col gap-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-6"
                 >
-                  <span
-                    style={{ marginRight: 10, flex: "1 1 auto", fontSize: 15 }}
-                  >
+                  <span className="flex-1 text-sm text-slate-700">
                     {queryWithAccountName}
                   </span>
                   {onSelectQuery && (
                     <button
-                      style={{
-                        padding: "6px 14px",
-                        fontSize: 14,
-                        borderRadius: 4,
-                        border: "1px solid #007bff",
-                        background: "#007bff",
-                        color: "white",
-                        cursor: "pointer",
-                        minWidth: 90,
-                        boxSizing: "border-box",
-                      }}
+                      type="button"
+                      className="min-w-[90px] rounded-md border border-indigo-500 bg-indigo-500 px-4 py-1.5 text-sm font-medium text-white transition hover:bg-indigo-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-300"
                       onClick={() => onSelectQuery(queryWithAccountName)}
                     >
                       Select

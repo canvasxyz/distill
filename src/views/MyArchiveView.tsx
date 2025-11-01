@@ -1,7 +1,6 @@
 import { useStore } from "../state/store";
 import { UploadPanel } from "./UploadView";
 import { ModelQuerySection } from "./query_view/ModelQueryView";
-import { PastQueries } from "./query_view/PastQueries";
 import { LoadingView } from "./LoadingView";
 import { FeedbackButtons } from "../components/FeedbackButtons";
 
@@ -11,16 +10,7 @@ export function MyArchiveView() {
   return (
     <div>
       {appIsReady ? (
-        <div
-          style={{
-            maxHeight: "100vh",
-            display: "flex",
-            flexDirection: "column",
-            padding: "15px 20px",
-            margin: "0 auto",
-            maxWidth: "1200px",
-          }}
-        >
+        <div className="mx-auto flex max-h-screen w-full max-w-6xl flex-col px-5 py-4">
           {dbHasTweets ? (
             <>
               <br />

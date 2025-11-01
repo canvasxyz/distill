@@ -1,17 +1,8 @@
-import { useState } from "react";
-import { ShowIfTweetsLoaded } from "../ShowIfTweetsLoaded";
 import { RunQueries } from "./RunQueries";
-import { PastQueries } from "./PastQueries";
 
 export function ModelQuerySection() {
   return (
-    <section
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        marginBottom: "40px",
-      }}
-    >
+    <section className="mb-10 flex flex-col">
       <RunQueries />
     </section>
   );

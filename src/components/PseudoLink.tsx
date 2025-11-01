@@ -10,12 +10,7 @@ export const PseudoLink = ({
   return (
     <span
       onClick={onClick}
-      style={{
-        cursor: "pointer",
-        color: "#255cdb",
-        userSelect: "none",
-        fontWeight: "bold",
-      }}
+      className="cursor-pointer select-none font-semibold text-indigo-600 transition hover:text-indigo-700"
     >
       {children}
     </span>

@@ -31,27 +31,15 @@ export function TweetsView({
   }
 
   return (
-    <div
-      style={{ height: "100vh", overflowY: "auto", scrollbarGutter: "stable" }}
-    >
-      <div
-        style={{
-          maxHeight: "100vh",
-          display: "flex",
-          flexDirection: "column",
-          paddingLeft: "10px",
-          paddingRight: "10px",
-          margin: "0 auto",
-          maxWidth: "1200px", // limit width for readability on large screens
-        }}
-      >
-        <h1>{title}</h1>
+    <div className="h-screen overflow-y-auto [scrollbar-gutter:stable]">
+      <div className="mx-auto flex max-h-screen w-full max-w-6xl flex-col px-3 py-4">
+        <h1 className="text-2xl font-semibold text-slate-900">{title}</h1>
         {blurb && (
-          <div style={{ marginBottom: "10px" }}>
+          <div className="mb-2.5 text-sm text-slate-600">
             <em>{blurb}</em>
           </div>
         )}
-        <div style={{ marginBottom: "10px" }}>
+        <div className="mb-2.5 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
           <input
             type="text"
             placeholder="Search tweets..."
@@ -59,49 +47,24 @@ export function TweetsView({
             onChange={(e) => {
               setSearchParams({ search: e.target.value });
             }}
-            style={{
-              width: "100%",
-              maxWidth: "400px",
-              padding: "6px 8px",
-              marginRight: "10px",
-              border: "1px solid #ccc",
-              borderRadius: "4px",
-              fontSize: "16px",
-            }}
+            className="w-full max-w-md rounded-md border border-slate-300 px-3 py-2 text-base text-slate-800 shadow-sm transition focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-200"
           />
-          {allTweets.length} tweets
+          <span className="text-sm text-slate-600">
+            {allTweets.length} tweets
+          </span>
         </div>
 
-        <div style={{ overflowY: "auto", flexGrow: 1 }} ref={listRef}>
+        <div className="flex-1 overflow-y-auto" ref={listRef}>
           {tweetsToDisplay.map((tweet, index) => (
             <TweetEntry tweet={tweet} key={index} />
           ))}
         </div>
 
-        <div
-          style={{
-            gap: "10px",
-            display: "flex",
-            flexDirection: "row",
-            paddingTop: "10px",
-            paddingBottom: "10px",
-            justifyContent: "end",
-          }}
-        >
+        <div className="flex flex-row justify-end gap-2.5 py-2">
           <button
             disabled={!navigatePrevious}
             onClick={navigatePrevious}
-            style={{
-              backgroundColor: "white",
-              borderRadius: "5px",
-              padding: "5px",
-              border: "1px solid black",
-              transition: "background-color 0.1s",
-            }}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.backgroundColor = "#f0f0f0")
-            }
-            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "")}
+            className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
           >
             Previous
           </button>
@@ -115,17 +78,7 @@ export function TweetsView({
                 }
               }
             }}
-            style={{
-              backgroundColor: "white",
-              borderRadius: "5px",
-              padding: "5px",
-              border: "1px solid black",
-              transition: "background-color 0.1s",
-            }}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.backgroundColor = "#f0f0f0")
-            }
-            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "")}
+            className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
           >
             Next
           </button>

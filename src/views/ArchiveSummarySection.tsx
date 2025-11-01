@@ -1,12 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router";
 import { useStore } from "../state/store";
 
 export function ArchiveSummarySection() {
-  const navigate = useNavigate();
-
-  const { account, allTweets, clearDatabase, profile, viewingMyArchive } =
-    useStore();
+  const { account, allTweets, profile } = useStore();
   const [showProfilePicture, setShowProfilePicture] = useState(false);
 
   useEffect(() => {
@@ -16,7 +12,7 @@ export function ArchiveSummarySection() {
     });
   }, [profile]);
 
-  const { totalTweetsCount, originalTweetsCount, repliesCount, retweetsCount } =
+  const { totalTweetsCount, repliesCount, retweetsCount } =
     useMemo(() => {
       const tweets = allTweets || [];
       let replies = 0;
@@ -50,52 +46,16 @@ export function ArchiveSummarySection() {
   }
 
   return (
-    <section
-      style={{
-        background: "#eceff7",
-        padding: "16px 22px 16px 22px",
-        borderRadius: "20px",
-        boxShadow: "0 3px 16px 2px rgba(30,60,160,0.07)",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: "10px",
-        maxWidth: 190,
-        boxSizing: "border-box",
-        margin: "0 auto",
-      }}
-    >
+    <section className="mx-auto flex max-w-[190px] flex-col items-center gap-2.5 rounded-3xl bg-[#eceff7] px-5 py-4 text-center shadow-lg shadow-indigo-100">
       <div
-        style={{
-          minWidth: 60,
-          minHeight: 60,
-          background: "linear-gradient(135deg,#ced9fd 70%,#e2edfa 100%)",
-          borderRadius: "50%",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontSize: "1.3rem",
-          fontWeight: 700,
-          color: "#5078B3",
-          letterSpacing: "1px",
-          boxShadow: "0 2px 6px rgba(80,120,180,0.10)",
-          border: "2px solid #afcfef",
-          flexShrink: 0,
-        }}
+        className="flex h-[60px] w-[60px] flex-shrink-0 items-center justify-center rounded-full border-2 border-[#afcfef] bg-[radial-gradient(circle_at_top_left,_#ced9fd_0%,_#e2edfa_100%)] text-lg font-bold uppercase tracking-wide text-[#5078B3] shadow"
         title={account.accountDisplayName}
       >
         {showProfilePicture ? (
           <img
             src={profile?.avatarMediaUrl}
             alt={account.accountDisplayName || account.username}
-            style={{
-              width: 58,
-              height: 58,
-              borderRadius: "50%",
-              objectFit: "cover",
-              border: "2px solid #afcfef",
-              boxShadow: "0 2px 6px rgba(80,120,180,0.10)",
-            }}
+            className="h-[58px] w-[58px] rounded-full border-2 border-[#afcfef] object-cover shadow"
           />
         ) : account.accountDisplayName ? (
           account.accountDisplayName
@@ -108,48 +68,19 @@ export function ArchiveSummarySection() {
           "@"
         )}
       </div>
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: 6,
-          flex: 1,
-          textAlign: "center",
-        }}
-      >
-        <div
-          style={{
-            fontWeight: 800,
-            color: "#223259",
-            flexWrap: "wrap",
-            marginBottom: -1,
-          }}
-        >
+      <div className="flex flex-1 flex-col gap-1.5 text-center">
+        <div className="flex flex-wrap items-center justify-center gap-1 text-xl font-extrabold text-slate-800">
           <span>{account.accountDisplayName}</span>{" "}
-          <span style={{ color: "#5b92ee" }}>@{account.username}</span>
+          <span className="text-[#5b92ee]">@{account.username}</span>
         </div>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "0 18px",
-            flexWrap: "wrap",
-            color: "#607399",
-            fontSize: "94%",
-          }}
-        >
+        <div className="text-sm text-slate-600">
           <span>
             {totalTweetsCount}&nbsp;tweets {repliesCount}&nbsp;replies{" "}
             {retweetsCount}&nbsp;retweets
           </span>
         </div>
         {account.createdAt && (
-          <div
-            style={{
-              color: "#607399",
-              fontSize: "94%",
-            }}
-          >
+          <div className="text-sm text-slate-600">
             Since{" "}
             {new Date(account.createdAt).toLocaleDateString(undefined, {
               year: "numeric",

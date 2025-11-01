@@ -8,7 +8,6 @@ import {
   useMemo,
   useRef,
   useState,
-  type CSSProperties,
 } from "react";
 import { useStore } from "../../state/store";
 import { RunQueryButton } from "./RunQueryButton";
@@ -47,7 +46,6 @@ export function RunQueries() {
     currentRunningQuery,
     queryResult,
     errorMessage,
-    setQueryError,
     selectedConfigIndex,
     setSelectedConfigIndex,
   } = useStore();
@@ -61,7 +59,6 @@ export function RunQueries() {
     [allTweets],
   );
 
-  // Keep UI state intuitive: if none exist, ensure toggles are off
   useEffect(() => {
     if (!hasReplies && includeReplies) setIncludeReplies(false);
   }, [hasReplies]);
@@ -91,7 +88,6 @@ export function RunQueries() {
         notation: "compact",
         maximumFractionDigits: 1,
       }).format(n);
-      // Use lowercase suffix to match "10k" style
       return s.replace("K", "k").replace("M", "m").replace("G", "g");
     } catch {
       if (n >= 1_000_000) return `${Math.round(n / 1_000_000)}m`;
@@ -131,34 +127,6 @@ export function RunQueries() {
     return Math.ceil(tweetsSelectedForQuery.length / QUERY_BATCH_SIZE);
   }, [tweetsSelectedForQuery]);
 
-  const featuredQueryCardStyle: CSSProperties = {
-    padding: "16px",
-    background: "#f8f9fa",
-    color: "#212529",
-    border: "1px solid #ddd",
-    borderRadius: "6px",
-    fontSize: "15px",
-    fontWeight: 500,
-    boxShadow: "0 2px 6px rgba(0,0,0,0.04)",
-    transition: "background 0.2s, color 0.2s",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "space-between",
-    textAlign: "center",
-    minHeight: "140px",
-    gap: "12px",
-    opacity: isProcessing ? 0.6 : 1,
-  };
-
-  const browseMoreButtonStyle: CSSProperties = {
-    display: "inline",
-    color: "#0056B3cc",
-    fontSize: "16px",
-    cursor: isProcessing ? "not-allowed" : "pointer",
-    opacity: isProcessing ? 0.6 : 1,
-  };
-
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   useEffect(() => {
@@ -167,7 +135,6 @@ export function RunQueries() {
     textareaRef.current?.focus();
   }, [account, selectedQuery]);
 
-  // Utility: only persist queries that don't reference a different @handle
   const shouldPersistQuery = (text: string, currentHandle: string) => {
     if (!text) return true;
     const handles = (text.match(/@[A-Za-z0-9_]{1,15}/g) || []).map((h) =>
@@ -176,10 +143,9 @@ export function RunQueries() {
     if (handles.length === 0) return true;
     const uniq = new Set(handles);
     uniq.delete(currentHandle.toLowerCase());
-    return uniq.size === 0; // persist only if remaining set is empty
+    return uniq.size === 0;
   };
 
-  // Restore last query from localStorage when account is available
   useEffect(() => {
     if (!account) return;
     try {
@@ -189,11 +155,10 @@ export function RunQueries() {
         setSelectedQuery((prev) => (prev ? prev : saved));
       }
     } catch {
-      // ignore storage errors
+      // noop
     }
   }, [account]);
 
-  // Persist query text changes to localStorage when valid for this account
   useEffect(() => {
     if (!account) return;
     try {
@@ -201,9 +166,8 @@ export function RunQueries() {
       if (shouldPersistQuery(selectedQuery, currentHandle)) {
         localStorage.setItem("llm:lastQuery", selectedQuery || "");
       }
-      // else: do not persist queries mentioning other handles
     } catch {
-      // ignore storage errors
+      // noop
     }
   }, [selectedQuery, account]);
 
@@ -216,19 +180,8 @@ export function RunQueries() {
       : `Most recent ${formatCompact(MAX_ARCHIVE_SIZE)}`;
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: "10px",
-        paddingBottom: "20px",
-      }}
-    >
-      <div
-        style={{
-          marginTop: "24px",
-        }}
-      >
+    <div className="flex flex-col gap-4 pb-6">
+      <div className="mt-6">
         <textarea
           ref={textareaRef}
           value={selectedQuery}
@@ -242,47 +195,20 @@ export function RunQueries() {
             handleRunQuery(selectedQuery);
           }}
           rows={3}
-          style={{
-            width: "100%",
-            minHeight: "60px",
-            fontSize: "16px",
-            padding: "8px",
-            borderRadius: "6px",
-            border: "1px solid #ccc",
-            resize: "vertical",
-            boxSizing: "border-box",
-          }}
+          className="w-full min-h-[60px] resize-y rounded-lg border border-slate-300 px-3 py-2 text-base text-slate-800 shadow-sm transition focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-200 disabled:bg-slate-100"
           placeholder="Type your query here..."
         />
       </div>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "12px",
-          marginBottom: "10px",
-        }}
-      >
+
+      <div className="flex flex-wrap items-center gap-3">
         <RunQueryButton
           disabled={isProcessing}
-          onClick={() => {
-            handleRunQuery(selectedQuery);
-          }}
+          onClick={() => handleRunQuery(selectedQuery)}
           showShortcut
         />
 
-        <div
-          style={{
-            height: "100%",
-            display: "flex",
-            flexDirection: "row",
-            alignItems: "center",
-            gap: "15px",
-            marginLeft: "10px",
-            fontSize: "90%",
-          }}
-        >
-          <label style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+        <div className="ml-2.5 flex flex-wrap items-center gap-4 text-sm text-slate-700">
+          <label className="flex items-center gap-1.5">
             <input
               type="radio"
               disabled={isProcessing}
@@ -296,42 +222,30 @@ export function RunQueries() {
                   });
                 }
               }}
-              style={{ accentColor: "#007bff", marginTop: "2px" }}
+              className="accent-indigo-500"
             />
             {lastTweetsLabel}
           </label>
-          <label
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-            }}
-          >
+          <label className="flex items-center gap-1.5">
             <input
               type="radio"
               disabled={isProcessing}
               name="archiveMode"
               checked={rangeSelection.type === "date-range"}
               onChange={(e) => {
-                if (e.target.checked)
+                if (e.target.checked) {
                   setRangeSelection({
                     type: "date-range",
                     startDate: "",
                     endDate: "",
                   });
+                }
               }}
-              style={{ accentColor: "#007bff", marginTop: "2px" }}
+              className="accent-indigo-500"
             />
             Custom
           </label>
-          <label
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-              marginLeft: "3px",
-            }}
-          >
+          <label className="ml-1 flex items-center gap-1.5">
             <input
               type="checkbox"
               disabled={isProcessing || !hasReplies}
@@ -340,7 +254,7 @@ export function RunQueries() {
             />
             Replies
           </label>
-          <label style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+          <label className="flex items-center gap-1.5">
             <input
               type="checkbox"
               disabled={isProcessing || !hasRetweets}
@@ -350,20 +264,15 @@ export function RunQueries() {
             Retweets
           </label>
         </div>
-        <div style={{ flex: 1 }} />
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+
+        <div className="flex-1" />
+        <div className="flex items-center gap-2">
           <select
             id="model-select"
             disabled={isProcessing}
             value={selectedConfigIndex}
             onChange={(e) => setSelectedConfigIndex(Number(e.target.value))}
-            style={{
-              padding: "6px 8px",
-              borderRadius: 6,
-              border: "1px solid #ccc",
-              background: isProcessing ? "#f3f3f3" : "#fff",
-              width: 280,
-            }}
+            className="w-72 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-700 shadow-sm transition focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-200 disabled:cursor-not-allowed disabled:bg-slate-100"
           >
             {AVAILABLE_LLM_CONFIGS.map(
               ([model, provider, openrouterProvider, recommended], idx) => (
@@ -371,15 +280,16 @@ export function RunQueries() {
                   key={`${model}-${provider}-${openrouterProvider || ""}`}
                   value={idx}
                 >
-                  {recommended && "️⭐️ "}
-                  {openrouterProvider && "🔀 "}
-                  {model} - {openrouterProvider ?? provider}{" "}
+                  {recommended ? "?? " : ""}
+                  {openrouterProvider ? "?? " : ""}
+                  {model} - {openrouterProvider ?? provider}
                 </option>
               ),
             )}
           </select>
         </div>
       </div>
+
       {rangeSelection.type === "date-range" && (
         <TweetFrequencyGraph
           tweetCounts={tweetCounts}
@@ -394,17 +304,11 @@ export function RunQueries() {
           }}
         />
       )}
+
       {errorMessage && (
         <div
           role="alert"
-          style={{
-            background: "#fde8e8",
-            border: "1px solid #f5c2c7",
-            color: "#842029",
-            padding: "10px 12px",
-            marginTop: "6px",
-            borderRadius: 6,
-          }}
+          className="mt-1.5 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700"
         >
           {errorMessage}
         </div>
@@ -425,102 +329,53 @@ export function RunQueries() {
           />
         </ResultsBox>
       )}
+
       {queryResult && (
-        <>
-          <ResultsBox>
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "row",
-                marginBottom: "-6px", // compensate for paragraph margins
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "4px",
-                  flex: 1,
-                }}
-              >
-                <h4 style={{ margin: 0 }}>{queryResult.query}</h4>
-                <span style={{ fontStyle: "italic", fontSize: "smaller" }}>
-                  {" "}
-                  completed in {(queryResult.totalRunTime / 1000).toFixed(
-                    2,
-                  )}{" "}
-                  seconds, {queryResult.totalTokens} tokens
-                </span>
-              </div>
-              <div style={{ marginLeft: "6px" }}>
-                <div style={{ display: "flex", gap: "6px", maxHeight: 36 }}>
-                  <button
-                    style={{
-                      border: "1px solid rgb(150, 234, 153)",
-                      borderRadius: "4px",
-                      padding: "4px 8px",
-                      background: "#fff",
-                      color: "#388e3c",
-                      fontSize: "12px",
-                      fontWeight: "bold",
-                      cursor: "pointer",
-                      transition: "all 0.2s ease",
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = "#e7f6e7";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = "#fff";
-                    }}
-                    onClick={() => {
-                      setShowBatchTweetsModal(true);
-                    }}
-                  >
-                    Evidence
-                  </button>
-                  <CopyButton text={queryResult.result} />
-                </div>
-              </div>
+        <ResultsBox>
+          <div className="mb-[-6px] flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="flex flex-1 flex-col gap-1">
+              <h4 className="text-lg font-semibold text-slate-900">
+                {queryResult.query}
+              </h4>
+              <span className="text-xs italic text-slate-600">
+                completed in {(queryResult.totalRunTime / 1000).toFixed(2)}
+                seconds, {queryResult.totalTokens} tokens
+              </span>
             </div>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                className="rounded border border-emerald-300 bg-white px-3 py-1 text-xs font-semibold text-emerald-600 transition hover:bg-emerald-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300"
+                onClick={() => setShowBatchTweetsModal(true)}
+              >
+                Evidence
+              </button>
+              <CopyButton text={queryResult.result} />
+            </div>
+          </div>
+          <div className="prose prose-sm prose-slate max-w-none">
             <Markdown remarkPlugins={[remarkGfm]}>
               {stripThink(queryResult.result)}
             </Markdown>
-          </ResultsBox>
-        </>
+          </div>
+        </ResultsBox>
       )}
-      <div
-        style={{
-          marginTop: "6px",
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-          gap: "12px",
-          alignItems: "stretch",
-        }}
-      >
+
+      <div className="mt-1.5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {FEATURED_QUERIES.map((baseQuery) => {
           const query = replaceAccountName(baseQuery, account.username);
+          const cardDisabled = isProcessing;
           return (
-            <div key={baseQuery} style={featuredQueryCardStyle}>
-              <div
-                style={{
-                  color: "#0056b3",
-                  whiteSpace: "pre-wrap",
-                  wordBreak: "break-word",
-                  flex: 1,
-                  display: "flex",
-                  alignItems: "center",
-                }}
-              >
-                {query}
+            <div
+              key={baseQuery}
+              className={`flex min-h-[140px] flex-col items-center justify-between gap-3 rounded-md border border-slate-200 bg-slate-50 p-4 text-center text-base font-medium shadow-sm transition ${
+                cardDisabled ? "opacity-60" : "hover:bg-slate-100"
+              }`}
+            >
+              <div className="flex flex-1 items-center text-indigo-600">
+                <span className="whitespace-pre-wrap break-words">{query}</span>
               </div>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  width: "100%",
-                  gap: "8px",
-                }}
-              >
+              <div className="flex w-full justify-center gap-2">
                 <RunQueryButton
                   disabled={isProcessing}
                   onClick={() => {
@@ -533,22 +388,7 @@ export function RunQueries() {
                 <button
                   type="button"
                   disabled={isProcessing}
-                  style={{
-                    border: "1px solid #d0d5dd",
-                    borderRadius: "4px",
-                    padding: "6px 10px",
-                    background: "#eee",
-                    color: "#555",
-                    cursor: isProcessing ? "not-allowed" : "pointer",
-                    transition: "all 0.2s ease",
-                  }}
-                  onMouseEnter={(e) => {
-                    if (isProcessing) return;
-                    e.currentTarget.style.background = "#e2e6ea";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = "#eee";
-                  }}
+                  className="rounded border border-slate-300 bg-slate-200 px-3 py-1 text-sm font-medium text-slate-600 transition hover:bg-slate-300 disabled:cursor-not-allowed disabled:opacity-80"
                   onClick={() => {
                     if (isProcessing) return;
                     setSelectedQuery(query);
@@ -562,25 +402,21 @@ export function RunQueries() {
           );
         })}
       </div>
-      <div style={{ margin: "10px 0", textAlign: "center" }}>
-        <a
+
+      <div className="mt-2 text-center">
+        <button
+          type="button"
           disabled={isProcessing}
-          style={browseMoreButtonStyle}
+          className="text-base font-medium text-indigo-600 transition hover:text-indigo-500 disabled:cursor-not-allowed disabled:text-indigo-300"
           onClick={() => {
             if (isProcessing) return;
             setExampleQueriesModalIsOpen(true);
           }}
-          onMouseEnter={(e) => {
-            if (isProcessing) return;
-            e.currentTarget.style.color = "#0056B3";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.color = "#0056B3cc";
-          }}
         >
           More examples...
-        </a>
+        </button>
       </div>
+
       <ExampleQueriesModal
         queries={EXAMPLE_QUERIES}
         isOpen={exampleQueriesModalIsOpen}

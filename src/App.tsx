@@ -1,5 +1,4 @@
 import { Outlet } from "react-router";
-import "./App.css";
 import { useEffect } from "react";
 import { useStore } from "./state/store";
 import { PastQueries } from "./views/query_view/PastQueries";
@@ -21,31 +20,24 @@ function App() {
   }, [init, subscribe, unsubscribe]);
 
   return (
-    <div style={{ height: "100vh", overflowY: "scroll", display: "flex" }}>
-      <div
-        style={{
-          minWidth: 220,
-          borderRight: "1px solid #ddd",
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
-        <div style={{ margin: "15px 20px", fontSize: 32 }}>
-          <a
-            type="link"
+    <div className="flex h-screen overflow-y-auto bg-slate-50">
+      <div className="flex min-w-[220px] flex-col border-r border-slate-200 bg-white shadow-sm">
+        <div className="mt-4 flex items-center justify-center px-5 text-4xl">
+          <button
+            type="button"
             onClick={() => navigate("/")}
-            style={{ cursor: "pointer" }}
+            className="cursor-pointer text-4xl transition hover:scale-105"
           >
             🔎
-          </a>
+          </button>
         </div>
-        <div style={{ flex: 1 }}>
+        <div className="flex-1 overflow-y-auto">
           <PastQueries />
         </div>
         <ArchiveSummarySection />
         <SidebarActions />
       </div>
-      <div style={{ flex: 1 }}>
+      <div className="flex-1 overflow-y-auto">
         <Outlet />
       </div>
     </div>

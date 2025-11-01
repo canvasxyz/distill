@@ -1,34 +1,11 @@
 export const FeedbackButtons = () => {
   return (
-    <div
-      style={{
-        position: "fixed",
-        bottom: "18px",
-        right: "24px",
-        display: "flex",
-        flexDirection: "column",
-        gap: "10px",
-      }}
-    >
+    <div className="fixed bottom-5 right-6 z-50 flex flex-col gap-2.5">
       <a
         href="https://docs.google.com/forms/d/e/1FAIpQLSdyfyXW0Kev9USSqr97FuIoZgXCqVebJsE7aj3kBWEw_xahRQ/viewform?usp=dialog"
         target="_blank"
         rel="noopener noreferrer"
-        style={{
-          display: "inline-block",
-          background: "#f7fafc",
-          borderRadius: "4px",
-          padding: "7px 10px",
-          textDecoration: "none",
-          cursor: "pointer",
-          color: "#345388",
-          fontWeight: 600,
-          fontSize: "1em",
-          boxShadow: "0 1.5px 6px 0px rgba(120, 150, 200, 0.08)",
-          outline: "none",
-          border: "1px solid #ddd",
-          zIndex: 1000,
-        }}
+        className="inline-flex items-center justify-center rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-base font-semibold text-indigo-700 shadow-md shadow-slate-200 transition hover:border-indigo-200 hover:text-indigo-800 hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
         title="Send feedback or get info"
       >
         💬

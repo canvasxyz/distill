@@ -13,35 +13,13 @@ export function RunQueryButton({
 }) {
   return (
     <button
-      style={{
-        fontSize: "0.94em",
-        padding: "6px 16px",
-        borderRadius: "5px",
-        border: "1px solid #007bff",
-        background: disabled ? "#bfc9d1" : "#007bff",
-        color: disabled ? "#6c757d" : "white",
-        fontWeight: 500,
-        cursor: disabled ? "not-allowed" : "pointer",
-        transition: "background 0.1s",
-      }}
+      className="rounded-md border border-[#007bff] bg-[#007bff] px-4 py-1.5 text-sm font-medium text-white transition hover:bg-[#0072ef] disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-300 disabled:text-slate-500"
       onClick={disabled ? undefined : onClick}
-      onMouseEnter={
-        disabled
-          ? undefined
-          : (e) => (e.currentTarget.style.background = "#0072ef")
-      }
-      onMouseLeave={
-        disabled
-          ? undefined
-          : (e) => (e.currentTarget.style.background = "#007bff")
-      }
       disabled={disabled}
     >
       Query
       {showShortcut && isMacPlatform && (
-        <span style={{ marginLeft: 8, fontSize: "0.85em", opacity: 0.8 }}>
-          ⌘⏎
-        </span>
+        <span className="ml-2 text-xs opacity-80">⌘⏎</span>
       )}
     </button>
   );
