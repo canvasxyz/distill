@@ -48,6 +48,6 @@ export const EXAMPLE_QUERIES = [
 export const FEATURED_QUERIES = [
   "What kinds of topics does {account} post about?",
   "Based on these tweets, what Enneagram and MBTI types are {account}? You may list multiple options.",
-  "What seems to motivate {account} to tweet, e.g. attention, reflection, humor, advocacy, curiosity?",
-  "What were the main eras or turning points in {account}'s Twitter life?",
+  "What were the main eras or turning points in {account}'s life?",
+  "What are {account}'s two best tweets? And which one is {account}'s worst?",
 ];

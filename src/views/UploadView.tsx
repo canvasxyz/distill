@@ -46,10 +46,14 @@ export function UploadPanel() {
     >
       <h1>Open your archive</h1>
       <p>
-        To begin, open your archive. Use the ".zip" file that you received when
-        you requested your archive from Twitter/X. The Archive Explorer will
-        only look at the account.js, follower.js, following.js, profile.js and
-        tweet(s).js files.
+        To begin, open the ".zip" file that you received when you requested your
+        archive. The Archive Explorer only looks at the account.js, follower.js,
+        following.js, profile.js and tweets.js files.
+      </p>
+      <p>
+        Only data from tweets.js leaves your browser during LLM queries. We do
+        not log your queries, and most providers we use also follow a no-log
+        policy.
       </p>
 
       {ingestTwitterArchiveProgress == null ? (

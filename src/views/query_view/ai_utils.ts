@@ -56,7 +56,7 @@ export const finalSystemPrompt =
   "You will be given a prompt, followed by a list of tweets. Review the tweets and provide an answer to the prompt. Do not create tables in your response.";
 
 export function replaceAccountName(text: string, accountName: string) {
-  return text.replace("{account}", `@${accountName}`);
+  return text.replace(/\{account\}/g, `@${accountName}`);
 }
 export function makePromptMessages(
   tweetsSample: { full_text: string }[],
