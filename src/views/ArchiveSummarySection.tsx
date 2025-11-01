@@ -1,12 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router";
 import { useStore } from "../state/store";
 
 export function ArchiveSummarySection() {
-  const navigate = useNavigate();
-
-  const { account, allTweets, clearDatabase, profile, viewingMyArchive } =
-    useStore();
+  const { account, allTweets, profile } = useStore();
   const [showProfilePicture, setShowProfilePicture] = useState(false);
 
   useEffect(() => {
@@ -16,8 +12,7 @@ export function ArchiveSummarySection() {
     });
   }, [profile]);
 
-  const { totalTweetsCount, originalTweetsCount, repliesCount, retweetsCount } =
-    useMemo(() => {
+  const { totalTweetsCount, repliesCount, retweetsCount } = useMemo(() => {
       const tweets = allTweets || [];
       let replies = 0;
       let retweets = 0;
@@ -50,52 +45,16 @@ export function ArchiveSummarySection() {
   }
 
   return (
-    <section
-      style={{
-        background: "#eceff7",
-        padding: "16px 22px 16px 22px",
-        borderRadius: "20px",
-        boxShadow: "0 3px 16px 2px rgba(30,60,160,0.07)",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: "10px",
-        maxWidth: 190,
-        boxSizing: "border-box",
-        margin: "0 auto",
-      }}
-    >
+    <section className="bg-[#eceff7] p-4 px-[22px] rounded-[20px] shadow-[0_3px_16px_2px_rgba(30,60,160,0.07)] flex flex-col items-center gap-[10px] max-w-[190px] box-border mx-auto">
       <div
-        style={{
-          minWidth: 60,
-          minHeight: 60,
-          background: "linear-gradient(135deg,#ced9fd 70%,#e2edfa 100%)",
-          borderRadius: "50%",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontSize: "1.3rem",
-          fontWeight: 700,
-          color: "#5078B3",
-          letterSpacing: "1px",
-          boxShadow: "0 2px 6px rgba(80,120,180,0.10)",
-          border: "2px solid #afcfef",
-          flexShrink: 0,
-        }}
+        className="min-w-[60px] min-h-[60px] bg-gradient-to-br from-[#ced9fd] via-[#ced9fd] to-[#e2edfa] rounded-full flex items-center justify-center text-[1.3rem] font-bold text-[#5078B3] tracking-wide shadow-[0_2px_6px_rgba(80,120,180,0.10)] border-2 border-[#afcfef] flex-shrink-0"
         title={account.accountDisplayName}
       >
         {showProfilePicture ? (
           <img
             src={profile?.avatarMediaUrl}
             alt={account.accountDisplayName || account.username}
-            style={{
-              width: 58,
-              height: 58,
-              borderRadius: "50%",
-              objectFit: "cover",
-              border: "2px solid #afcfef",
-              boxShadow: "0 2px 6px rgba(80,120,180,0.10)",
-            }}
+            className="w-[58px] h-[58px] rounded-full object-cover border-2 border-[#afcfef] shadow-[0_2px_6px_rgba(80,120,180,0.10)]"
           />
         ) : account.accountDisplayName ? (
           account.accountDisplayName
@@ -108,48 +67,19 @@ export function ArchiveSummarySection() {
           "@"
         )}
       </div>
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: 6,
-          flex: 1,
-          textAlign: "center",
-        }}
-      >
-        <div
-          style={{
-            fontWeight: 800,
-            color: "#223259",
-            flexWrap: "wrap",
-            marginBottom: -1,
-          }}
-        >
+      <div className="flex flex-col gap-[6px] flex-1 text-center">
+        <div className="font-extrabold text-[#223259] flex-wrap -mb-px">
           <span>{account.accountDisplayName}</span>{" "}
-          <span style={{ color: "#5b92ee" }}>@{account.username}</span>
+          <span className="text-[#5b92ee]">@{account.username}</span>
         </div>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "0 18px",
-            flexWrap: "wrap",
-            color: "#607399",
-            fontSize: "94%",
-          }}
-        >
+        <div className="flex flex-col gap-x-[18px] flex-wrap text-[#607399] text-[94%]">
           <span>
             {totalTweetsCount}&nbsp;tweets {repliesCount}&nbsp;replies{" "}
             {retweetsCount}&nbsp;retweets
           </span>
         </div>
         {account.createdAt && (
-          <div
-            style={{
-              color: "#607399",
-              fontSize: "94%",
-            }}
-          >
+          <div className="text-[#607399] text-[94%]">
             Since{" "}
             {new Date(account.createdAt).toLocaleDateString(undefined, {
               year: "numeric",

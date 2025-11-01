@@ -16,26 +16,9 @@ export const CopyButton = ({ text }: { text: string }) => {
   return (
     <button
       onClick={handleCopy}
-      style={{
-        background: copied ? "#4CAF50" : "#fff",
-        border: "1px solid #ccc",
-        borderRadius: "4px",
-        padding: "4px 8px",
-        cursor: "pointer",
-        fontSize: "12px",
-        color: copied ? "#fff" : "#333",
-        transition: "all 0.2s ease",
-      }}
-      onMouseEnter={(e) => {
-        if (!copied) {
-          e.currentTarget.style.background = "#f0f0f0";
-        }
-      }}
-      onMouseLeave={(e) => {
-        if (!copied) {
-          e.currentTarget.style.background = "#fff";
-        }
-      }}
+      className={`${
+        copied ? "bg-[#4CAF50] text-white" : "bg-white text-gray-800 hover:bg-gray-100"
+      } border border-gray-300 rounded py-1 px-2 cursor-pointer text-xs transition-all duration-200`}
     >
       {copied ? "Copied!" : "Copy"}
     </button>
@@ -53,20 +36,13 @@ export const ProgressLabel = ({
     totalProgress > 0 && currentProgress >= totalProgress;
 
   return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        marginBottom: "8px",
-      }}
-    >
-      <span style={{ fontSize: "14px", color: "#666" }}>
+    <div className="flex justify-between items-center mb-2">
+      <span className="text-sm text-gray-600">
         {allBatchesComplete
           ? "Summarizing results..."
           : "Processing batches..."}
       </span>
-      <span style={{ fontSize: "14px", color: "#666" }}>
+      <span className="text-sm text-gray-600">
         {currentProgress} / {totalProgress}
       </span>
     </div>
@@ -115,22 +91,10 @@ export function ProgressBar({
 
   return (
     <>
-      <div
-        style={{
-          width: "100%",
-          height: "8px",
-          backgroundColor: "#e0e0e0",
-          borderRadius: "4px",
-          overflow: "hidden",
-        }}
-      >
+      <div className="w-full h-2 bg-gray-200 rounded overflow-hidden">
         <div
-          style={{
-            width: `${widthFraction * 100}%`,
-            height: "100%",
-            backgroundColor: "#4CAF50",
-            transition: "width 0.3s ease",
-          }}
+          className="h-full bg-[#4CAF50] transition-[width] duration-300 ease-in-out"
+          style={{ width: `${widthFraction * 100}%` }}
         />
       </div>
     </>
@@ -139,15 +103,7 @@ export function ProgressBar({
 
 export function ResultsBox({ children }: { children: ReactNode }) {
   return (
-    <div
-      style={{
-        border: "1px solid #ccc",
-        borderRadius: "6px",
-        padding: "16px",
-        background: "#f5f5f5",
-        position: "relative",
-      }}
-    >
+    <div className="border border-gray-300 rounded-md p-4 bg-gray-100 relative">
       {children}
     </div>
   );

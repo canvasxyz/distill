@@ -52,56 +52,18 @@ export function BatchTweetsModal({
 
   return (
     <div
-      style={{
-        position: "fixed",
-        zIndex: 1000,
-        left: 0,
-        top: 0,
-        width: "100vw",
-        height: "100vh",
-        background: "rgba(0,0,0,0.4)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
+      className="fixed z-[1000] left-0 top-0 w-screen h-screen bg-black/40 flex items-center justify-center"
       onClick={onClose}
     >
       <div
-        style={{
-          width: "90%",
-          maxWidth: 768,
-          maxHeight: "80vh",
-          background: "#fff",
-          borderRadius: "12px",
-          boxShadow: "0 2px 16px rgba(0,0,0,0.18)",
-          padding: "32px 24px 24px 24px",
-          position: "relative",
-          display: "flex",
-          flexDirection: "column",
-        }}
+        className="w-[90%] max-w-[768px] max-h-[80vh] bg-white rounded-xl shadow-[0_2px_16px_rgba(0,0,0,0.18)] p-[32px_24px_24px_24px] relative flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            paddingBottom: 12,
-          }}
-        >
-          <h2 style={{ margin: 0, fontSize: 22, flex: 1 }}>Evidence</h2>
+        <div className="flex items-center justify-between pb-3">
+          <h2 className="m-0 text-[22px] flex-1">Evidence</h2>
 
           <button
-            style={{
-              border: "none",
-              background: "transparent",
-              fontSize: "22px",
-              cursor: "pointer",
-              color: "#666",
-              fontWeight: "bold",
-              marginLeft: 12,
-              alignSelf: "flex-start",
-            }}
+            className="border-none bg-transparent text-[22px] cursor-pointer text-gray-600 font-bold ml-3 self-start"
             onClick={onClose}
             aria-label="Close modal"
           >
@@ -119,76 +81,33 @@ export function BatchTweetsModal({
           Model: {queryResult?.model} on {queryResult?.provider}
         </p>
 
-        <div
-          style={{
-            display: "flex",
-            marginTop: "16px",
-            gap: "8px",
-          }}
-        >
+        <div className="flex mt-4 gap-2">
           {TABS.map((tab) => (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              style={{
-                background: activeTab === tab.key ? "#f5f5f5" : "transparent",
-                border: "none",
-                borderBottom:
-                  activeTab === tab.key
-                    ? "3px solid #007bff"
-                    : "3px solid transparent",
-                color: activeTab === tab.key ? "#007bff" : "#333",
-                fontWeight: activeTab === tab.key ? "bold" : "normal",
-                padding: "12px 20px",
-                cursor: "pointer",
-                outline: "none",
-                fontSize: "16px",
-                transition: "color 0.2s, border-bottom 0.2s, background 0.2s",
-                borderRadius: "6px 6px 0 0",
-              }}
+              className={`${
+                activeTab === tab.key
+                  ? "bg-gray-100 border-b-[3px] border-b-blue-500 text-blue-500 font-bold"
+                  : "bg-transparent border-b-[3px] border-b-transparent text-gray-800 font-normal"
+              } border-none p-[12px_20px] cursor-pointer outline-none text-base transition-[color,border-bottom,background] duration-200 rounded-t-md`}
             >
               {tab.label} ({tab.count})
             </button>
           ))}
         </div>
         {activeTab === "evidence" ? (
-          <div
-            style={{
-              flex: 1,
-              minHeight: 0,
-              maxHeight: "54vh", // Ensures scrolling space for the list
-              overflowY: "auto",
-            }}
-          >
-            <ul
-              style={{
-                padding: 0,
-                margin: 0,
-                listStyle: "none",
-              }}
-            >
+          <div className="flex-1 min-h-0 max-h-[54vh] overflow-y-auto">
+            <ul className="p-0 m-0 list-none">
               {batchTweets.map((batchTweet, idx) => {
                 return (
                   <li
                     key={idx}
-                    style={{
-                      padding: "10px 0",
-                      borderBottom:
-                        idx !== batchTweets.length - 1
-                          ? "1px solid #eee"
-                          : undefined,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                    }}
+                    className={`py-[10px] ${
+                      idx !== batchTweets.length - 1 ? "border-b border-gray-100" : ""
+                    } flex items-center justify-between`}
                   >
-                    <span
-                      style={{
-                        marginRight: 10,
-                        flex: "1 1 auto",
-                        fontSize: 15,
-                      }}
-                    >
+                    <span className="mr-[10px] flex-[1_1_auto] text-[15px]">
                       {batchTweet.full_text}
                     </span>
                   </li>
@@ -198,43 +117,17 @@ export function BatchTweetsModal({
           </div>
         ) : (
           <>
-            <div
-              style={{
-                flex: 1,
-                minHeight: 0,
-                maxHeight: "54vh", // Ensures scrolling space for the list
-                overflowY: "auto",
-              }}
-            >
-              <ul
-                style={{
-                  padding: 0,
-                  margin: 0,
-                  listStyle: "none",
-                }}
-              >
+            <div className="flex-1 min-h-0 max-h-[54vh] overflow-y-auto">
+              <ul className="p-0 m-0 list-none">
                 {batchHallucinations.map((batchTweet, idx) => {
                   return (
                     <li
                       key={idx}
-                      style={{
-                        padding: "10px 0",
-                        borderBottom:
-                          idx !== batchTweets.length - 1
-                            ? "1px solid #eee"
-                            : undefined,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                      }}
+                      className={`py-[10px] ${
+                        idx !== batchTweets.length - 1 ? "border-b border-gray-100" : ""
+                      } flex items-center justify-between`}
                     >
-                      <span
-                        style={{
-                          marginRight: 10,
-                          flex: "1 1 auto",
-                          fontSize: 15,
-                        }}
-                      >
+                      <span className="mr-[10px] flex-[1_1_auto] text-[15px]">
                         {batchTweet.full_text}
                       </span>
                     </li>

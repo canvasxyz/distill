@@ -1,7 +1,6 @@
 import type { ChatCompletionMessageParam } from "openai/resources";
 import type { Account, Tweet } from "../../types";
 import OpenAI from "openai";
-import { pickSampleNoRepeats } from "../../utils";
 import type { LLMQueryProvider } from "../../constants";
 
 export type Query = { prompt: string; systemPrompt?: string };
@@ -161,8 +160,7 @@ export const selectSubset = (
       const tweetDate = new Date(tweet.created_at);
       return tweetDate >= startDateTime && tweetDate < endDateTime;
     });
-  } else {
-    // random sample
-    return pickSampleNoRepeats(tweets, rangeSelection.sampleSize);
   }
+  // This should never happen, but TypeScript needs a return statement
+  return tweets;
 };

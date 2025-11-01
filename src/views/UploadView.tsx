@@ -36,14 +36,7 @@ export function UploadPanel() {
   };
 
   return (
-    <div
-      style={{
-        maxWidth: "768px",
-        margin: "auto",
-        padding: "20px",
-        borderRadius: "10px",
-      }}
-    >
+    <div className="max-w-[768px] mx-auto p-5 rounded-[10px]">
       <h1>Open your archive</h1>
       <p>
         To begin, open your archive. Use the ".zip" file that you received when
@@ -54,16 +47,7 @@ export function UploadPanel() {
 
       {ingestTwitterArchiveProgress == null ? (
         <div
-          style={{
-            textAlign: "center",
-            marginTop: "20px",
-            padding: "20px",
-            border: "2px dashed #007bff",
-            borderRadius: "5px",
-            backgroundColor: "#f9f9f9",
-            cursor: "pointer",
-            transition: "background-color 0.2s",
-          }}
+          className="text-center mt-5 p-5 border-2 border-dashed border-blue-500 rounded-[5px] bg-[#f9f9f9] cursor-pointer transition-colors duration-200 hover:bg-[#e0e0e0]"
           onClick={() => {
             fileInputRef.current?.click();
           }}
@@ -75,14 +59,8 @@ export function UploadPanel() {
               await ingestTwitterArchive(file);
             }
           }}
-          onMouseEnter={(e) =>
-            (e.currentTarget.style.backgroundColor = "#e0e0e0")
-          }
-          onMouseLeave={(e) =>
-            (e.currentTarget.style.backgroundColor = "#f9f9f9")
-          }
         >
-          <p style={{ margin: "0", color: "#007bff" }}>
+          <p className="m-0 text-blue-500">
             Drag and drop your Twitter archive (.zip) here or click to open.
           </p>
           <input
@@ -91,20 +69,11 @@ export function UploadPanel() {
             type="file"
             accept=".zip"
             onChange={handleFileUpload}
-            style={{ display: "none" }}
+            className="hidden"
           />
         </div>
       ) : (
-        <div
-          style={{
-            textAlign: "center",
-            marginTop: "20px",
-            padding: "20px",
-            border: "2px dashed rgb(190, 222, 255)",
-            borderRadius: "5px",
-            backgroundColor: "#f9f9f9",
-          }}
-        >
+        <div className="text-center mt-5 p-5 border-2 border-dashed border-[rgb(190,222,255)] rounded-[5px] bg-[#f9f9f9]">
           {ingestTwitterArchiveProgress.status === "processingArchive" &&
             "Processing archive..."}
           {ingestTwitterArchiveProgress.status === "addingAccount" &&
@@ -145,25 +114,14 @@ export function UploadPanel() {
             "Generating text index"}
         </>
       ) : (
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr 1fr",
-            gap: "8px",
-            marginTop: "16px",
-            alignItems: "center",
-          }}
-        >
+        <div className="grid grid-cols-3 gap-2 mt-4 items-center">
           {(otherUserAccounts || []).map((account, idx) => {
             const isPinned = pinnedSet.has(
               (account.username || "").toLowerCase(),
             );
             return (
               <>
-                <div
-                  key={`avatar-${idx}`}
-                  style={{ display: "flex", alignItems: "center" }}
-                >
+                <div key={`avatar-${idx}`} className="flex items-center">
                   {account.profile && account.profile.avatarMediaUrl ? (
                     <img
                       src={account.profile.avatarMediaUrl}
@@ -172,69 +130,30 @@ export function UploadPanel() {
                         (e.target.src =
                           "https://www.community-archive.org/_next/image?url=%2Fplaceholder.jpg&w=3840&q=75")
                       }
-                      style={{
-                        width: "36px",
-                        height: "36px",
-                        borderRadius: "50%",
-                        objectFit: "cover",
-                        border: "1px solid #ccc",
-                      }}
+                      className="w-9 h-9 rounded-full object-cover border border-gray-300"
                     />
                   ) : (
-                    <div
-                      style={{
-                        width: "36px",
-                        height: "36px",
-                        borderRadius: "50%",
-                        backgroundColor: "#ddd",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: "20px",
-                        color: "#888",
-                      }}
-                    >
+                    <div className="w-9 h-9 rounded-full bg-gray-300 flex items-center justify-center text-xl text-gray-500">
                       ?
                     </div>
                   )}
-                  <div style={{ marginLeft: 10 }}>{account.username}</div>
+                  <div className="ml-[10px]">{account.username}</div>
                 </div>
-                <div key={`tweets-${idx}`} style={{ textAlign: "center" }}>
+                <div key={`tweets-${idx}`} className="text-center">
                   {account.numTweets.toLocaleString()}
                 </div>
-                <div
-                  key={`select-${idx}`}
-                  style={{
-                    display: "flex",
-                    justifyContent: "flex-end",
-                    alignItems: "center",
-                    gap: "6px",
-                  }}
-                >
+                <div key={`select-${idx}`} className="flex justify-end items-center gap-[6px]">
                   {isPinned && (
                     <span
                       title="Pinned"
                       aria-label="Pinned account"
-                      style={{
-                        color: "#f5b301",
-                        fontSize: "14px",
-                        lineHeight: 1,
-                        marginRight: 4,
-                      }}
+                      className="text-[#f5b301] text-sm leading-none mr-1"
                     >
                       ★
                     </span>
                   )}
                   <button
-                    style={{
-                      padding: "4px 10px",
-                      borderRadius: "5px",
-                      border: "1px solid #1976d2",
-                      background: "#1976d2",
-                      color: "#fff",
-                      cursor: "pointer",
-                      fontWeight: 500,
-                    }}
+                    className="py-1 px-[10px] rounded-[5px] border border-[#1976d2] bg-[#1976d2] text-white cursor-pointer font-medium"
                     onClick={() =>
                       selectCommunityArchiveUser(account.accountId)
                     }

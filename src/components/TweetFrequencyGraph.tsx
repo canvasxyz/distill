@@ -96,16 +96,8 @@ export function TweetFrequencyGraph({
   );
 
   return (
-    <div
-      style={{
-        border: "1px solid #ddd",
-        borderRadius: "8px",
-        padding: "16px",
-        background: "#fafbfc",
-        marginBottom: "12px",
-      }}
-    >
-      <div style={{ fontSize: "16px", color: "#222", marginBottom: 16 }}>
+    <div className="border border-gray-300 rounded-lg p-4 bg-[#fafbfc] mb-3">
+      <div className="text-base text-[#222] mb-4">
         {tweetCounts.length === 0 || !startDate || !endDate ? (
           "Click and drag to select a date range"
         ) : (
@@ -124,12 +116,7 @@ export function TweetFrequencyGraph({
       <svg
         width={graphWidth}
         height={graphHeight + 40}
-        style={{
-          border: "1px solid #ddd",
-          borderRadius: "4px",
-          cursor: "crosshair",
-          background: "#fff",
-        }}
+        className="border border-gray-300 rounded cursor-crosshair bg-white"
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
       >
@@ -156,7 +143,7 @@ export function TweetFrequencyGraph({
                 fill={fillColor}
                 onMouseDown={(e) => handleMouseDown(e, index)}
                 onMouseMove={(e) => handleMouseMove(e, index)}
-                style={{ cursor: "crosshair" }}
+                  className="cursor-crosshair"
               />
               {index % Math.ceil(tweetCounts.length / 8) === 0 && (
                 <text
@@ -165,7 +152,7 @@ export function TweetFrequencyGraph({
                   textAnchor="middle"
                   fontSize="10"
                   fill="#666"
-                  style={{ userSelect: "none" }}
+                  className="select-none"
                 >
                   {new Date(data.date).toLocaleDateString("en-US", {
                     month: "short",

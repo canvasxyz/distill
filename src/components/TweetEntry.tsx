@@ -4,40 +4,16 @@ import { useStore } from "../state/store";
 export function TweetEntry({ tweet }: { tweet: Tweet }) {
   const { account } = useStore();
 
-  const borderColor = "#b3ffb5";
-
   return (
-    <div
-      style={{
-        backgroundColor: "#e0ffe1",
-        border: `1px solid ${borderColor}`,
-        marginTop: 4,
-        marginLeft: 2,
-        marginRight: 2,
-        marginBottom: 12,
-        borderRadius: "5px",
-        padding: "8px",
-        paddingTop: "8px",
-        paddingBottom: "8px",
-        display: "flex",
-        flexDirection: "row",
-      }}
-    >
-      <div
-        style={{
-          marginLeft: "5px",
-          display: "flex",
-          flexDirection: "column",
-          gap: "10px",
-        }}
-      >
+    <div className="bg-[#e0ffe1] border border-[#b3ffb5] mt-1 mx-[2px] mb-3 rounded-[5px] p-2 flex flex-row">
+      <div className="ml-[5px] flex flex-col gap-[10px]">
         {/* username */}
         <div>
           {account?.accountDisplayName} ·{" "}
           <a
             href={`https://x.com/${account?.username}/status/${tweet.id}`}
             target="_blank"
-            style={{ color: "#4287f5" }}
+            className="text-[#4287f5]"
           >
             {new Date(tweet.created_at).toLocaleString()}
           </a>
@@ -45,37 +21,15 @@ export function TweetEntry({ tweet }: { tweet: Tweet }) {
         {/* tweet body */}
         <span>&quot;{tweet.full_text}&quot;</span>
         {/* labels */}
-        <div style={{ display: "flex", gap: "10px" }}>
+        <div className="flex gap-[10px]">
           <span
-            style={{
-              backgroundColor: "white",
-              border: "1px solid #e0e0e0",
-              borderRadius: "12px",
-              padding: "2px 8px",
-              fontSize: "12px",
-              color: "#333",
-              display: "inline-flex",
-              alignItems: "center",
-              fontWeight: 500,
-              gap: "4px",
-            }}
+            className="bg-white border border-gray-200 rounded-xl py-[2px] px-2 text-xs text-gray-800 inline-flex items-center font-medium gap-1"
             title="Favorites"
           >
             ⭐ {tweet.favorite_count}
           </span>
           <span
-            style={{
-              backgroundColor: "white",
-              border: "1px solid #e0e0e0",
-              borderRadius: "12px",
-              padding: "2px 8px",
-              fontSize: "12px",
-              color: "#333",
-              display: "inline-flex",
-              alignItems: "center",
-              fontWeight: 500,
-              gap: "4px",
-            }}
+            className="bg-white border border-gray-200 rounded-xl py-[2px] px-2 text-xs text-gray-800 inline-flex items-center font-medium gap-1"
             title="Retweets"
           >
             🔁 {tweet.retweet_count}

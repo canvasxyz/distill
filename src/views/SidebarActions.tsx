@@ -6,25 +6,9 @@ export const SidebarActions = () => {
   const { clearDatabase } = useStore();
 
   return (
-    <div
-      style={{
-        margin: "20px 18px",
-        display: "flex",
-        flexDirection: "column",
-        gap: "10px",
-      }}
-    >
+    <div className="m-[20px_18px] flex flex-col gap-[10px]">
       <button
-        style={{
-          display: "block",
-          borderRadius: "5px",
-          padding: "6px 16px",
-          backgroundColor: "#e5f0ff",
-          border: "1px solid #9bc1f799",
-          fontSize: "16px",
-          cursor: "pointer",
-          color: "#194486",
-        }}
+        className="block rounded-[5px] py-[6px] px-4 bg-[#e5f0ff] border border-[#9bc1f799] text-base cursor-pointer text-[#194486]"
         onClick={() => {
           navigate("/all-tweets");
         }}
@@ -33,15 +17,7 @@ export const SidebarActions = () => {
       </button>
 
       <button
-        style={{
-          borderRadius: "5px",
-          padding: "6px 16px",
-          backgroundColor: "#f8d7da",
-          border: "1px solid #f5c2c7",
-          fontSize: "16px",
-          cursor: "pointer",
-          color: "#721c24",
-        }}
+        className="rounded-[5px] py-[6px] px-4 bg-[#f8d7da] border border-[#f5c2c7] text-base cursor-pointer text-[#721c24]"
         onClick={() => {
           const message =
             "Close the archive? You will have to fetch or upload these tweets again.";

@@ -21,31 +21,24 @@ function App() {
   }, [init, subscribe, unsubscribe]);
 
   return (
-    <div style={{ height: "100vh", overflowY: "scroll", display: "flex" }}>
-      <div
-        style={{
-          minWidth: 220,
-          borderRight: "1px solid #ddd",
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
-        <div style={{ margin: "15px 20px", fontSize: 32 }}>
+    <div className="h-screen overflow-y-scroll flex">
+      <div className="min-w-[220px] border-r border-gray-300 flex flex-col">
+        <div className="m-[15px_20px] text-[32px]">
           <a
             type="link"
             onClick={() => navigate("/")}
-            style={{ cursor: "pointer" }}
+            className="cursor-pointer"
           >
             🔎
           </a>
         </div>
-        <div style={{ flex: 1 }}>
+        <div className="flex-1">
           <PastQueries />
         </div>
         <ArchiveSummarySection />
         <SidebarActions />
       </div>
-      <div style={{ flex: 1 }}>
+      <div className="flex-1">
         <Outlet />
       </div>
     </div>

@@ -31,27 +31,15 @@ export function TweetsView({
   }
 
   return (
-    <div
-      style={{ height: "100vh", overflowY: "auto", scrollbarGutter: "stable" }}
-    >
-      <div
-        style={{
-          maxHeight: "100vh",
-          display: "flex",
-          flexDirection: "column",
-          paddingLeft: "10px",
-          paddingRight: "10px",
-          margin: "0 auto",
-          maxWidth: "1200px", // limit width for readability on large screens
-        }}
-      >
+    <div className="h-screen overflow-y-auto [scrollbar-gutter:stable]">
+      <div className="max-h-screen flex flex-col px-[10px] mx-auto max-w-[1200px]">
         <h1>{title}</h1>
         {blurb && (
-          <div style={{ marginBottom: "10px" }}>
+          <div className="mb-[10px]">
             <em>{blurb}</em>
           </div>
         )}
-        <div style={{ marginBottom: "10px" }}>
+        <div className="mb-[10px]">
           <input
             type="text"
             placeholder="Search tweets..."
@@ -59,49 +47,22 @@ export function TweetsView({
             onChange={(e) => {
               setSearchParams({ search: e.target.value });
             }}
-            style={{
-              width: "100%",
-              maxWidth: "400px",
-              padding: "6px 8px",
-              marginRight: "10px",
-              border: "1px solid #ccc",
-              borderRadius: "4px",
-              fontSize: "16px",
-            }}
+            className="w-full max-w-[400px] p-[6px_8px] mr-[10px] border border-gray-300 rounded text-base"
           />
           {allTweets.length} tweets
         </div>
 
-        <div style={{ overflowY: "auto", flexGrow: 1 }} ref={listRef}>
+        <div className="overflow-y-auto flex-grow" ref={listRef}>
           {tweetsToDisplay.map((tweet, index) => (
             <TweetEntry tweet={tweet} key={index} />
           ))}
         </div>
 
-        <div
-          style={{
-            gap: "10px",
-            display: "flex",
-            flexDirection: "row",
-            paddingTop: "10px",
-            paddingBottom: "10px",
-            justifyContent: "end",
-          }}
-        >
+        <div className="gap-[10px] flex flex-row pt-[10px] pb-[10px] justify-end">
           <button
             disabled={!navigatePrevious}
             onClick={navigatePrevious}
-            style={{
-              backgroundColor: "white",
-              borderRadius: "5px",
-              padding: "5px",
-              border: "1px solid black",
-              transition: "background-color 0.1s",
-            }}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.backgroundColor = "#f0f0f0")
-            }
-            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "")}
+            className="bg-white rounded-[5px] p-[5px] border border-black transition-colors duration-100 hover:bg-gray-100"
           >
             Previous
           </button>
@@ -115,17 +76,7 @@ export function TweetsView({
                 }
               }
             }}
-            style={{
-              backgroundColor: "white",
-              borderRadius: "5px",
-              padding: "5px",
-              border: "1px solid black",
-              transition: "background-color 0.1s",
-            }}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.backgroundColor = "#f0f0f0")
-            }
-            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "")}
+            className="bg-white rounded-[5px] p-[5px] border border-black transition-colors duration-100 hover:bg-gray-100"
           >
             Next
           </button>

@@ -42,105 +42,34 @@ function PastQueryItem({ query }: { query: QueryResult }) {
 
   return (
     <div
-      style={{
-        border: "1px solid #ddd",
-        borderRadius: "6px",
-        background: "#fff",
-        overflow: "hidden",
-        boxShadow: open ? "0px 2px 10px #eee" : undefined,
-      }}
+      className={`border border-gray-300 rounded-md bg-white overflow-hidden ${
+        open ? "shadow-[0px_2px_10px_#eee]" : ""
+      }`}
     >
       <div
         onClick={() => setOpen((open) => !open)}
-        style={{
-          cursor: "pointer",
-          padding: "10px 18px",
-          display: "flex",
-          flexDirection: "row",
-          alignItems: "center",
-          gap: "12px",
-          fontWeight: 500,
-          transition: "background 0.12s",
-          background: undefined,
-        }}
-        onMouseEnter={(e) => (e.currentTarget.style.background = "#f7faff")}
-        onMouseLeave={(e) => (e.currentTarget.style.background = "")}
+        className="cursor-pointer p-[10px_18px] flex flex-row items-center gap-3 font-medium transition-colors duration-[120ms] hover:bg-[#f7faff]"
       >
-        <span style={{ flexGrow: 1, wordBreak: "break-word" }}>
+        <span className="flex-grow break-words">
           {query.query.length > 120
             ? query.query.slice(0, 120) + "…"
             : query.query}
         </span>
-        <span
-          style={{
-            color: "#888",
-            fontSize: "12px",
-            fontWeight: 400,
-            paddingLeft: "10px",
-            marginLeft: "auto",
-          }}
-        >
+        <span className="text-gray-500 text-xs font-normal pl-[10px] ml-auto">
           {formatRangeSelection(query.rangeSelection)}
         </span>
-        <span
-          style={{
-            color: "#aaa",
-            fontSize: "11px",
-            fontWeight: 400,
-            paddingLeft: "12px",
-            flexShrink: 0,
-            minWidth: "90px",
-            textAlign: "right",
-          }}
-        >
+        <span className="text-gray-400 text-[11px] font-normal pl-3 flex-shrink-0 min-w-[90px] text-right">
           {formatDateTime(query.id)}
         </span>
       </div>
       {open && (
-        <div style={{ padding: "20px" }}>
-          <div
-            style={{
-              fontFamily: "inherit",
-              fontSize: "15px",
-              color: "#0c254d",
-              borderRadius: "4px",
-              border: "1px solid #aaa",
-              padding: "10px 12px",
-              position: "relative",
-              marginBottom: "4px",
-              minHeight: "32px",
-              display: "flex",
-              flexDirection: "column",
-            }}
-          >
-            <div style={{ display: "flex", flexDirection: "row" }}>
-              <div style={{ flex: 1 }} />
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  gap: "10px",
-                  justifyContent: "flex-end",
-                }}
-              >
+        <div className="p-5">
+          <div className="font-[inherit] text-[15px] text-[#0c254d] rounded border border-gray-600 p-[10px_12px] relative mb-1 min-h-8 flex flex-col">
+            <div className="flex flex-row">
+              <div className="flex-1" />
+              <div className="flex flex-row gap-[10px] justify-end">
                 <button
-                  style={{
-                    border: "1px solid rgb(150, 234, 153)",
-                    borderRadius: "4px",
-                    padding: "4px 8px",
-                    background: "#fff",
-                    color: "#388e3c",
-                    fontSize: "12px",
-                    fontWeight: "bold",
-                    cursor: "pointer",
-                    transition: "all 0.2s ease",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = "#e7f6e7";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = "#fff";
-                  }}
+                  className="border border-[rgb(150,234,153)] rounded py-1 px-2 bg-white text-[#388e3c] text-xs font-bold cursor-pointer transition-all duration-200 hover:bg-[#e7f6e7]"
                   onClick={() => {
                     setShowBatchTweetsModal(true);
                   }}
@@ -154,38 +83,29 @@ function PastQueryItem({ query }: { query: QueryResult }) {
               {stripThink(query.result)}
             </Markdown>
           </div>
-          <div
-            style={{
-              marginTop: "16px",
-              fontSize: "13px",
-              color: "#888",
-              display: "flex",
-              gap: "20px",
-              flexWrap: "wrap",
-            }}
-          >
+          <div className="mt-4 text-[13px] text-gray-500 flex gap-5 flex-wrap">
             <span>
-              <span style={{ color: "#62b47a", fontWeight: 500 }}>
+              <span className="text-[#62b47a] font-medium">
                 Total Run Time:
               </span>{" "}
               {(query.totalRunTime / 1000).toFixed(2)}s
             </span>
             <span>
-              <span style={{ color: "#baac4e", fontWeight: 500 }}>Range:</span>{" "}
+              <span className="text-[#baac4e] font-medium">Range:</span>{" "}
               {formatRangeSelection(query.rangeSelection)}
             </span>
             <span>
-              <span style={{ color: "#4e52ba", fontWeight: 500 }}>
+              <span className="text-[#4e52ba] font-medium">
                 Provider:
               </span>{" "}
               {query.provider}
             </span>
             <span>
-              <span style={{ color: "#bf4962", fontWeight: 500 }}>Model:</span>{" "}
+              <span className="text-[#bf4962] font-medium">Model:</span>{" "}
               {query.model}
             </span>
             <span>
-              <span style={{ color: "#bf4962", fontWeight: 500 }}>Tokens:</span>{" "}
+              <span className="text-[#bf4962] font-medium">Tokens:</span>{" "}
               {query.totalTokens}
             </span>
           </div>
@@ -206,15 +126,7 @@ export function PastQueries() {
   if (!account) return <></>;
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: "10px",
-        paddingBottom: "20px",
-        paddingTop: "20px",
-      }}
-    >
+    <div className="flex flex-col gap-[10px] pb-5 pt-5">
       {(queryResults || []).map((query) => (
         <PastQueryItem query={query} />
       ))}
