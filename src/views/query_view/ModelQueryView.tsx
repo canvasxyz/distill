@@ -56,25 +56,3 @@ export function ModelQuerySection() {
     </section>
   );
 }
-
-export function ModelQueryView() {
-  return (
-    <ShowIfTweetsLoaded>
-      <div style={{ height: "100vh", overflowY: "scroll" }}>
-        <div
-          style={{
-            maxHeight: "100vh",
-            display: "flex",
-            flexDirection: "column",
-            paddingLeft: "10px",
-            paddingRight: "10px",
-            margin: "0 auto",
-            maxWidth: "1200px",
-          }}
-        >
-          <ModelQuerySection />
-        </div>
-      </div>
-    </ShowIfTweetsLoaded>
-  );
-}
