@@ -1,14 +1,9 @@
 import { useStore } from "../../state/store";
 
-import { useState } from "react";
+import { useNavigate, useMatch } from "react-router";
 import type { QueryResult, RangeSelection } from "./ai_utils";
-import { CopyButton } from "./ResultsBox";
-import Markdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import { stripThink } from "../../utils";
-import { BatchTweetsModal } from "./BatchTweetsModal";
 
-function formatDateTime(dateStr?: string) {
+export function formatDateTime(dateStr?: string) {
   if (!dateStr) return "";
   // dateStr could be an ISO datetime or undefined
   const d = new Date(dateStr);
@@ -27,7 +22,7 @@ function formatDateTime(dateStr?: string) {
   );
 }
 
-function formatRangeSelection(rangeSelection?: RangeSelection) {
+export function formatRangeSelection(rangeSelection?: RangeSelection) {
   if (!rangeSelection) return "latest tweets";
   return rangeSelection.type === "date-range"
     ? `${formatDateTime(rangeSelection.startDate)} - ${formatDateTime(
@@ -36,172 +31,79 @@ function formatRangeSelection(rangeSelection?: RangeSelection) {
     : `latest ${rangeSelection.numTweets} tweets`;
 }
 
-function PastQueryItem({ query }: { query: QueryResult }) {
-  const [open, setOpen] = useState(false);
-  const [showBatchTweetsModal, setShowBatchTweetsModal] = useState(false);
+function PastQueryItem({
+  query,
+  isActive,
+  onSelect,
+}: {
+  query: QueryResult;
+  isActive: boolean;
+  onSelect: () => void;
+}) {
+  const truncatedQuery =
+    query.query.length > 120 ? `${query.query.slice(0, 120)}…` : query.query;
 
   return (
-    <div
+    <button
+      type="button"
+      onClick={onSelect}
+      aria-current={isActive ? "page" : undefined}
       style={{
-        border: "1px solid #ddd",
+        border: "1px solid #d8dee4",
         borderRadius: "6px",
-        background: "#fff",
-        overflow: "hidden",
-        boxShadow: open ? "0px 2px 10px #eee" : undefined,
+        background: isActive ? "#e7f0ff" : "#fff",
+        boxShadow: isActive ? "0 2px 8px rgba(29, 78, 216, 0.18)" : "none",
+        cursor: "pointer",
+        padding: "10px 18px",
+        display: "flex",
+        alignItems: "center",
+        gap: "12px",
+        fontWeight: 500,
+        fontSize: "14px",
+        width: "100%",
+        textAlign: "left",
+        color: "#0c254d",
+        transition: "background 0.12s ease, box-shadow 0.12s ease",
+        outlineOffset: 2,
       }}
+      title={query.query}
     >
-      <div
-        onClick={() => setOpen((open) => !open)}
+      <span style={{ flexGrow: 1, wordBreak: "break-word" }}>
+        {truncatedQuery}
+      </span>
+      <span
         style={{
-          cursor: "pointer",
-          padding: "10px 18px",
-          display: "flex",
-          flexDirection: "row",
-          alignItems: "center",
-          gap: "12px",
-          fontWeight: 500,
-          transition: "background 0.12s",
-          background: undefined,
+          color: "#666",
+          fontSize: "12px",
+          fontWeight: 400,
+          paddingLeft: "10px",
+          marginLeft: "auto",
         }}
-        onMouseEnter={(e) => (e.currentTarget.style.background = "#f7faff")}
-        onMouseLeave={(e) => (e.currentTarget.style.background = "")}
       >
-        <span style={{ flexGrow: 1, wordBreak: "break-word" }}>
-          {query.query.length > 120
-            ? query.query.slice(0, 120) + "…"
-            : query.query}
-        </span>
-        <span
-          style={{
-            color: "#888",
-            fontSize: "12px",
-            fontWeight: 400,
-            paddingLeft: "10px",
-            marginLeft: "auto",
-          }}
-        >
-          {formatRangeSelection(query.rangeSelection)}
-        </span>
-        <span
-          style={{
-            color: "#aaa",
-            fontSize: "11px",
-            fontWeight: 400,
-            paddingLeft: "12px",
-            flexShrink: 0,
-            minWidth: "90px",
-            textAlign: "right",
-          }}
-        >
-          {formatDateTime(query.id)}
-        </span>
-      </div>
-      {open && (
-        <div style={{ padding: "20px" }}>
-          <div
-            style={{
-              fontFamily: "inherit",
-              fontSize: "15px",
-              color: "#0c254d",
-              borderRadius: "4px",
-              border: "1px solid #aaa",
-              padding: "10px 12px",
-              position: "relative",
-              marginBottom: "4px",
-              minHeight: "32px",
-              display: "flex",
-              flexDirection: "column",
-            }}
-          >
-            <div style={{ display: "flex", flexDirection: "row" }}>
-              <div style={{ flex: 1 }} />
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  gap: "10px",
-                  justifyContent: "flex-end",
-                }}
-              >
-                <button
-                  style={{
-                    border: "1px solid rgb(150, 234, 153)",
-                    borderRadius: "4px",
-                    padding: "4px 8px",
-                    background: "#fff",
-                    color: "#388e3c",
-                    fontSize: "12px",
-                    fontWeight: "bold",
-                    cursor: "pointer",
-                    transition: "all 0.2s ease",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = "#e7f6e7";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = "#fff";
-                  }}
-                  onClick={() => {
-                    setShowBatchTweetsModal(true);
-                  }}
-                >
-                  Evidence
-                </button>
-                <CopyButton text={query.result} />
-              </div>
-            </div>
-            <Markdown remarkPlugins={[remarkGfm]}>
-              {stripThink(query.result)}
-            </Markdown>
-          </div>
-          <div
-            style={{
-              marginTop: "16px",
-              fontSize: "13px",
-              color: "#888",
-              display: "flex",
-              gap: "20px",
-              flexWrap: "wrap",
-            }}
-          >
-            <span>
-              <span style={{ color: "#62b47a", fontWeight: 500 }}>
-                Total Run Time:
-              </span>{" "}
-              {(query.totalRunTime / 1000).toFixed(2)}s
-            </span>
-            <span>
-              <span style={{ color: "#baac4e", fontWeight: 500 }}>Range:</span>{" "}
-              {formatRangeSelection(query.rangeSelection)}
-            </span>
-            <span>
-              <span style={{ color: "#4e52ba", fontWeight: 500 }}>
-                Provider:
-              </span>{" "}
-              {query.provider}
-            </span>
-            <span>
-              <span style={{ color: "#bf4962", fontWeight: 500 }}>Model:</span>{" "}
-              {query.model}
-            </span>
-            <span>
-              <span style={{ color: "#bf4962", fontWeight: 500 }}>Tokens:</span>{" "}
-              {query.totalTokens}
-            </span>
-          </div>
-        </div>
-      )}
-      <BatchTweetsModal
-        isOpen={showBatchTweetsModal}
-        queryResult={query}
-        onClose={() => setShowBatchTweetsModal(false)}
-      />
-    </div>
+        {formatRangeSelection(query.rangeSelection)}
+      </span>
+      <span
+        style={{
+          color: "#888",
+          fontSize: "11px",
+          fontWeight: 400,
+          paddingLeft: "12px",
+          flexShrink: 0,
+          minWidth: "90px",
+          textAlign: "right",
+        }}
+      >
+        {formatDateTime(query.id)}
+      </span>
+    </button>
   );
 }
 
 export function PastQueries() {
   const { account, queryResults } = useStore();
+  const navigate = useNavigate();
+  const match = useMatch("/queries/:queryId");
+  const activeQueryId = match?.params?.queryId;
 
   if (!account) return <></>;
 
@@ -216,7 +118,12 @@ export function PastQueries() {
       }}
     >
       {(queryResults || []).map((query) => (
-        <PastQueryItem query={query} />
+        <PastQueryItem
+          key={query.id}
+          query={query}
+          isActive={query.id === activeQueryId}
+          onSelect={() => navigate(`/queries/${query.id}`)}
+        />
       ))}
     </div>
   );
