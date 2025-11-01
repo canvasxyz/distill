@@ -57,24 +57,24 @@ function ArchiveSummaryCard() {
     <section
       style={{
         background: "#eceff7",
-        padding: "26px 28px",
+        padding: "18px 22px",
         borderRadius: "20px",
         boxShadow: "0 3px 16px 2px rgba(30,60,160,0.07)",
         display: "flex",
         alignItems: "center",
-        gap: "28px",
+        gap: "20px",
       }}
     >
       <div
         style={{
-          minWidth: 80,
-          minHeight: 80,
+          minWidth: 60,
+          minHeight: 60,
           background: "linear-gradient(135deg,#ced9fd 70%,#e2edfa 100%)",
           borderRadius: "50%",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          fontSize: "2.2rem",
+          fontSize: "1.7rem",
           fontWeight: 700,
           color: "#5078B3",
           letterSpacing: "1px",
@@ -89,8 +89,8 @@ function ArchiveSummaryCard() {
             src={profile?.avatarMediaUrl}
             alt={account.accountDisplayName || account.username}
             style={{
-              width: 78,
-              height: 78,
+              width: 58,
+              height: 58,
               borderRadius: "50%",
               objectFit: "cover",
               border: "2px solid #afcfef",
@@ -112,7 +112,7 @@ function ArchiveSummaryCard() {
         style={{
           display: "flex",
           flexDirection: "column",
-          gap: "7px",
+          gap: 6,
           flex: 1,
         }}
       >
@@ -136,64 +136,25 @@ function ArchiveSummaryCard() {
         <div
           style={{
             display: "flex",
-            alignItems: "center",
-            gap: "6px 18px",
+            gap: "0 18px",
             flexWrap: "wrap",
-            color: "#607399",
             fontSize: "1em",
+            color: "#607399",
           }}
         >
-          {account.email && (
-            <span style={{ display: "flex", alignItems: "center" }}>
-              <span
-                role="img"
-                aria-label="Email"
-                style={{
-                  marginRight: "5px",
-                  fontSize: "1em",
-                }}
-              >
-                📧
-              </span>
-              {account.email}
-            </span>
-          )}
+          <span>{totalTweetsCount} tweets</span>
+          <span>{repliesCount} replies</span>
+          <span>{retweetsCount} retweets</span>
           {account.createdAt && (
-            <span style={{ display: "flex", alignItems: "center" }}>
-              <span
-                role="img"
-                aria-label="Calendar"
-                style={{
-                  marginRight: "5px",
-                  fontSize: "1em",
-                }}
-              >
-                📅
-              </span>
-              <span>
-                Joined{" "}
-                {new Date(account.createdAt).toLocaleDateString(undefined, {
-                  year: "numeric",
-                  month: "short",
-                  day: "numeric",
-                })}
-              </span>
+            <span>
+              Since{" "}
+              {new Date(account.createdAt).toLocaleDateString(undefined, {
+                year: "numeric",
+                month: "short",
+                day: "numeric",
+              })}
             </span>
           )}
-        </div>
-        <div
-          style={{
-            display: "flex",
-            gap: "6px 24px",
-            flexWrap: "wrap",
-            fontSize: "1em",
-            color: "#607399",
-          }}
-        >
-          <span>Total: {totalTweetsCount}</span>
-          <span>Posts: {originalTweetsCount}</span>
-          <span>Replies: {repliesCount}</span>
-          <span>Retweets: {retweetsCount}</span>
         </div>
       </div>
       {viewingMyArchive && (
