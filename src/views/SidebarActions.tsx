@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router";
 import { useStore } from "../state/store";
+import { itemContainerBase, itemTitleBase } from "./query_view/SidebarQueries";
 
 export const SidebarActions = () => {
   const navigate = useNavigate();
@@ -8,51 +9,66 @@ export const SidebarActions = () => {
   return (
     <div
       style={{
-        margin: "20px 18px",
         display: "flex",
         flexDirection: "column",
-        gap: "10px",
       }}
     >
       {dbHasTweets && (
-        <button
-          style={{
-            display: "block",
-            borderRadius: "5px",
-            padding: "6px 16px",
-            backgroundColor: "#e5f0ff",
-            border: "1px solid #9bc1f799",
-            fontSize: "16px",
-            cursor: "pointer",
-            color: "#194486",
-          }}
+        <div
           onClick={() => {
             navigate("/all-tweets");
           }}
+          style={{
+            ...itemContainerBase,
+            marginTop: 10,
+            paddingBottom: 10,
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "#f7faff";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "";
+          }}
         >
-          View Tweets
-        </button>
+          <span
+            style={{
+              ...itemTitleBase,
+              color: "#194486",
+            }}
+          >
+            View Tweets
+          </span>
+        </div>
       )}
 
       {dbHasTweets && (
-        <button
-          style={{
-            borderRadius: "5px",
-            padding: "6px 16px",
-            backgroundColor: "#f8d7da",
-            border: "1px solid #f5c2c7",
-            fontSize: "16px",
-            cursor: "pointer",
-            color: "#721c24",
-          }}
+        <div
           onClick={() => {
             const message =
               "Close the archive? You will have to fetch or upload these tweets again.";
             if (confirm(message)) clearDatabase();
           }}
+          style={{
+            ...itemContainerBase,
+            marginBottom: 10,
+            paddingBottom: 10,
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "#f8d7da77";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "";
+          }}
         >
-          Close Archive
-        </button>
+          <span
+            style={{
+              ...itemTitleBase,
+              color: "#721c24",
+            }}
+          >
+            Close Archive
+          </span>
+        </div>
       )}
     </div>
   );

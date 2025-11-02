@@ -31,7 +31,7 @@ function formatRangeSelection(rangeSelection?: RangeSelection) {
 }
 
 // Shared styles for sidebar items
-const itemContainerBase: CSSProperties = {
+export const itemContainerBase: CSSProperties = {
   cursor: "pointer",
   padding: "10px 18px 6px",
   display: "flex",
@@ -40,7 +40,7 @@ const itemContainerBase: CSSProperties = {
   transition: "background 0.12s",
 };
 
-const itemTitleBase: CSSProperties = {
+export const itemTitleBase: CSSProperties = {
   fontSize: "13px",
   wordBreak: "break-word",
 };
