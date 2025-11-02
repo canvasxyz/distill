@@ -1,7 +1,12 @@
 import { useStore } from "../../state/store";
 import { useNavigate, useLocation } from "react-router";
 import type { QueryResult, RangeSelection } from "./ai_utils";
-import type { CSSProperties, ReactNode } from "react";
+import type { ReactNode } from "react";
+import {
+  sidebarItemContainerBase,
+  sidebarItemSubtitleBase,
+  sidebarItemTitleBase,
+} from "../sidebarStyles";
 
 function formatDateTime(dateStr?: string) {
   if (!dateStr) return "";
@@ -30,27 +35,6 @@ function formatRangeSelection(rangeSelection?: RangeSelection) {
     : `latest ${rangeSelection.numTweets} tweets`;
 }
 
-// Shared styles for sidebar items
-const itemContainerBase: CSSProperties = {
-  cursor: "pointer",
-  padding: "10px 18px 6px",
-  display: "flex",
-  flexDirection: "column",
-  gap: "4px",
-  transition: "background 0.12s",
-};
-
-const itemTitleBase: CSSProperties = {
-  fontSize: "13px",
-  wordBreak: "break-word",
-};
-
-const itemSubtitleBase: CSSProperties = {
-  color: "#888",
-  fontSize: "11px",
-  fontWeight: 400,
-};
-
 function SidebarItemContainer({
   children,
   isActive,
@@ -64,7 +48,7 @@ function SidebarItemContainer({
     <div
       onClick={onClick}
       style={{
-        ...itemContainerBase,
+        ...sidebarItemContainerBase,
         background: isActive ? "#e3f2fd" : undefined,
       }}
       onMouseEnter={(e) => {
@@ -92,13 +76,13 @@ function PastQueryItem({ query }: { query: QueryResult }) {
     >
       <span
         style={{
-          ...itemTitleBase,
+          ...sidebarItemTitleBase,
           color: isActive ? "#1976d2" : "#333",
         }}
       >
         {query.query.length > 80 ? query.query.slice(0, 80) + "…" : query.query}
       </span>
-      <span style={itemSubtitleBase}>{formatDateTime(query.id)}</span>
+      <span style={sidebarItemSubtitleBase}>{formatDateTime(query.id)}</span>
     </SidebarItemContainer>
   );
 }
@@ -112,14 +96,14 @@ function RunQueryItem() {
     <SidebarItemContainer isActive={isActive} onClick={() => navigate("/")}>
       <span
         style={{
-          ...itemTitleBase,
+          ...sidebarItemTitleBase,
           color: isActive ? "#1976d2" : "#333",
         }}
       >
         Run Query
       </span>
       {/* empty second line to match PastQueryItem height */}
-      <span style={itemSubtitleBase}></span>
+      <span style={sidebarItemSubtitleBase}></span>
     </SidebarItemContainer>
   );
 }

@@ -1,9 +1,28 @@
-import { useNavigate } from "react-router";
+import type { CSSProperties } from "react";
+import { useNavigate, useLocation } from "react-router";
 import { useStore } from "../state/store";
+import {
+  sidebarItemContainerBase,
+  sidebarItemSubtitleBase,
+  sidebarItemTitleBase,
+} from "./sidebarStyles";
 
 export const SidebarActions = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { clearDatabase, dbHasTweets } = useStore();
+
+  const buttonBaseStyle: CSSProperties = {
+    ...sidebarItemContainerBase,
+    width: "100%",
+    border: "none",
+    background: "transparent",
+    outline: "none",
+    textAlign: "left",
+    font: "inherit",
+  };
+
+  const isViewingAllTweets = location.pathname === "/all-tweets";
 
   return (
     <div
@@ -16,33 +35,39 @@ export const SidebarActions = () => {
     >
       {dbHasTweets && (
         <button
+          type="button"
           style={{
-            display: "block",
-            borderRadius: "5px",
-            padding: "6px 16px",
-            backgroundColor: "#e5f0ff",
-            border: "1px solid #9bc1f799",
-            fontSize: "16px",
-            cursor: "pointer",
+            ...buttonBaseStyle,
+            background: isViewingAllTweets ? "#e3f2fd" : "transparent",
             color: "#194486",
           }}
           onClick={() => {
             navigate("/all-tweets");
           }}
+          onMouseEnter={(e) => {
+            if (!isViewingAllTweets) e.currentTarget.style.background = "#f7faff";
+          }}
+          onMouseLeave={(e) => {
+            if (!isViewingAllTweets) e.currentTarget.style.background = "transparent";
+          }}
         >
-          View Tweets
+          <span
+            style={{
+              ...sidebarItemTitleBase,
+              color: "#194486",
+            }}
+          >
+            View Tweets
+          </span>
+          <span style={sidebarItemSubtitleBase}></span>
         </button>
       )}
 
       {dbHasTweets && (
         <button
+          type="button"
           style={{
-            borderRadius: "5px",
-            padding: "6px 16px",
-            backgroundColor: "#f8d7da",
-            border: "1px solid #f5c2c7",
-            fontSize: "16px",
-            cursor: "pointer",
+            ...buttonBaseStyle,
             color: "#721c24",
           }}
           onClick={() => {
@@ -50,8 +75,22 @@ export const SidebarActions = () => {
               "Close the archive? You will have to fetch or upload these tweets again.";
             if (confirm(message)) clearDatabase();
           }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "#f8d7da";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "transparent";
+          }}
         >
-          Close Archive
+          <span
+            style={{
+              ...sidebarItemTitleBase,
+              color: "#721c24",
+            }}
+          >
+            Close Archive
+          </span>
+          <span style={sidebarItemSubtitleBase}></span>
         </button>
       )}
     </div>
