@@ -294,6 +294,9 @@ export function PastQueries() {
       style={{
         display: "flex",
         flexDirection: "column",
+        overflowY: "auto",
+        flex: 1,
+        minHeight: 0,
       }}
     >
       <RunQueryItem />

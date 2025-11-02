@@ -32,7 +32,7 @@ function App() {
           position: "sticky",
           top: 0,
           height: "100vh",
-          overflowY: "auto",
+          overflow: "hidden",
         }}
       >
         <div style={{ margin: "15px 20px", fontSize: 32 }}>
@@ -44,7 +44,7 @@ function App() {
             🔎
           </a>
         </div>
-        <div style={{ flex: 1 }}>
+        <div style={{ flex: 1, minHeight: 0 }}>
           <PastQueries />
         </div>
         <ArchiveSummarySection />
