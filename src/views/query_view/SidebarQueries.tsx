@@ -154,37 +154,28 @@ function PastQueryItem({ query }: { query: QueryResult }) {
       <div
         style={{
           display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
+          flexDirection: "column",
+          gap: "4px",
           width: "100%",
-          gap: "8px",
+          position: "relative",
         }}
       >
-        <div
+        <span
           style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "4px",
-            flex: 1,
-            minWidth: 0,
+            ...itemTitleBase,
+            color: isActive ? "#1976d2" : "#333",
           }}
         >
-          <span
-            style={{
-              ...itemTitleBase,
-              color: isActive ? "#1976d2" : "#333",
-            }}
-          >
-            {query.query.length > 80
-              ? query.query.slice(0, 80) + "…"
-              : query.query}
-          </span>
-          <span style={itemSubtitleBase}>{formatDateTime(query.id)}</span>
-        </div>
+          {query.query.length > 80
+            ? query.query.slice(0, 80) + "…"
+            : query.query}
+        </span>
+        <span style={itemSubtitleBase}>{formatDateTime(query.id)}</span>
         <div
           style={{
-            position: "relative",
-            flexShrink: 0,
+            position: "absolute",
+            top: "10px",
+            right: "18px",
           }}
         >
           <button
