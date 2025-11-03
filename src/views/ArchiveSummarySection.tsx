@@ -1,12 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router";
 import { useStore } from "../state/store";
 
 export function ArchiveSummarySection() {
-  const navigate = useNavigate();
-
-  const { account, allTweets, clearDatabase, profile, viewingMyArchive } =
-    useStore();
+  const { account, allTweets, profile } = useStore();
   const [showProfilePicture, setShowProfilePicture] = useState(false);
 
   useEffect(() => {
@@ -16,34 +12,33 @@ export function ArchiveSummarySection() {
     });
   }, [profile]);
 
-  const { totalTweetsCount, originalTweetsCount, repliesCount, retweetsCount } =
-    useMemo(() => {
-      const tweets = allTweets || [];
-      let replies = 0;
-      let retweets = 0;
+  const { totalTweetsCount, repliesCount, retweetsCount } = useMemo(() => {
+    const tweets = allTweets || [];
+    let replies = 0;
+    let retweets = 0;
 
-      for (const tweet of tweets) {
-        if (tweet.in_reply_to_user_id) {
-          replies += 1;
-          continue;
-        }
-
-        const text = tweet.full_text || "";
-        if (text.trim().toUpperCase().startsWith("RT ")) {
-          retweets += 1;
-        }
+    for (const tweet of tweets) {
+      if (tweet.in_reply_to_user_id) {
+        replies += 1;
+        continue;
       }
 
-      const total = tweets.length;
-      const original = Math.max(total - replies - retweets, 0);
+      const text = tweet.full_text || "";
+      if (text.trim().toUpperCase().startsWith("RT ")) {
+        retweets += 1;
+      }
+    }
 
-      return {
-        totalTweetsCount: total,
-        originalTweetsCount: original,
-        repliesCount: replies,
-        retweetsCount: retweets,
-      };
-    }, [allTweets]);
+    const total = tweets.length;
+    const original = Math.max(total - replies - retweets, 0);
+
+    return {
+      totalTweetsCount: total,
+      originalTweetsCount: original,
+      repliesCount: replies,
+      retweetsCount: retweets,
+    };
+  }, [allTweets]);
 
   if (!account) {
     return null;

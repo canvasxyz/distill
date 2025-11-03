@@ -1,6 +1,6 @@
 import { useStore } from "../../state/store";
 import { useNavigate, useLocation } from "react-router";
-import type { QueryResult, RangeSelection } from "./ai_utils";
+import type { QueryResult } from "./ai_utils";
 import type { CSSProperties, ReactNode } from "react";
 import { useState, useRef, useEffect } from "react";
 import { db } from "../../db";
@@ -21,15 +21,6 @@ function formatDateTime(dateStr?: string) {
       minute: "2-digit",
     })
   );
-}
-
-function formatRangeSelection(rangeSelection?: RangeSelection) {
-  if (!rangeSelection) return "latest tweets";
-  return rangeSelection.type === "date-range"
-    ? `${formatDateTime(rangeSelection.startDate)} - ${formatDateTime(
-        rangeSelection.endDate,
-      )}`
-    : `latest ${rangeSelection.numTweets} tweets`;
 }
 
 // Shared styles for sidebar items

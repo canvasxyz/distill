@@ -47,7 +47,6 @@ export function RunQueries() {
     currentRunningQuery,
     queryResult,
     errorMessage,
-    setQueryError,
     selectedConfigIndex,
     setSelectedConfigIndex,
   } = useStore();
@@ -564,7 +563,6 @@ export function RunQueries() {
       </div>
       <div style={{ margin: "10px 0", textAlign: "center" }}>
         <a
-          disabled={isProcessing}
           style={browseMoreButtonStyle}
           onClick={() => {
             if (isProcessing) return;

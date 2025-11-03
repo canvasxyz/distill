@@ -1,7 +1,6 @@
 import type { ChatCompletionMessageParam } from "openai/resources";
 import type { Account, Tweet } from "../../types";
 import OpenAI from "openai";
-import { pickSampleNoRepeats } from "../../utils";
 import type { LLMQueryProvider } from "../../constants";
 
 export type Query = { prompt: string; systemPrompt?: string };
@@ -167,7 +166,6 @@ export const selectSubset = (
       return tweetDate >= startDateTime && tweetDate < endDateTime;
     });
   } else {
-    // random sample
-    return pickSampleNoRepeats(tweets, rangeSelection.sampleSize);
+    throw new Error("Unknown rangeSelection type (should never happen)");
   }
 };
