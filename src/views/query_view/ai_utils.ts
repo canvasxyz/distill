@@ -59,7 +59,7 @@ export function replaceAccountName(text: string, accountName: string) {
   return text.replace(/\{account\}/g, `@${accountName}`);
 }
 export function makePromptMessages(
-  tweetsSample: { id_str: string; full_text: string }[],
+  tweetsSample: { id_str: string; full_text: string; created_at: string }[],
   query: Query,
   account: Account,
 ) {
@@ -74,7 +74,10 @@ export function makePromptMessages(
     {
       role: "user" as const,
       content: tweetsSample
-        .map((tweet) => `<Post id="${tweet.id_str}">${tweet.full_text}</Post>`)
+        .map(
+          (tweet) =>
+            `<Post id="${tweet.id_str}" date="${tweet.created_at}">${tweet.full_text}</Post>`,
+        )
         .join("\n"),
     },
   ];
@@ -83,7 +86,7 @@ export function makePromptMessages(
 export const serverUrl = "https://tweet-analysis-worker.bob-wbb.workers.dev";
 
 export async function submitQuery(params: {
-  tweetsSample: { id_str: string; full_text: string }[];
+  tweetsSample: Tweet[];
   query: Query;
   account: Account;
   model: string;

@@ -197,18 +197,13 @@ export const createLlmQuerySlice: StateCreator<
             if (batchStatus.status !== "done") return;
           }
 
-          const collectedTweetTexts: { id_str: string; full_text: string }[] =
-            [];
+          const collectedTweets: Tweet[] = [];
           for (const batchStatus of Object.values(batchStatuses)) {
             if (batchStatus.status === "done") {
               for (const tweet of Object.values(
                 batchStatus.groundedTweets.genuine,
               )) {
-                if (tweet)
-                  collectedTweetTexts.push({
-                    id_str: tweet.id_str,
-                    full_text: tweet.full_text,
-                  });
+                if (tweet) collectedTweets.push(tweet);
               }
             }
           }
@@ -222,7 +217,7 @@ export const createLlmQuerySlice: StateCreator<
             try {
               // submit query to create the final result based on the collected texts
               finalQueryResult = await submitQuery({
-                tweetsSample: collectedTweetTexts,
+                tweetsSample: collectedTweets,
                 query: { systemPrompt: finalSystemPrompt, prompt: query },
                 account,
                 model,
