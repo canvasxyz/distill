@@ -48,8 +48,3 @@ export type SessionData = {
   id: string;
   viewingMyArchive: boolean;
 };
-
-export type FuzzySetFields = {
-  id: string;
-  fields: string;
-};

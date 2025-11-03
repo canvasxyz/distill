@@ -24,18 +24,17 @@ export function BatchTweetsModal({
     if (!queryResult) return [];
     return Object.values(queryResult?.batchStatuses)
       .filter((batchStatus) => batchStatus.status === "done")
-      .map((batchStatus) => batchStatus.groundedTweetTexts.genuine)
-      .flat()
-      .map((tweetText) => ({ full_text: tweetText }));
+      .map((batchStatus) => batchStatus.groundedTweets.genuine)
+      .flat();
   }, [queryResult]);
 
   const batchHallucinations = useMemo(() => {
     if (!queryResult) return [];
     return Object.values(queryResult?.batchStatuses)
       .filter((batchStatus) => batchStatus.status === "done")
-      .map((batchStatus) => batchStatus.groundedTweetTexts.hallucinated)
+      .map((batchStatus) => batchStatus.groundedTweets.hallucinated)
       .flat()
-      .map((tweetText) => ({ full_text: tweetText }));
+      .map((tweetId) => ({ id_str: tweetId }));
   }, [queryResult]);
 
   const TABS = [
@@ -235,7 +234,7 @@ export function BatchTweetsModal({
                           fontSize: 15,
                         }}
                       >
-                        {batchTweet.full_text}
+                        {batchTweet.id_str}
                       </span>
                     </li>
                   );

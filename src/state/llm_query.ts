@@ -2,7 +2,7 @@ import type { StateCreator } from "zustand";
 import type { StoreSlices } from "./types";
 import {
   batchSystemPrompt,
-  extractTweetTexts,
+  extractTweetIds,
   finalSystemPrompt,
   selectSubset,
   submitQuery,
@@ -12,7 +12,7 @@ import {
 } from "../views/query_view/ai_utils";
 import PQueue from "p-queue";
 import type { Tweet } from "../types";
-import { getBatches, normalizeText } from "../utils";
+import { getBatches } from "../utils";
 import { v7 as uuidv7 } from "uuid";
 import { db } from "../db";
 import { QUERY_BATCH_SIZE, type LLMQueryConfig } from "../constants";
@@ -40,8 +40,8 @@ export type LlmQuerySlice = {
   llmQueryQueue: PQueue;
   selectedConfigIndex: number;
   setSelectedConfigIndex: (idx: number) => void;
-  getGenuineTweetTexts: (tweetTexts: string[]) => {
-    genuine: string[];
+  getGenuineTweetIds: (tweetIds: string[]) => {
+    genuine: Tweet[];
     hallucinated: string[];
   };
   submit: (
@@ -72,29 +72,17 @@ export const createLlmQuerySlice: StateCreator<
   selectedConfigIndex: 0,
   setSelectedConfigIndex: (idx: number) => set({ selectedConfigIndex: idx }),
 
-  getGenuineTweetTexts: (tweetTexts: string[]) => {
-    const genuine = [];
-    const hallucinated = [];
+  getGenuineTweetIds: (tweetIds: string[]) => {
+    const genuine: Tweet[] = [];
+    const hallucinated: string[] = [];
 
-    for (const tweetText of tweetTexts) {
-      // check if the tweet text is in the db
-      const normalizedTweetText = normalizeText(tweetText);
-
-      const threshold = 0.8;
-      const candidates =
-        get().tweetsByFullText!.get(
-          normalizedTweetText,
-          undefined,
-          threshold,
-        ) || [];
-
-      if (candidates.length === 0) {
-        // hallucination!
-        hallucinated.push(normalizedTweetText);
+    const { tweetsById } = get();
+    for (const id of tweetIds) {
+      const t = tweetsById[id];
+      if (t) {
+        genuine.push(t);
       } else {
-        const candidate = candidates[0];
-        // we should push the value that the generated tweet matched against
-        genuine.push(candidate[1]);
+        hallucinated.push(id);
       }
     }
 
@@ -115,6 +103,7 @@ export const createLlmQuerySlice: StateCreator<
 
     const [model, provider, openrouterProvider] = config;
 
+    console.log(filteredTweetsSubsetToAnalyse);
     const batches = getBatches(filteredTweetsSubsetToAnalyse, QUERY_BATCH_SIZE);
 
     const queuedTime = performance.now();
@@ -182,13 +171,13 @@ export const createLlmQuerySlice: StateCreator<
             );
           }
 
-          const tweetTexts = extractTweetTexts(queryResult.result);
-          const groundedTweetTexts = get().getGenuineTweetTexts(tweetTexts);
+          const tweetIds = extractTweetIds(queryResult.result);
+          const groundedTweets = get().getGenuineTweetIds(tweetIds);
 
           const endTime = performance.now();
           updateBatchStatus(i, {
             status: "done",
-            groundedTweetTexts,
+            groundedTweets,
             outputText: queryResult.result,
             startTime,
             endTime,
@@ -208,11 +197,18 @@ export const createLlmQuerySlice: StateCreator<
             if (batchStatus.status !== "done") return;
           }
 
-          const collectedTweetTexts: { full_text: string }[] = [];
+          const collectedTweetTexts: { id_str: string; full_text: string }[] =
+            [];
           for (const batchStatus of Object.values(batchStatuses)) {
             if (batchStatus.status === "done") {
-              for (const tweetText of batchStatus.groundedTweetTexts.genuine) {
-                collectedTweetTexts.push({ full_text: tweetText });
+              for (const tweet of Object.values(
+                batchStatus.groundedTweets.genuine,
+              )) {
+                if (tweet)
+                  collectedTweetTexts.push({
+                    id_str: tweet.id_str,
+                    full_text: tweet.full_text,
+                  });
               }
             }
           }

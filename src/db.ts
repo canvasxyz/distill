@@ -6,7 +6,6 @@ import type {
   Following,
   Follower,
   SessionData,
-  FuzzySetFields,
 } from "./types";
 import type { QueryResult } from "./views/query_view/ai_utils";
 
@@ -21,8 +20,6 @@ class AppDatabase extends Dexie {
 
   sessionData: Dexie.Table<SessionData, string>;
 
-  fullTextFuzzySetFields: Dexie.Table<FuzzySetFields, string>;
-
   constructor() {
     super("TweetArchiveExplorerDB");
     this.version(1).stores({
@@ -33,7 +30,6 @@ class AppDatabase extends Dexie {
       tweets: "id,created_at",
       queryResults: "id",
       sessionData: "id",
-      fullTextFuzzySetFields: "id",
     });
 
     this.accounts = this.table("accounts");
@@ -43,7 +39,6 @@ class AppDatabase extends Dexie {
     this.tweets = this.table("tweets");
     this.queryResults = this.table("queryResults");
     this.sessionData = this.table("sessionData");
-    this.fullTextFuzzySetFields = this.table("fullTextFuzzySetFields");
   }
 }
 

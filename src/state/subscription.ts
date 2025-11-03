@@ -8,14 +8,11 @@ import {
   allTweetsObservable,
   queryResultsObservable,
   sessionDataObservable,
-  fullTextFuzzySetFieldsObservable,
 } from "./observables";
 import type { Account, ProfileWithId, Tweet } from "../types";
 import type { QueryResult } from "../views/query_view/ai_utils";
 import type { StateCreator } from "zustand";
 import type { StoreSlices } from "./types";
-import { deserialize } from "./fuzzyset/serialize.js";
-import type { FuzzySetInstance } from "./fuzzyset/fuzzyset.js";
 
 export type SubscriptionSlice = {
   subscriptions: RefObject<Subscription[]>;
@@ -24,7 +21,7 @@ export type SubscriptionSlice = {
   account: Account | null;
   profile: ProfileWithId | null;
   allTweets: Tweet[];
-  tweetsByFullText: FuzzySetInstance | null;
+  tweetsById: Record<string, Tweet>;
   queryResults: QueryResult[];
 };
 
@@ -52,7 +49,12 @@ export const createSubscriptionSlice: StateCreator<
 
     const allTweetsSubscription = liveQuery(allTweetsObservable).subscribe({
       next: (newAllTweets) => {
-        set({ allTweets: newAllTweets });
+        set({
+          allTweets: newAllTweets,
+          tweetsById: Object.fromEntries(
+            newAllTweets.map((t) => [t.id_str, t]),
+          ),
+        });
       },
       error: (error) => console.error(error),
     });
@@ -74,22 +76,12 @@ export const createSubscriptionSlice: StateCreator<
       error: (error) => console.error(error),
     });
 
-    const fullTextFuzzySetFieldsSubscription = liveQuery(
-      fullTextFuzzySetFieldsObservable,
-    ).subscribe({
-      next: (results) => {
-        set({ tweetsByFullText: deserialize(JSON.parse(results[0].fields)) });
-      },
-      error: (error) => console.error(error),
-    });
-
     subscriptions.current = [
       accountSubscription,
       profileSubscription,
       allTweetsSubscription,
       queryResultsSubscription,
       sessionDataSubscription,
-      fullTextFuzzySetFieldsSubscription,
     ];
   },
   unsubscribe: () => {
@@ -102,6 +94,6 @@ export const createSubscriptionSlice: StateCreator<
   account: null,
   profile: null,
   allTweets: [],
-  tweetsByFullText: null,
+  tweetsById: {},
   queryResults: [],
 });

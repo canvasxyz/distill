@@ -16,8 +16,8 @@ export type BatchStatus =
       startTime: number;
       endTime: number;
       runTime: number;
-      groundedTweetTexts: {
-        genuine: string[];
+      groundedTweets: {
+        genuine: Tweet[];
         hallucinated: string[];
       };
       outputText: string;
@@ -50,7 +50,7 @@ export type QueryResult = {
 };
 
 export const batchSystemPrompt =
-  "You are a researcher who is looking through an archive of a user's tweets ({account}) trying to answer a question (given in the user prompt). You are trying to collect together all of the tweets that might provide a way to answer that question. Give your reasoning in <Reasoning>...</Reasoning> tags and then return a list of the tweets that you used as evidence with each tweet text wrapped in a <Tweet>...</Tweet> tag. Return at most 20 tweets.";
+  "You are a researcher who is looking through an archive of a user's tweets ({account}) trying to answer a question (given in the user prompt). You are trying to collect together all of the tweets that might provide a way to answer that question. Give your reasoning in <Reasoning>...</Reasoning> tags and then return a list of the tweets that you used as evidence with each tweet id wrapped in a <TweetId>...</TweetId> tag. Use only the exact tweet ids provided. Return at most 20 tweets.";
 
 export const finalSystemPrompt =
   "You will be given a prompt, followed by a list of tweets. Review the tweets and provide an answer to the prompt. Do not create tables in your response.";
@@ -59,7 +59,7 @@ export function replaceAccountName(text: string, accountName: string) {
   return text.replace(/\{account\}/g, `@${accountName}`);
 }
 export function makePromptMessages(
-  tweetsSample: { full_text: string }[],
+  tweetsSample: { id_str: string; full_text: string }[],
   query: Query,
   account: Account,
 ) {
@@ -74,7 +74,7 @@ export function makePromptMessages(
     {
       role: "user" as const,
       content: tweetsSample
-        .map((tweet) => `<Post">${tweet.full_text}</Post>`)
+        .map((tweet) => `<Post id="${tweet.id_str}">${tweet.full_text}</Post>`)
         .join("\n"),
     },
   ];
@@ -83,7 +83,7 @@ export function makePromptMessages(
 export const serverUrl = "https://tweet-analysis-worker.bob-wbb.workers.dev";
 
 export async function submitQuery(params: {
-  tweetsSample: { full_text: string }[];
+  tweetsSample: { id_str: string; full_text: string }[];
   query: Query;
   account: Account;
   model: string;
@@ -128,15 +128,15 @@ export async function submitQuery(params: {
   };
 }
 
-export const extractTweetTexts = (queryResult: string) => {
-  const tweetMatches = queryResult.match(/<Tweet>([\s\S]*?)<\/Tweet>/g) || [];
-  const tweetTexts = tweetMatches.map((m) =>
+export const extractTweetIds = (queryResult: string) => {
+  const idMatches = queryResult.match(/<TweetId>([\s\S]*?)<\/TweetId>/g) || [];
+  const tweetIds = idMatches.map((m) =>
     m
-      .replace(/^<Tweet>/, "")
-      .replace(/<\/Tweet>$/, "")
+      .replace(/^<TweetId>/, "")
+      .replace(/<\/TweetId>$/, "")
       .trim(),
   );
-  return tweetTexts;
+  return tweetIds;
 };
 
 export const selectSubset = (

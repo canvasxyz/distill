@@ -3,10 +3,8 @@ import type { StoreSlices } from "./types";
 import { processTwitterArchive } from "../processTwitterArchive";
 import { db } from "../db";
 import { supabase } from "../supabase";
-import { mapKeysDeep, normalizeText, snakeToCamelCase } from "../utils";
+import { mapKeysDeep, snakeToCamelCase } from "../utils";
 import type { Account, ProfileWithId, Tweet } from "../types";
-import FuzzySet from "./fuzzyset/fuzzyset";
-import { serialize } from "./fuzzyset/serialize";
 
 type IngestTwitterArchiveProgress =
   | { status: "processingArchive" }
@@ -64,7 +62,6 @@ export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
       db.profiles.clear(),
       db.tweets.clear(),
       db.sessionData.clear(),
-      db.fullTextFuzzySetFields.clear(),
     ]);
     // refresh page to reinitialize state; queryResults remain intact
     location.reload();
@@ -99,15 +96,6 @@ export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
 
     set({ ingestTwitterArchiveProgress: { status: "applyingFilters" } });
     await db.sessionData.add({ id: "singleton", viewingMyArchive: true });
-
-    set({ ingestTwitterArchiveProgress: { status: "generatingTextIndex" } });
-    const fuzzyTexts = tweets.map((tweet) => normalizeText(tweet.full_text));
-    const fuzzySet = FuzzySet(fuzzyTexts);
-
-    await db.fullTextFuzzySetFields.add({
-      id: "singleton",
-      fields: JSON.stringify(serialize(fuzzySet)),
-    });
 
     set({ ingestTwitterArchiveProgress: null });
     set(() => ({
@@ -174,6 +162,7 @@ export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
     const tweets = (allTweets || []).map((tweet) => ({
       ...tweet,
       id: tweet.tweet_id,
+      id_str: tweet.tweet_id,
     })) as Tweet[];
 
     await db.tweets.clear();
@@ -252,17 +241,6 @@ export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
     }));
 
     await db.follower.bulkAdd(follower);
-
-    set({
-      loadCommunityArchiveUserProgress: { status: "generatingTextIndex" },
-    });
-    const fuzzyTexts = tweets.map((tweet) => normalizeText(tweet.full_text));
-    const fuzzySet = FuzzySet(fuzzyTexts);
-
-    await db.fullTextFuzzySetFields.add({
-      id: "singleton",
-      fields: JSON.stringify(serialize(fuzzySet)),
-    });
 
     set({
       loadCommunityArchiveUserProgress: null,
