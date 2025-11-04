@@ -20,32 +20,35 @@ export function BatchTweetsModal({
     }
   }, [isOpen]);
 
-  const batchTweets = useMemo(() => {
+  const batchesByKey = useMemo(() => {
     if (!queryResult) return [];
-    return Object.values(queryResult?.batchStatuses)
-      .filter((batchStatus) => batchStatus.status === "done")
-      .map((batchStatus) => batchStatus.groundedTweets.genuine)
-      .flat();
+    return Object.entries(queryResult.batchStatuses)
+      .filter(([, batchStatus]) => batchStatus.status === "done")
+      .map(([batchId, batchStatus]) => ({
+        batchId,
+        batchStatus: batchStatus as Extract<
+          typeof batchStatus,
+          { status: "done" }
+        >,
+      }))
+      .sort((a, b) => parseInt(a.batchId) - parseInt(b.batchId));
   }, [queryResult]);
 
-  const batchHallucinations = useMemo(() => {
-    if (!queryResult) return [];
-    return Object.values(queryResult?.batchStatuses)
-      .filter((batchStatus) => batchStatus.status === "done")
-      .map((batchStatus) => batchStatus.groundedTweets.hallucinated)
-      .flat()
-      .map((tweetId) => ({ id_str: tweetId }));
-  }, [queryResult]);
+  const [expandedBatches, setExpandedBatches] = useState<Set<string>>(
+    new Set(),
+  );
 
-  const TABS = [
-    { label: "Evidence", key: "evidence", count: batchTweets.length },
-    {
-      label: "Possible Hallucinations",
-      key: "hallucinations",
-      count: batchHallucinations.length,
-    },
-  ];
-  const [activeTab, setActiveTab] = useState(TABS[0].key);
+  const toggleBatch = (batchId: string) => {
+    setExpandedBatches((prev) => {
+      const next = new Set(prev);
+      if (next.has(batchId)) {
+        next.delete(batchId);
+      } else {
+        next.add(batchId);
+      }
+      return next;
+    });
+  };
 
   if (!isOpen) return null;
 
@@ -120,129 +123,193 @@ export function BatchTweetsModal({
 
         <div
           style={{
-            display: "flex",
+            flex: 1,
+            minHeight: 0,
+            maxHeight: "54vh",
+            overflowY: "auto",
             marginTop: "16px",
-            gap: "8px",
           }}
         >
-          {TABS.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              style={{
-                background: activeTab === tab.key ? "#f5f5f5" : "transparent",
-                border: "none",
-                borderBottom:
-                  activeTab === tab.key
-                    ? "3px solid #007bff"
-                    : "3px solid transparent",
-                color: activeTab === tab.key ? "#007bff" : "#333",
-                fontWeight: activeTab === tab.key ? "bold" : "normal",
-                padding: "12px 20px",
-                cursor: "pointer",
-                outline: "none",
-                fontSize: "16px",
-                transition: "color 0.2s, border-bottom 0.2s, background 0.2s",
-                borderRadius: "6px 6px 0 0",
-              }}
-            >
-              {tab.label} ({tab.count})
-            </button>
-          ))}
-        </div>
-        {activeTab === "evidence" ? (
-          <div
-            style={{
-              flex: 1,
-              minHeight: 0,
-              maxHeight: "54vh", // Ensures scrolling space for the list
-              overflowY: "auto",
-            }}
-          >
-            <ul
-              style={{
-                padding: 0,
-                margin: 0,
-                listStyle: "none",
-              }}
-            >
-              {batchTweets.map((batchTweet, idx) => {
-                return (
-                  <li
-                    key={idx}
-                    style={{
-                      padding: "10px 0",
-                      borderBottom:
-                        idx !== batchTweets.length - 1
-                          ? "1px solid #eee"
-                          : undefined,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                    }}
-                  >
-                    <span
-                      style={{
-                        marginRight: 10,
-                        flex: "1 1 auto",
-                        fontSize: 15,
-                      }}
-                    >
-                      {batchTweet.full_text}
-                    </span>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        ) : (
-          <>
-            <div
-              style={{
-                flex: 1,
-                minHeight: 0,
-                maxHeight: "54vh", // Ensures scrolling space for the list
-                overflowY: "auto",
-              }}
-            >
-              <ul
+          {batchesByKey.map(({ batchId, batchStatus }, batchIdx) => {
+            const tweets = batchStatus.groundedTweets.genuine;
+            const hallucinatedIds = batchStatus.groundedTweets.hallucinated;
+            const isExpanded = expandedBatches.has(batchId);
+            const hasContent = tweets.length > 0 || hallucinatedIds.length > 0;
+
+            if (!hasContent) return null;
+
+            return (
+              <div
+                key={batchId}
                 style={{
-                  padding: 0,
-                  margin: 0,
-                  listStyle: "none",
+                  marginBottom: batchIdx < batchesByKey.length - 1 ? "16px" : 0,
+                  border: "1px solid #e0e0e0",
+                  borderRadius: "8px",
+                  overflow: "hidden",
                 }}
               >
-                {batchHallucinations.map((batchTweet, idx) => {
-                  return (
-                    <li
-                      key={idx}
+                <button
+                  onClick={() => toggleBatch(batchId)}
+                  style={{
+                    width: "100%",
+                    padding: "12px 16px",
+                    border: "none",
+                    background: "#f8f9fa",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    textAlign: "left",
+                  }}
+                >
+                  <div style={{ flex: 1 }}>
+                    <span
                       style={{
-                        padding: "10px 0",
-                        borderBottom:
-                          idx !== batchTweets.length - 1
-                            ? "1px solid #eee"
-                            : undefined,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
+                        fontSize: 16,
+                        fontWeight: 600,
+                        color: "#333",
                       }}
                     >
-                      <span
+                      Batch {parseInt(batchId) + 1}
+                    </span>
+                    <span
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 400,
+                        color: "#666",
+                        marginLeft: "12px",
+                      }}
+                    >
+                      {tweets.length} evidence
+                      {hallucinatedIds.length > 0 &&
+                        `, ${hallucinatedIds.length} hallucinations`}
+                      {" · "}
+                      {Math.round(batchStatus.runTime)}ms
+                    </span>
+                  </div>
+                  <span
+                    style={{
+                      fontSize: 18,
+                      color: "#666",
+                      transform: isExpanded ? "rotate(90deg)" : "rotate(0deg)",
+                      transition: "transform 0.2s",
+                    }}
+                  >
+                    ▶
+                  </span>
+                </button>
+                {isExpanded && (
+                  <div style={{ padding: "16px", background: "#fff" }}>
+                    {tweets.length > 0 && (
+                      <div
                         style={{
-                          marginRight: 10,
-                          flex: "1 1 auto",
-                          fontSize: 15,
+                          marginBottom: hallucinatedIds.length > 0 ? "20px" : 0,
                         }}
                       >
-                        {batchTweet.id_str}
-                      </span>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          </>
-        )}
+                        <h4
+                          style={{
+                            fontSize: 14,
+                            fontWeight: 600,
+                            margin: "0 0 12px 0",
+                            color: "#333",
+                          }}
+                        >
+                          Evidence ({tweets.length})
+                        </h4>
+                        <ul
+                          style={{
+                            padding: 0,
+                            margin: 0,
+                            listStyle: "none",
+                          }}
+                        >
+                          {tweets.map((tweet, idx) => {
+                            return (
+                              <li
+                                key={tweet.id_str}
+                                style={{
+                                  padding: "10px 0",
+                                  borderBottom:
+                                    idx !== tweets.length - 1
+                                      ? "1px solid #eee"
+                                      : undefined,
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "space-between",
+                                }}
+                              >
+                                <span
+                                  style={{
+                                    marginRight: 10,
+                                    flex: "1 1 auto",
+                                    fontSize: 15,
+                                  }}
+                                >
+                                  {tweet.full_text}
+                                </span>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      </div>
+                    )}
+                    {hallucinatedIds.length > 0 && (
+                      <div>
+                        <h4
+                          style={{
+                            fontSize: 14,
+                            fontWeight: 600,
+                            margin: "0 0 12px 0",
+                            color: "#d32f2f",
+                          }}
+                        >
+                          Hallucinations ({hallucinatedIds.length})
+                        </h4>
+                        <ul
+                          style={{
+                            padding: 0,
+                            margin: 0,
+                            listStyle: "none",
+                          }}
+                        >
+                          {hallucinatedIds.map((tweetId, idx) => {
+                            return (
+                              <li
+                                key={tweetId}
+                                style={{
+                                  padding: "10px 0",
+                                  borderBottom:
+                                    idx !== hallucinatedIds.length - 1
+                                      ? "1px solid #eee"
+                                      : undefined,
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "space-between",
+                                }}
+                              >
+                                <span
+                                  style={{
+                                    marginRight: 10,
+                                    flex: "1 1 auto",
+                                    fontSize: 15,
+                                    fontFamily: "monospace",
+                                    color: "#666",
+                                  }}
+                                >
+                                  {tweetId}
+                                </span>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
