@@ -184,7 +184,8 @@ export function BatchTweetsModal({
                       {hallucinatedIds.length > 0 &&
                         `, ${hallucinatedIds.length} hallucinations`}
                       {" · "}
-                      {Math.round(batchStatus.runTime)}ms
+                      {Math.round(batchStatus.runTime)}ms {batchStatus.provider}{" "}
+                      {batchStatus.model}
                     </span>
                   </div>
                   <span

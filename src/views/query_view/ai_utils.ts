@@ -28,6 +28,8 @@ export type BatchStatus =
         prompt_tokens_details: null; // only used with prompt caching
         total_tokens: number;
       };
+      provider: string;
+      model: string;
     }
   | { status: "pending"; startTime: number }
   | { status: "queued" };
@@ -130,6 +132,8 @@ export async function submitQuery(params: {
     messages,
     runTime,
     usage: data.usage,
+    provider: data.provider,
+    model: data.model,
   };
 }
 

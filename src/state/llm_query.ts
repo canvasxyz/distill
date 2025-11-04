@@ -182,6 +182,8 @@ export const createLlmQuerySlice: StateCreator<
             endTime,
             runTime: endTime - startTime,
             usage: queryResult.usage,
+            provider: queryResult.provider,
+            model: queryResult.model,
           });
 
           // if the job is done, then trigger the final query
