@@ -103,7 +103,6 @@ export const createLlmQuerySlice: StateCreator<
 
     const [model, provider, openrouterProvider] = config;
 
-    console.log(filteredTweetsSubsetToAnalyse);
     const batches = getBatches(filteredTweetsSubsetToAnalyse, QUERY_BATCH_SIZE);
 
     const queuedTime = performance.now();
