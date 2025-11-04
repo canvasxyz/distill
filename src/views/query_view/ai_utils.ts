@@ -2,6 +2,7 @@ import type { ChatCompletionMessageParam } from "openai/resources";
 import type { Account, Tweet } from "../../types";
 import OpenAI from "openai";
 import type { LLMQueryProvider } from "../../constants";
+import { AVAILABLE_LLM_CONFIGS } from "../../state/llm_query";
 
 export type Query = { prompt: string; systemPrompt?: string };
 
@@ -105,9 +106,11 @@ export async function submitQuery(params: {
     provider: openrouterProvider ? { only: [openrouterProvider] } : undefined,
   };
 
+  const llmConfigs = AVAILABLE_LLM_CONFIGS;
+
   const classificationResponse = await fetch(serverUrl, {
     method: "POST",
-    body: JSON.stringify({ params: aiParams, provider }),
+    body: JSON.stringify({ params: aiParams, provider, llmConfigs }),
     headers: { "Content-Type": "application/json" },
   });
 
