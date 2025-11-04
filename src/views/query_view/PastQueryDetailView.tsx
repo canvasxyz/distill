@@ -3,15 +3,13 @@ import { useStore } from "../../state/store";
 import { useState } from "react";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { stripThink } from "../../utils";
+import { extractTimestampFromUUIDv7, stripThink } from "../../utils";
 import { CopyButton } from "./ResultsBox";
 import { BatchTweetsModal } from "./BatchTweetsModal";
 import type { RangeSelection } from "./ai_utils";
 import { db } from "../../db";
 
-function formatDateTime(dateStr?: string) {
-  if (!dateStr) return "";
-  const d = new Date(dateStr);
+function formatDateTime(d: Date) {
   if (isNaN(d.getTime())) return "";
   return (
     d.toLocaleDateString(undefined, {
@@ -30,8 +28,8 @@ function formatDateTime(dateStr?: string) {
 function formatRangeSelection(rangeSelection?: RangeSelection) {
   if (!rangeSelection) return "latest tweets";
   return rangeSelection.type === "date-range"
-    ? `${formatDateTime(rangeSelection.startDate)} - ${formatDateTime(
-        rangeSelection.endDate,
+    ? `${formatDateTime(new Date(rangeSelection.startDate))} - ${formatDateTime(
+        new Date(rangeSelection.endDate),
       )}`
     : `latest ${rangeSelection.numTweets} tweets`;
 }
@@ -306,7 +304,7 @@ export function PastQueryDetailView() {
           </span>
           <span>
             <span style={{ color: "#888", fontWeight: 500 }}>Date:</span>{" "}
-            {formatDateTime(query.id)}
+            {formatDateTime(extractTimestampFromUUIDv7(query.id))}
           </span>
         </div>
       </div>
