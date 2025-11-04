@@ -108,7 +108,12 @@ export async function submitQuery(params: {
     provider: openrouterProvider ? { only: [openrouterProvider] } : undefined,
   };
 
-  const llmConfigs = AVAILABLE_LLM_CONFIGS;
+  // put the selected model at the start of the llm configs list
+  // i.e. if it's not available then fall back to the other models in the list
+  const llmConfigs = [
+    [model, provider, openrouterProvider, false],
+    ...AVAILABLE_LLM_CONFIGS,
+  ];
 
   const classificationResponse = await fetch(serverUrl, {
     method: "POST",
