@@ -19,7 +19,10 @@ import {
   ResultsBox,
 } from "./ResultsBox";
 import { ExampleQueriesModal } from "./ExampleQueriesModal";
-import { EXAMPLE_QUERIES, FEATURED_QUERIES } from "./example_queries";
+import {
+  EXAMPLE_QUERIES_SINGULAR,
+  FEATURED_QUERIES_SINGULAR,
+} from "./example_queries";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useTweetCounts } from "./useTweetCounts";
@@ -496,7 +499,7 @@ export function RunQueries() {
           alignItems: "stretch",
         }}
       >
-        {FEATURED_QUERIES.map((baseQuery) => {
+        {FEATURED_QUERIES_SINGULAR.map((baseQuery) => {
           const query = replaceAccountName(baseQuery, account.username);
           return (
             <div key={baseQuery} style={featuredQueryCardStyle}>
@@ -580,7 +583,7 @@ export function RunQueries() {
         </a>
       </div>
       <ExampleQueriesModal
-        queries={EXAMPLE_QUERIES}
+        queries={EXAMPLE_QUERIES_SINGULAR}
         isOpen={exampleQueriesModalIsOpen}
         onClose={() => {
           setExampleQueriesModalIsOpen(false);
