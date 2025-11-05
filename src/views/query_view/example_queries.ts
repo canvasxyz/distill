@@ -1,4 +1,4 @@
-export const EXAMPLE_QUERIES = [
+export const EXAMPLE_QUERIES_SINGULAR = [
   "What kinds of topics does {account} post about?",
   "Based on these tweets, what Enneagram type is {account}? If you're unsure, list multiple options.",
   "Based on these tweets, what MBTI is {account}? If you're unsure, list multiple options.",
@@ -45,9 +45,62 @@ export const EXAMPLE_QUERIES = [
   "Which corner of the internet would claim {account} as one of their own?",
 ];
 
-export const FEATURED_QUERIES = [
+export const EXAMPLE_QUERIES_PLURAL = [
+  "What kinds of topics do {accounts} post about, and how do their focuses compare?",
+  "Based on these tweets, what Enneagram types might describe {accounts}? If uncertain, list possible ranges for each.",
+  "Based on these tweets, what MBTI types seem to fit {accounts}? If unsure, suggest multiple options per person.",
+  "How do {accounts} seem to perceive themselves based on their collective tweeting styles?",
+  "What kind of people might someone imagine {accounts} to be if they only read their tweets?",
+  "What adjectives best capture each of {accounts}’ online personalities?",
+  "What consistent themes or archetypes do {accounts} embody (e.g., thinker, rebel, nurturer), and where do they overlap or differ?",
+  "How authentic do {accounts} appear — whose tweets feel more curated versus spontaneous?",
+  "What kinds of reputations might {accounts} have built unconsciously over time?",
+  "If {accounts}’ tweets were mirrors, what self-images would they reflect individually and collectively?",
+  "What emotions do {accounts} express most often — and which do they seem to avoid?",
+  "What topics or events tend to trigger strong emotional reactions across {accounts}?",
+  "Do {accounts} seem to seek connection, validation, or expression through tweeting — and in what distinct ways?",
+  "How do {accounts}’ emotional tones shift over months or years, and how do those trajectories compare?",
+  "When do {accounts} sound most alive, passionate, or inspired?",
+  "What might {accounts}’ tweets reveal about their coping mechanisms or stress responses?",
+  "Is there evidence of emotional growth or healing across {accounts}’ timelines?",
+  "What appears to drive {accounts} to tweet — attention, reflection, humor, advocacy, curiosity — and how do motivations differ?",
+  "What needs (belonging, recognition, control, freedom, etc.) are most visible across {accounts}’ writing?",
+  "What might {accounts} collectively be searching for or trying to prove through their online presence?",
+  "What topics make {accounts} feel most purposeful or fulfilled?",
+  "What ambitions or longings surface between the lines of {accounts}’ tweets?",
+  "What do {accounts} seem to believe about people, society, or themselves?",
+  "What moral or philosophical positions do {accounts} return to repeatedly?",
+  "Do {accounts} come across as idealistic, skeptical, pragmatic, or ironic — and how do those tendencies vary?",
+  "How do {accounts} express disagreement or conviction — gently, humorously, or forcefully?",
+  "What implicit assumptions or worldviews shape {accounts}’ language and interactions?",
+  "How do {accounts}’ values appear to evolve over time — are any in sync or in contrast?",
+  "How have {accounts} changed as individuals since they began tweeting?",
+  "What were the main “eras” or turning points in {accounts}’ Twitter lives, and how do they align?",
+  "Which events or ideas appear to have shifted {accounts}’ perspectives most?",
+  "Do {accounts} show increasing maturity, self-awareness, or openness over time?",
+  "What parts of {accounts}’ online selves have remained consistent despite the years?",
+  "What contradictions exist between what {accounts} say and how they act online?",
+  "What fears or insecurities show up indirectly across {accounts}’ tweets?",
+  "Are there emotional tones that {accounts} collectively avoid expressing publicly?",
+  "What do {accounts} criticize in others that they might also wrestle with themselves?",
+  "What biases, assumptions, or defensiveness patterns do {accounts} reveal?",
+  "What kinds of inner narrators do {accounts} sound like — critics, philosophers, comedians, dreamers?",
+  "How do {accounts}’ tones toward themselves differ from their tones toward others?",
+  "What metaphors or storylines do {accounts} unconsciously use to describe life?",
+  "If {accounts}’ tweets were chapters of a shared anthology, what would the chapters be called?",
+  "What’s the overarching “thesis statement” of {accounts}’ collective Twitter presence?",
+  "Which corners of the internet would claim {accounts} as their own, and where would their communities overlap?",
+];
+
+export const FEATURED_QUERIES_SINGULAR = [
   "What kinds of topics does {account} post about?",
   "Based on these tweets, what Enneagram and MBTI types are {account}? You may list multiple options.",
   "What were the main eras or turning points in {account}'s life?",
   "What are {account}'s two best tweets? And which one is {account}'s worst?",
+];
+
+export const FEATURED_QUERIES_PLURAL = [
+  "What kinds of topics do {accounts} post about, and how do their focuses compare?",
+  "Based on these tweets, what MBTI/Enneagram types might describe {accounts}? If uncertain, list possible ranges for each.",
+  "What were the main eras or turning points in {accounts}' lives?",
 ];
