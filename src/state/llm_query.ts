@@ -30,6 +30,30 @@ export const AVAILABLE_LLM_CONFIGS: LLMQueryConfig[] = [
   ["openai/gpt-oss-120b", "openrouter", "sambanova", false],
 ];
 
+const getGenuineTweetIds = (
+  tweetIdsToCheck: string[],
+  originalTweets: Tweet[],
+) => {
+  const tweetsById: Record<string, Tweet> = {};
+  for (const tweet of originalTweets) {
+    tweetsById[tweet.id_str || tweet.id] = tweet;
+  }
+
+  const genuine: Tweet[] = [];
+  const hallucinated: string[] = [];
+
+  for (const id of tweetIdsToCheck) {
+    const t = tweetsById[id];
+    if (t) {
+      genuine.push(t);
+    } else {
+      hallucinated.push(id);
+    }
+  }
+
+  return { genuine, hallucinated };
+};
+
 export type LlmQuerySlice = {
   queryResult: QueryResult | null;
   isProcessing: boolean;
@@ -40,10 +64,6 @@ export type LlmQuerySlice = {
   llmQueryQueue: PQueue;
   selectedConfigIndex: number;
   setSelectedConfigIndex: (idx: number) => void;
-  getGenuineTweetIds: (tweetIds: string[]) => {
-    genuine: Tweet[];
-    hallucinated: string[];
-  };
   submit: (
     filteredTweetsToAnalyse: Tweet[],
     query: string,
@@ -71,23 +91,6 @@ export const createLlmQuerySlice: StateCreator<
   llmQueryQueue,
   selectedConfigIndex: 0,
   setSelectedConfigIndex: (idx: number) => set({ selectedConfigIndex: idx }),
-
-  getGenuineTweetIds: (tweetIds: string[]) => {
-    const genuine: Tweet[] = [];
-    const hallucinated: string[] = [];
-
-    const { tweetsById } = get();
-    for (const id of tweetIds) {
-      const t = tweetsById[id];
-      if (t) {
-        genuine.push(t);
-      } else {
-        hallucinated.push(id);
-      }
-    }
-
-    return { genuine, hallucinated };
-  },
 
   submit: (filteredTweetsToAnalyse: Tweet[], query: string, rangeSelection) => {
     const queryId = uuidv7();
@@ -171,7 +174,7 @@ export const createLlmQuerySlice: StateCreator<
           }
 
           const tweetIds = extractTweetIds(queryResult.result);
-          const groundedTweets = get().getGenuineTweetIds(tweetIds);
+          const groundedTweets = getGenuineTweetIds(tweetIds, batch);
 
           const endTime = performance.now();
           updateBatchStatus(i, {

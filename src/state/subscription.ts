@@ -21,7 +21,6 @@ export type SubscriptionSlice = {
   account: Account | null;
   profile: ProfileWithId | null;
   allTweets: Tweet[];
-  tweetsById: Record<string, Tweet>;
   queryResults: QueryResult[];
 };
 
@@ -51,9 +50,6 @@ export const createSubscriptionSlice: StateCreator<
       next: (newAllTweets) => {
         set({
           allTweets: newAllTweets,
-          tweetsById: Object.fromEntries(
-            newAllTweets.map((t) => [t.id_str, t]),
-          ),
         });
       },
       error: (error) => console.error(error),
@@ -94,6 +90,5 @@ export const createSubscriptionSlice: StateCreator<
   account: null,
   profile: null,
   allTweets: [],
-  tweetsById: {},
   queryResults: [],
 });
