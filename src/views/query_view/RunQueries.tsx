@@ -31,6 +31,7 @@ import { BatchTweetsModal } from "./BatchTweetsModal";
 import { MAX_ARCHIVE_SIZE, QUERY_BATCH_SIZE } from "../../constants";
 import { stripThink } from "../../utils";
 import { AVAILABLE_LLM_CONFIGS } from "../../state/llm_query";
+import { FeaturedQueryCard } from "../../components/FeaturedQueryCard";
 
 export function RunQueries() {
   const [exampleQueriesModalIsOpen, setExampleQueriesModalIsOpen] =
@@ -132,26 +133,6 @@ export function RunQueries() {
     if (tweetsSelectedForQuery.length === 0) return 0;
     return Math.ceil(tweetsSelectedForQuery.length / QUERY_BATCH_SIZE);
   }, [tweetsSelectedForQuery]);
-
-  const featuredQueryCardStyle: CSSProperties = {
-    padding: "16px",
-    background: "#f8f9fa",
-    color: "#212529",
-    border: "1px solid #ddd",
-    borderRadius: "6px",
-    fontSize: "15px",
-    fontWeight: 500,
-    boxShadow: "0 2px 6px rgba(0,0,0,0.04)",
-    transition: "background 0.2s, color 0.2s",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "space-between",
-    textAlign: "center",
-    minHeight: "140px",
-    gap: "12px",
-    opacity: isProcessing ? 0.6 : 1,
-  };
 
   const browseMoreButtonStyle: CSSProperties = {
     display: "inline",
@@ -502,7 +483,7 @@ export function RunQueries() {
         {FEATURED_QUERIES_SINGULAR.map((baseQuery) => {
           const query = replaceAccountName(baseQuery, account.username);
           return (
-            <div key={baseQuery} style={featuredQueryCardStyle}>
+            <FeaturedQueryCard key={baseQuery} isProcessing={isProcessing}>
               <div
                 style={{
                   color: "#0056b3",
@@ -560,7 +541,7 @@ export function RunQueries() {
                   Edit
                 </button>
               </div>
-            </div>
+            </FeaturedQueryCard>
           );
         })}
       </div>
