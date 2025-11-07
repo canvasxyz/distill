@@ -57,8 +57,6 @@ export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
     // Clear all archive-related tables but preserve past query results
     await Promise.all([
       db.accounts.clear(),
-      db.follower.clear(),
-      db.following.clear(),
       db.profiles.clear(),
       db.tweets.clear(),
       db.sessionData.clear(),
@@ -71,20 +69,11 @@ export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
   ingestTwitterArchiveProgress: null,
   ingestTwitterArchive: async (file: File) => {
     set({ ingestTwitterArchiveProgress: { status: "processingArchive" } });
-    const { account, follower, following, profile, tweets } =
-      await processTwitterArchive(file);
+    const { account, profile, tweets } = await processTwitterArchive(file);
 
     set({ ingestTwitterArchiveProgress: { status: "addingAccount" } });
     await db.accounts.clear();
     await db.accounts.add(account);
-
-    set({ ingestTwitterArchiveProgress: { status: "addingFollowers" } });
-    await db.follower.clear();
-    await db.follower.bulkAdd(follower);
-
-    set({ ingestTwitterArchiveProgress: { status: "addingFollowing" } });
-    await db.following.clear();
-    await db.following.bulkAdd(following);
 
     set({ ingestTwitterArchiveProgress: { status: "addingProfile" } });
     await db.profiles.clear();
@@ -204,45 +193,6 @@ export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
     const account = mapKeysDeep(accountData, snakeToCamelCase) as Account;
 
     await db.accounts.add(account);
-
-    set({
-      loadCommunityArchiveUserProgress: {
-        status: "loadingFollowing",
-      },
-    });
-
-    const { data: followingData } = await supabase
-      .schema("public")
-      .from("following")
-      .select("*")
-      .eq("account_id", accountId);
-    await db.following.clear();
-
-    const following = (followingData || []).map((entry) => ({
-      accountId: entry.following_account_id,
-      userLink: "",
-    }));
-
-    await db.following.bulkAdd(following);
-
-    set({
-      loadCommunityArchiveUserProgress: {
-        status: "loadingFollower",
-      },
-    });
-
-    const { data: followerData } = await supabase
-      .schema("public")
-      .from("followers")
-      .select("*")
-      .eq("account_id", accountId);
-    await db.follower.clear();
-    const follower = (followerData || []).map((entry) => ({
-      accountId: entry.follower_account_id,
-      userLink: "",
-    }));
-
-    await db.follower.bulkAdd(follower);
 
     set({
       loadCommunityArchiveUserProgress: null,

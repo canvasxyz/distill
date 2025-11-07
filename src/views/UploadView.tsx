@@ -47,8 +47,8 @@ export function UploadPanel() {
       <h1>Open your archive</h1>
       <p>
         To begin, open the ".zip" file that you received when you requested your
-        archive. The Archive Explorer only looks at the account.js, follower.js,
-        following.js, profile.js and tweets.js files.
+        archive. The Archive Explorer only looks at the account.js, profile.js
+        and tweets.js files.
       </p>
       <p>
         Only data from tweets.js leaves your browser during LLM queries. We do
@@ -113,10 +113,6 @@ export function UploadPanel() {
             "Processing archive..."}
           {ingestTwitterArchiveProgress.status === "addingAccount" &&
             "Adding account"}
-          {ingestTwitterArchiveProgress.status === "addingFollowers" &&
-            "Adding followers"}
-          {ingestTwitterArchiveProgress.status === "addingFollowing" &&
-            "Adding following"}
           {ingestTwitterArchiveProgress.status === "addingProfile" &&
             "Adding profile"}
           {ingestTwitterArchiveProgress.status === "addingTweets" &&
@@ -141,10 +137,6 @@ export function UploadPanel() {
 
           {loadCommunityArchiveUserProgress.status === "loadingAccount" &&
             "Loading account"}
-          {loadCommunityArchiveUserProgress.status === "loadingFollower" &&
-            "Loading followers"}
-          {loadCommunityArchiveUserProgress.status === "loadingFollowing" &&
-            "Loading following"}
           {loadCommunityArchiveUserProgress.status === "generatingTextIndex" &&
             "Generating text index"}
         </>

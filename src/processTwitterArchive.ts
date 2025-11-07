@@ -1,11 +1,4 @@
-import type {
-  Account,
-  Tweet,
-  Profile,
-  ProfileWithId,
-  Following,
-  Follower,
-} from "./types";
+import type { Account, Tweet, Profile, ProfileWithId } from "./types";
 import { unzip } from "unzipit";
 import { parseTwitterArchiveFile } from "./twitterArchiveParser";
 
@@ -15,8 +8,6 @@ export const processTwitterArchive = async (
   account: Account;
   profile: ProfileWithId;
   tweets: Tweet[];
-  following: Following[];
-  follower: Follower[];
 }> => {
   // This is a stub method. Implement the logic to parse the Twitter archive zip file.
   // Once parsed, use setTweets to update the tweets state.
@@ -28,15 +19,11 @@ export const processTwitterArchive = async (
     "profile.js",
     "tweet.js",
     "tweets.js",
-    "following.js",
-    "follower.js",
   ];
 
   let account;
   let profile;
   let tweets;
-  let following;
-  let follower;
 
   for (const entry of Object.values(zipInfo.entries)) {
     const entryNameParts = entry.name.split("/");
@@ -61,16 +48,6 @@ export const processTwitterArchive = async (
         account = (parsedData as { account: Account }[])[0].account;
       } else if (lastEntryNamePart === "profile.js") {
         profile = (parsedData as { profile: Profile }[])[0].profile;
-      } else if (lastEntryNamePart === "following.js") {
-        // add following
-        following = (parsedData as { following: Following }[]).map(
-          (entry) => entry.following,
-        );
-      } else if (lastEntryNamePart === "follower.js") {
-        // add follower
-        follower = (parsedData as { follower: Follower }[]).map(
-          (entry) => entry.follower,
-        );
       }
     }
   }
@@ -84,12 +61,6 @@ export const processTwitterArchive = async (
   if (tweets === undefined) {
     throw new Error("Couldn't extract tweets data");
   }
-  if (following === undefined) {
-    throw new Error("Couldn't extract following data");
-  }
-  if (follower === undefined) {
-    throw new Error("Couldn't extract follower data");
-  }
 
   const profileWithId = { ...profile, accountId: account.accountId };
 
@@ -97,7 +68,5 @@ export const processTwitterArchive = async (
     account,
     profile: profileWithId,
     tweets,
-    following,
-    follower,
   };
 };
