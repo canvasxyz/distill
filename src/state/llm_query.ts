@@ -119,7 +119,9 @@ export const createLlmQuerySlice: StateCreator<
       errorMessage: null,
     });
 
-    const { llmQueryQueue, account, updateBatchStatus } = get();
+    const { llmQueryQueue, accounts, activeAccountId, updateBatchStatus } =
+      get();
+    const account = accounts.filter((a) => a.accountId === activeAccountId)[0];
 
     // If there is no account, reset view state and exit early
     if (!account) {

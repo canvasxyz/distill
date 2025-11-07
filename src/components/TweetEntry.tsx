@@ -1,8 +1,13 @@
 import type { Tweet } from "../types";
 import { useStore } from "../state/store";
+import { useMemo } from "react";
 
 export function TweetEntry({ tweet }: { tweet: Tweet }) {
-  const { account } = useStore();
+  const { accounts } = useStore();
+  const account = useMemo(
+    () => accounts.filter((a) => a.accountId === tweet.account_id)[0],
+    [accounts, tweet],
+  );
 
   const borderColor = "#b3ffb5";
 

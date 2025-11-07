@@ -2,8 +2,13 @@ import { useEffect, useMemo, useState } from "react";
 import { useStore } from "../state/store";
 
 export function ArchiveSummarySection() {
-  const { account, allTweets, profile } = useStore();
+  const { accounts, activeAccountId, allTweets, profile } = useStore();
   const [showProfilePicture, setShowProfilePicture] = useState(false);
+
+  const account = useMemo(
+    () => accounts.filter((a) => a.accountId === activeAccountId)[0],
+    [accounts, activeAccountId],
+  );
 
   useEffect(() => {
     if (!profile) return;

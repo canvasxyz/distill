@@ -4,7 +4,7 @@ import { itemContainerBase, itemTitleBase } from "./query_view/SidebarQueries";
 
 export const SidebarActions = () => {
   const navigate = useNavigate();
-  const { clearDatabase, dbHasTweets } = useStore();
+  const { dbHasTweets, accounts } = useStore();
 
   return (
     <div
@@ -41,20 +41,21 @@ export const SidebarActions = () => {
         </div>
       )}
 
-      {dbHasTweets && (
+      {dbHasTweets && accounts.length > 0 && (
         <div
           onClick={() => {
-            const message =
-              "Close the archive? You will have to fetch or upload these tweets again.";
-            if (confirm(message)) clearDatabase();
+            navigate("/switch-account");
           }}
           style={{
+            display: "flex",
+            justifyContent: "space-between",
+            cursor: "pointer",
             ...itemContainerBase,
             marginBottom: 10,
             paddingBottom: 10,
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = "#f8d7da77";
+            e.currentTarget.style.background = "#f7faff";
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.background = "";
@@ -63,10 +64,10 @@ export const SidebarActions = () => {
           <span
             style={{
               ...itemTitleBase,
-              color: "#721c24",
+              color: "#194486",
             }}
           >
-            Close Archive
+            Switch Account
           </span>
         </div>
       )}

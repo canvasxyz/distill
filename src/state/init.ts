@@ -39,8 +39,8 @@ export type InitSlice = {
   ingestTwitterArchiveProgress: IngestTwitterArchiveProgress | null;
   loadCommunityArchiveUser: (accountId: string) => Promise<void>;
   loadCommunityArchiveUserProgress: LoadCommunityArchiveUserProgress | null;
-  // are we viewing the user's own uploaded archive or an archive from the community archive supabase api?
-  viewingMyArchive: boolean;
+  activeAccountId: string | null;
+  switchAccount: (accountId: string) => Promise<void>;
 };
 
 export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
@@ -49,7 +49,30 @@ export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
   init: async () => {
     // before anything else is displayed we need to check that the database has tweets in it
     const dbHasTweets = (await db.tweets.limit(1).toArray()).length > 0;
-    set({ dbHasTweets, appIsReady: true });
+    // Load activeAccountId from sessionData
+    const sessionData = await db.sessionData.toArray();
+    let activeAccountId = sessionData[0]?.activeAccountId ?? null;
+
+    // Backward compatibility: if no activeAccountId but we have accounts, set the first one
+    if (activeAccountId === null && dbHasTweets) {
+      const accounts = await db.accounts.toArray();
+      if (accounts.length > 0) {
+        activeAccountId = accounts[0].accountId;
+        // Update sessionData with activeAccountId
+        if (sessionData.length > 0) {
+          await db.sessionData.update(sessionData[0].id, {
+            activeAccountId,
+          });
+        } else {
+          await db.sessionData.add({
+            id: "singleton",
+            activeAccountId,
+          });
+        }
+      }
+    }
+
+    set({ dbHasTweets, appIsReady: true, activeAccountId });
   },
 
   dbHasTweets: false,
@@ -72,25 +95,34 @@ export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
     const { account, profile, tweets } = await processTwitterArchive(file);
 
     set({ ingestTwitterArchiveProgress: { status: "addingAccount" } });
-    await db.accounts.clear();
-    await db.accounts.add(account);
+    await db.accounts.put(account);
 
     set({ ingestTwitterArchiveProgress: { status: "addingProfile" } });
-    await db.profiles.clear();
-    await db.profiles.add(profile);
+    await db.profiles.put(profile);
 
     set({ ingestTwitterArchiveProgress: { status: "addingTweets" } });
-    await db.tweets.clear();
-    await db.tweets.bulkAdd(
+    await db.tweets.bulkPut(
       tweets.map((tweet) => ({ ...tweet, account_id: account.accountId })),
     );
 
     set({ ingestTwitterArchiveProgress: { status: "applyingFilters" } });
-    await db.sessionData.add({ id: "singleton", viewingMyArchive: true });
+    // Update or create sessionData with activeAccountId
+    const existingSession = await db.sessionData.toArray();
+    if (existingSession.length > 0) {
+      await db.sessionData.update(existingSession[0].id, {
+        activeAccountId: account.accountId,
+      });
+    } else {
+      await db.sessionData.add({
+        id: "singleton",
+        activeAccountId: account.accountId,
+      });
+    }
 
     set({ ingestTwitterArchiveProgress: null });
     set(() => ({
       dbHasTweets: true,
+      activeAccountId: account.accountId,
     }));
   },
   loadCommunityArchiveUser: async (accountId) => {
@@ -156,8 +188,7 @@ export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
       id_str: tweet.tweet_id,
     })) as Tweet[];
 
-    await db.tweets.clear();
-    await db.tweets.bulkAdd(tweets);
+    await db.tweets.bulkPut(tweets);
 
     set({
       loadCommunityArchiveUserProgress: {
@@ -172,10 +203,9 @@ export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
       .eq("account_id", accountId)
       .maybeSingle();
 
-    await db.profiles.clear();
     const profile = mapKeysDeep(profileData, snakeToCamelCase) as ProfileWithId;
 
-    await db.profiles.add(profile);
+    await db.profiles.put(profile);
 
     set({
       loadCommunityArchiveUserProgress: {
@@ -189,19 +219,47 @@ export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
       .select("*")
       .eq("account_id", accountId)
       .maybeSingle();
-    await db.accounts.clear();
     const account = mapKeysDeep(accountData, snakeToCamelCase) as Account;
 
-    await db.accounts.add(account);
+    await db.accounts.put(account);
 
     set({
       loadCommunityArchiveUserProgress: null,
     });
 
-    await db.sessionData.add({ id: "singleton", viewingMyArchive: false });
+    // Update or create sessionData with activeAccountId
+    const existingSession = await db.sessionData.toArray();
+    if (existingSession.length > 0) {
+      await db.sessionData.update(existingSession[0].id, {
+        activeAccountId: accountId,
+      });
+    } else {
+      await db.sessionData.add({
+        id: "singleton",
+        activeAccountId: accountId,
+      });
+    }
 
-    set({ dbHasTweets: true });
+    set({ dbHasTweets: true, activeAccountId: accountId });
   },
   loadCommunityArchiveUserProgress: null,
-  viewingMyArchive: false,
+  activeAccountId: null,
+  switchAccount: async (accountId: string) => {
+    // Update sessionData with new activeAccountId
+    const existingSession = await db.sessionData.toArray();
+    if (existingSession.length > 0) {
+      const currentSession = existingSession[0];
+      await db.sessionData.update(currentSession.id, {
+        activeAccountId: accountId,
+      });
+    } else {
+      // If no session exists, check if this is a user's own archive
+      // For now, assume community archive if we're switching to an account
+      await db.sessionData.add({
+        id: "singleton",
+        activeAccountId: accountId,
+      });
+    }
+    set({ activeAccountId: accountId });
+  },
 });

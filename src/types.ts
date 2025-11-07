@@ -44,5 +44,5 @@ export type Tweet = {
 
 export type SessionData = {
   id: string;
-  viewingMyArchive: boolean;
+  activeAccountId: string | null;
 };

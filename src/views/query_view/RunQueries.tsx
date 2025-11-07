@@ -3,13 +3,7 @@ import {
   replaceAccountName,
   selectSubset,
 } from "./ai_utils";
-import {
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type CSSProperties,
-} from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useStore } from "../../state/store";
 import { RunQueryButton } from "./RunQueryButton";
 import {
@@ -43,7 +37,8 @@ export function RunQueries() {
   const [includeRetweets, setIncludeRetweets] = useState(true);
 
   const {
-    account,
+    accounts,
+    activeAccountId,
     allTweets,
     submit,
     batchStatuses,
@@ -55,6 +50,11 @@ export function RunQueries() {
     selectedConfigIndex,
     setSelectedConfigIndex,
   } = useStore();
+
+  const account = useMemo(
+    () => accounts.filter((a) => a.accountId === activeAccountId)[0],
+    [accounts, activeAccountId],
+  );
 
   const hasReplies = useMemo(
     () => (allTweets || []).some((t) => Boolean(t.in_reply_to_user_id)),
@@ -183,13 +183,13 @@ export function RunQueries() {
     }
   }, [selectedQuery, account]);
 
-  if (!account) return <></>;
-
   const totalPostsCount = (allTweets || []).length;
   const lastTweetsLabel =
     totalPostsCount < MAX_ARCHIVE_SIZE
       ? "All posts"
       : `Most recent ${formatCompact(MAX_ARCHIVE_SIZE)}`;
+
+  if (!account) return <></>;
 
   return (
     <div

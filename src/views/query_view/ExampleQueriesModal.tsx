@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { replaceAccountName } from "./ai_utils";
 import { useStore } from "../../state/store";
 
@@ -13,7 +13,13 @@ export function ExampleQueriesModal({
   queries: string[];
   onSelectQuery?: (query: string) => void;
 }) {
-  const { account } = useStore();
+  const { accounts, activeAccountId } = useStore();
+
+  const account = useMemo(
+    () => accounts.filter((a) => a.accountId === activeAccountId)[0],
+    [accounts, activeAccountId],
+  );
+
   // Prevent scroll on the underlying page when modal is open
   useEffect(() => {
     if (isOpen) {

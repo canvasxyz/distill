@@ -18,7 +18,7 @@ export type SubscriptionSlice = {
   subscriptions: RefObject<Subscription[]>;
   subscribe: () => void;
   unsubscribe: () => void;
-  account: Account | null;
+  accounts: Account[];
   profile: ProfileWithId | null;
   allTweets: Tweet[];
   queryResults: QueryResult[];
@@ -37,7 +37,7 @@ export const createSubscriptionSlice: StateCreator<
     const { subscriptions } = get();
 
     const accountSubscription = liveQuery(accountObservable).subscribe({
-      next: (newAccount) => set({ account: newAccount[0] || null }),
+      next: (newAccounts) => set({ accounts: newAccounts }),
       error: (error) => console.error(error),
     });
 
@@ -63,12 +63,12 @@ export const createSubscriptionSlice: StateCreator<
     });
 
     const sessionDataSubscription = liveQuery(sessionDataObservable).subscribe({
-      next: (sessionData) =>
+      next: (sessionData) => {
+        const session = sessionData[0];
         set({
-          viewingMyArchive: sessionData[0]
-            ? sessionData[0].viewingMyArchive
-            : false,
-        }),
+          activeAccountId: session ? (session.activeAccountId ?? null) : null,
+        });
+      },
       error: (error) => console.error(error),
     });
 
@@ -87,7 +87,7 @@ export const createSubscriptionSlice: StateCreator<
     }
     subscriptions.current = [];
   },
-  account: null,
+  accounts: [],
   profile: null,
   allTweets: [],
   queryResults: [],
