@@ -92,7 +92,9 @@ export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
 
     set({ ingestTwitterArchiveProgress: { status: "addingTweets" } });
     await db.tweets.clear();
-    await db.tweets.bulkAdd(tweets);
+    await db.tweets.bulkAdd(
+      tweets.map((tweet) => ({ ...tweet, account_id: account.accountId })),
+    );
 
     set({ ingestTwitterArchiveProgress: { status: "applyingFilters" } });
     await db.sessionData.add({ id: "singleton", viewingMyArchive: true });

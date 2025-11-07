@@ -27,6 +27,7 @@ export type Follower = { accountId: string; userLink: string };
 export type Tweet = {
   id: string;
   id_str: string;
+  account_id: string;
   full_text: string;
   created_at: string;
   retweet_count: string;
