@@ -32,6 +32,7 @@ import { MAX_ARCHIVE_SIZE, QUERY_BATCH_SIZE } from "../../constants";
 import { stripThink } from "../../utils";
 import { AVAILABLE_LLM_CONFIGS } from "../../state/llm_query";
 import { FeaturedQueryCard } from "../../components/FeaturedQueryCard";
+import { BrowseMoreButton } from "../../components/BrowseMoreButton";
 
 export function RunQueries() {
   const [exampleQueriesModalIsOpen, setExampleQueriesModalIsOpen] =
@@ -133,14 +134,6 @@ export function RunQueries() {
     if (tweetsSelectedForQuery.length === 0) return 0;
     return Math.ceil(tweetsSelectedForQuery.length / QUERY_BATCH_SIZE);
   }, [tweetsSelectedForQuery]);
-
-  const browseMoreButtonStyle: CSSProperties = {
-    display: "inline",
-    color: "#0056B3cc",
-    fontSize: "16px",
-    cursor: isProcessing ? "not-allowed" : "pointer",
-    opacity: isProcessing ? 0.6 : 1,
-  };
 
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
@@ -545,24 +538,13 @@ export function RunQueries() {
           );
         })}
       </div>
-      <div style={{ margin: "10px 0", textAlign: "center" }}>
-        <a
-          style={browseMoreButtonStyle}
-          onClick={() => {
-            if (isProcessing) return;
-            setExampleQueriesModalIsOpen(true);
-          }}
-          onMouseEnter={(e) => {
-            if (isProcessing) return;
-            e.currentTarget.style.color = "#0056B3";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.color = "#0056B3cc";
-          }}
-        >
-          More examples...
-        </a>
-      </div>
+      <BrowseMoreButton
+        isProcessing={isProcessing}
+        onClick={() => {
+          if (isProcessing) return;
+          setExampleQueriesModalIsOpen(true);
+        }}
+      />
       <ExampleQueriesModal
         queries={EXAMPLE_QUERIES_SINGULAR}
         isOpen={exampleQueriesModalIsOpen}
