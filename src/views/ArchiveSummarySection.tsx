@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useStore } from "../state/store";
 
 export function ArchiveSummarySection() {
-  const { accounts, activeAccountId, allTweets, profile } = useStore();
+  const { accounts, activeAccountId, allTweets, currentProfile } = useStore();
   const [showProfilePicture, setShowProfilePicture] = useState(false);
 
   const account = useMemo(
@@ -11,11 +11,11 @@ export function ArchiveSummarySection() {
   );
 
   useEffect(() => {
-    if (!profile) return;
-    fetch(profile.avatarMediaUrl).then((response) => {
+    if (!currentProfile) return;
+    fetch(currentProfile.avatarMediaUrl).then((response) => {
       if (response.status === 200) setShowProfilePicture(true);
     });
-  }, [profile]);
+  }, [currentProfile]);
 
   const { totalTweetsCount, repliesCount, retweetsCount } = useMemo(() => {
     const tweets = allTweets || [];
@@ -86,7 +86,7 @@ export function ArchiveSummarySection() {
       >
         {showProfilePicture ? (
           <img
-            src={profile?.avatarMediaUrl}
+            src={currentProfile?.avatarMediaUrl}
             alt={account.accountDisplayName || account.username}
             style={{
               width: 58,

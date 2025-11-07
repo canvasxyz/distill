@@ -19,7 +19,7 @@ export type SubscriptionSlice = {
   subscribe: () => void;
   unsubscribe: () => void;
   accounts: Account[];
-  profile: ProfileWithId | null;
+  currentProfile: ProfileWithId | null;
   allTweets: Tweet[];
   queryResults: QueryResult[];
 };
@@ -42,7 +42,7 @@ export const createSubscriptionSlice: StateCreator<
     });
 
     const profileSubscription = liveQuery(profileObservable).subscribe({
-      next: (newProfile) => set({ profile: newProfile[0] || null }),
+      next: (newProfile) => set({ currentProfile: newProfile[0] || null }),
       error: (error) => console.error(error),
     });
 
@@ -88,7 +88,7 @@ export const createSubscriptionSlice: StateCreator<
     subscriptions.current = [];
   },
   accounts: [],
-  profile: null,
+  currentProfile: null,
   allTweets: [],
   queryResults: [],
 });
