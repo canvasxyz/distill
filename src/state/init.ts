@@ -16,7 +16,7 @@ type IngestTwitterArchiveProgress =
   | { status: "applyingFilters" }
   | { status: "generatingTextIndex" };
 
-type LoadCommunityArchiveUserProgress =
+export type LoadCommunityArchiveUserProgress =
   | { status: "starting" }
   | {
       status: "loadingTweets";
@@ -39,8 +39,6 @@ export type InitSlice = {
   ingestTwitterArchiveProgress: IngestTwitterArchiveProgress | null;
   loadCommunityArchiveUser: (accountId: string) => Promise<void>;
   loadCommunityArchiveUserProgress: LoadCommunityArchiveUserProgress | null;
-  activeAccountId: string | null;
-  switchAccount: (accountId: string) => Promise<void>;
 };
 
 export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
@@ -49,30 +47,8 @@ export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
   init: async () => {
     // before anything else is displayed we need to check that the database has tweets in it
     const dbHasTweets = (await db.tweets.limit(1).toArray()).length > 0;
-    // Load activeAccountId from sessionData
-    const sessionData = await db.sessionData.toArray();
-    let activeAccountId = sessionData[0]?.activeAccountId ?? null;
 
-    // Backward compatibility: if no activeAccountId but we have accounts, set the first one
-    if (activeAccountId === null && dbHasTweets) {
-      const accounts = await db.accounts.toArray();
-      if (accounts.length > 0) {
-        activeAccountId = accounts[0].accountId;
-        // Update sessionData with activeAccountId
-        if (sessionData.length > 0) {
-          await db.sessionData.update(sessionData[0].id, {
-            activeAccountId,
-          });
-        } else {
-          await db.sessionData.add({
-            id: "singleton",
-            activeAccountId,
-          });
-        }
-      }
-    }
-
-    set({ dbHasTweets, appIsReady: true, activeAccountId });
+    set({ dbHasTweets, appIsReady: true });
   },
 
   dbHasTweets: false,
@@ -82,7 +58,6 @@ export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
       db.accounts.clear(),
       db.profiles.clear(),
       db.tweets.clear(),
-      db.sessionData.clear(),
     ]);
     // refresh page to reinitialize state; queryResults remain intact
     location.reload();
@@ -95,7 +70,7 @@ export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
     const { account, profile, tweets } = await processTwitterArchive(file);
 
     set({ ingestTwitterArchiveProgress: { status: "addingAccount" } });
-    await db.accounts.put(account);
+    await db.accounts.put({ ...account, fromArchive: true });
 
     set({ ingestTwitterArchiveProgress: { status: "addingProfile" } });
     await db.profiles.put(profile);
@@ -106,23 +81,10 @@ export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
     );
 
     set({ ingestTwitterArchiveProgress: { status: "applyingFilters" } });
-    // Update or create sessionData with activeAccountId
-    const existingSession = await db.sessionData.toArray();
-    if (existingSession.length > 0) {
-      await db.sessionData.update(existingSession[0].id, {
-        activeAccountId: account.accountId,
-      });
-    } else {
-      await db.sessionData.add({
-        id: "singleton",
-        activeAccountId: account.accountId,
-      });
-    }
 
     set({ ingestTwitterArchiveProgress: null });
     set(() => ({
       dbHasTweets: true,
-      activeAccountId: account.accountId,
     }));
   },
   loadCommunityArchiveUser: async (accountId) => {
@@ -221,45 +183,13 @@ export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
       .maybeSingle();
     const account = mapKeysDeep(accountData, snakeToCamelCase) as Account;
 
-    await db.accounts.put(account);
+    await db.accounts.put({ ...account, fromArchive: false });
 
     set({
       loadCommunityArchiveUserProgress: null,
     });
 
-    // Update or create sessionData with activeAccountId
-    const existingSession = await db.sessionData.toArray();
-    if (existingSession.length > 0) {
-      await db.sessionData.update(existingSession[0].id, {
-        activeAccountId: accountId,
-      });
-    } else {
-      await db.sessionData.add({
-        id: "singleton",
-        activeAccountId: accountId,
-      });
-    }
-
-    set({ dbHasTweets: true, activeAccountId: accountId });
+    set({ dbHasTweets: true });
   },
   loadCommunityArchiveUserProgress: null,
-  activeAccountId: null,
-  switchAccount: async (accountId: string) => {
-    // Update sessionData with new activeAccountId
-    const existingSession = await db.sessionData.toArray();
-    if (existingSession.length > 0) {
-      const currentSession = existingSession[0];
-      await db.sessionData.update(currentSession.id, {
-        activeAccountId: accountId,
-      });
-    } else {
-      // If no session exists, check if this is a user's own archive
-      // For now, assume community archive if we're switching to an account
-      await db.sessionData.add({
-        id: "singleton",
-        activeAccountId: accountId,
-      });
-    }
-    set({ activeAccountId: accountId });
-  },
 });

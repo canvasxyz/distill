@@ -27,6 +27,7 @@ import { stripThink } from "../../utils";
 import { AVAILABLE_LLM_CONFIGS } from "../../state/llm_query";
 import { FeaturedQueryCard } from "../../components/FeaturedQueryCard";
 import { BrowseMoreButton } from "../../components/BrowseMoreButton";
+import { SelectUser } from "../SelectUser";
 
 export function RunQueries() {
   const [exampleQueriesModalIsOpen, setExampleQueriesModalIsOpen] =
@@ -38,7 +39,6 @@ export function RunQueries() {
 
   const {
     accounts,
-    activeAccountId,
     allTweets,
     submit,
     batchStatuses,
@@ -51,9 +51,14 @@ export function RunQueries() {
     setSelectedConfigIndex,
   } = useStore();
 
+  const [selectedAccountId, setSelectedAccountId] = useState<string | null>(
+    null,
+  );
+
   const account = useMemo(
-    () => accounts.filter((a) => a.accountId === activeAccountId)[0],
-    [accounts, activeAccountId],
+    () => accounts.filter((a) => a.accountId === selectedAccountId)[0] || null,
+
+    [accounts, selectedAccountId],
   );
 
   const hasReplies = useMemo(
@@ -121,9 +126,9 @@ export function RunQueries() {
   const [showBatchTweetsModal, setShowBatchTweetsModal] = useState(false);
 
   const handleRunQuery = (queryText: string) => {
-    if (queryText === "" || queryText.trim() === "") return;
+    if (!account || queryText === "" || queryText.trim() === "") return;
 
-    submit(filteredTweetsToAnalyse, queryText, rangeSelection);
+    submit(filteredTweetsToAnalyse, account, queryText, rangeSelection);
   };
 
   const tweetsSelectedForQuery = useMemo(() => {
@@ -189,8 +194,6 @@ export function RunQueries() {
       ? "All posts"
       : `Most recent ${formatCompact(MAX_ARCHIVE_SIZE)}`;
 
-  if (!account) return <></>;
-
   return (
     <div
       style={{
@@ -200,6 +203,10 @@ export function RunQueries() {
         paddingBottom: "20px",
       }}
     >
+      <SelectUser
+        selectedAccountId={selectedAccountId}
+        setSelectedAccountId={setSelectedAccountId}
+      />
       <div
         style={{
           marginTop: "24px",
@@ -474,7 +481,10 @@ export function RunQueries() {
         }}
       >
         {FEATURED_QUERIES_SINGULAR.map((baseQuery) => {
-          const query = replaceAccountName(baseQuery, account.username);
+          const query = replaceAccountName(
+            baseQuery,
+            account ? account.username : "user",
+          );
           return (
             <FeaturedQueryCard key={baseQuery} isProcessing={isProcessing}>
               <div

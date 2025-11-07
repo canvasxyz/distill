@@ -3,8 +3,6 @@ import "./App.css";
 import { useEffect } from "react";
 import { useStore } from "./state/store";
 import { PastQueries } from "./views/query_view/SidebarQueries";
-import { ArchiveSummarySection } from "./views/ArchiveSummarySection";
-import { SidebarActions } from "./views/SidebarActions";
 import { useNavigate } from "react-router";
 
 function App() {
@@ -47,8 +45,6 @@ function App() {
         <div style={{ flex: 1 }}>
           <PastQueries />
         </div>
-        <ArchiveSummarySection />
-        <SidebarActions />
       </div>
       <div style={{ flex: 1 }}>
         <Outlet />

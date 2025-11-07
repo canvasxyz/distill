@@ -11,7 +11,7 @@ import {
   type RangeSelection,
 } from "../views/query_view/ai_utils";
 import PQueue from "p-queue";
-import type { Tweet } from "../types";
+import type { Account, Tweet } from "../types";
 import { getBatches } from "../utils";
 import { v7 as uuidv7 } from "uuid";
 import { db } from "../db";
@@ -66,6 +66,7 @@ export type LlmQuerySlice = {
   setSelectedConfigIndex: (idx: number) => void;
   submit: (
     filteredTweetsToAnalyse: Tweet[],
+    account: Account,
     query: string,
     rangeSelection: RangeSelection,
   ) => void;
@@ -92,7 +93,12 @@ export const createLlmQuerySlice: StateCreator<
   selectedConfigIndex: 0,
   setSelectedConfigIndex: (idx: number) => set({ selectedConfigIndex: idx }),
 
-  submit: (filteredTweetsToAnalyse: Tweet[], query: string, rangeSelection) => {
+  submit: (
+    filteredTweetsToAnalyse: Tweet[],
+    account: Account,
+    query: string,
+    rangeSelection,
+  ) => {
     const queryId = uuidv7();
 
     const filteredTweetsSubsetToAnalyse = selectSubset(
@@ -119,9 +125,7 @@ export const createLlmQuerySlice: StateCreator<
       errorMessage: null,
     });
 
-    const { llmQueryQueue, accounts, activeAccountId, updateBatchStatus } =
-      get();
-    const account = accounts.filter((a) => a.accountId === activeAccountId)[0];
+    const { llmQueryQueue, updateBatchStatus } = get();
 
     // If there is no account, reset view state and exit early
     if (!account) {

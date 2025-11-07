@@ -1,11 +1,10 @@
 import { useStore } from "../state/store";
-import { UploadPanel } from "./UploadView";
 import { ModelQuerySection } from "./query_view/ModelQueryView";
 import { LoadingView } from "./LoadingView";
 import { FeedbackButtons } from "../components/FeedbackButtons";
 
 export function MyArchiveView() {
-  const { appIsReady, dbHasTweets } = useStore();
+  const { appIsReady } = useStore();
 
   return (
     <div>
@@ -20,15 +19,11 @@ export function MyArchiveView() {
             maxWidth: "1200px",
           }}
         >
-          {dbHasTweets ? (
-            <>
-              <br />
-              <ModelQuerySection />
-              <FeedbackButtons />
-            </>
-          ) : (
-            <UploadPanel />
-          )}
+          <>
+            <br />
+            <ModelQuerySection />
+            <FeedbackButtons />
+          </>
         </div>
       ) : (
         <LoadingView />

@@ -1,4 +1,5 @@
 export type Account = {
+  fromArchive: boolean;
   email: string;
   createdVia: string;
   username: string;
@@ -40,9 +41,4 @@ export type Tweet = {
   lang: string;
   source: string;
   raw_json: string;
-};
-
-export type SessionData = {
-  id: string;
-  activeAccountId: string | null;
 };

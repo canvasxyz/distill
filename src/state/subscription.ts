@@ -7,7 +7,6 @@ import {
   profileObservable,
   allTweetsObservable,
   queryResultsObservable,
-  sessionDataObservable,
 } from "./observables";
 import type { Account, ProfileWithId, Tweet } from "../types";
 import type { QueryResult } from "../views/query_view/ai_utils";
@@ -62,22 +61,11 @@ export const createSubscriptionSlice: StateCreator<
       error: (error) => console.error(error),
     });
 
-    const sessionDataSubscription = liveQuery(sessionDataObservable).subscribe({
-      next: (sessionData) => {
-        const session = sessionData[0];
-        set({
-          activeAccountId: session ? (session.activeAccountId ?? null) : null,
-        });
-      },
-      error: (error) => console.error(error),
-    });
-
     subscriptions.current = [
       accountSubscription,
       profileSubscription,
       allTweetsSubscription,
       queryResultsSubscription,
-      sessionDataSubscription,
     ];
   },
   unsubscribe: () => {

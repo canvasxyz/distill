@@ -1,5 +1,5 @@
 import Dexie from "dexie";
-import type { Tweet, Account, ProfileWithId, SessionData } from "./types";
+import type { Tweet, Account, ProfileWithId } from "./types";
 import type { QueryResult } from "./views/query_view/ai_utils";
 
 class AppDatabase extends Dexie {
@@ -9,8 +9,6 @@ class AppDatabase extends Dexie {
 
   queryResults: Dexie.Table<QueryResult, string>;
 
-  sessionData: Dexie.Table<SessionData, string>;
-
   constructor() {
     super("TweetArchiveExplorerDB");
     this.version(1).stores({
@@ -18,14 +16,12 @@ class AppDatabase extends Dexie {
       profiles: "accountId",
       tweets: "id,account_id,created_at",
       queryResults: "id",
-      sessionData: "id",
     });
 
     this.accounts = this.table("accounts");
     this.profiles = this.table("profiles");
     this.tweets = this.table("tweets");
     this.queryResults = this.table("queryResults");
-    this.sessionData = this.table("sessionData");
   }
 }
 

@@ -7,7 +7,6 @@ import { RouterProvider } from "react-router/dom";
 import { MyArchiveView } from "./views/MyArchiveView.tsx";
 import { AllTweetsView } from "./views/AllTweetsView.tsx";
 import { PastQueryDetailView } from "./views/query_view/PastQueryDetailView.tsx";
-import { UploadPanel } from "./views/UploadView.tsx";
 
 const router = createHashRouter([
   {
@@ -15,7 +14,6 @@ const router = createHashRouter([
     Component: App,
     children: [
       { index: true, Component: MyArchiveView },
-      { path: "switch-account", Component: UploadPanel },
       { path: "all-tweets", Component: AllTweetsView },
       { path: "query/:queryId", Component: PastQueryDetailView },
     ],
