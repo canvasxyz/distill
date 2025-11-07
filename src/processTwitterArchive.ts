@@ -9,9 +9,6 @@ export const processTwitterArchive = async (
   profile: ProfileWithId;
   tweets: Tweet[];
 }> => {
-  // This is a stub method. Implement the logic to parse the Twitter archive zip file.
-  // Once parsed, use setTweets to update the tweets state.
-  console.log("Parsing Twitter archive:", file.name);
   const zipInfo = await unzip(file);
 
   const fileNamesToExtract = [

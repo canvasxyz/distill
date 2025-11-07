@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import { useStore } from "../state/store";
 import { Navigate } from "react-router";
 import {
@@ -17,7 +17,7 @@ function Modal({
   open: boolean;
   onClose: () => void;
   title: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   if (!open) return null;
   return (
@@ -155,7 +155,7 @@ export function UploadPanel() {
             (account.username || "").toLowerCase(),
           );
           return (
-            <React.Fragment key={account.accountId}>
+            <>
               <div
                 key={`avatar-${idx}`}
                 style={{ display: "flex", alignItems: "center" }}
@@ -236,7 +236,7 @@ export function UploadPanel() {
                   Select
                 </button>
               </div>
-            </React.Fragment>
+            </>
           );
         })}
       </div>

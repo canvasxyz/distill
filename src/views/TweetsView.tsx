@@ -1,7 +1,6 @@
 import { useRef } from "react";
 import { TweetEntry } from "../components/TweetEntry";
 
-import { UploadView } from "./UploadView";
 import type { Tweet } from "../types";
 import { useSearchParams } from "react-router";
 
@@ -25,10 +24,6 @@ export function TweetsView({
   const [, setSearchParams] = useSearchParams();
 
   const listRef = useRef<HTMLDivElement>(null);
-
-  if (tweetsToDisplay === null) {
-    return <UploadView />;
-  }
 
   return (
     <div
