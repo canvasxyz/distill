@@ -102,7 +102,7 @@ export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
 
     set({ ingestTwitterArchiveProgress: { status: "addingTweets" } });
     await db.tweets.bulkPut(
-      tweets.map((tweet) => ({ ...tweet, account_id: account.accountId })),
+      tweets.map((tweet) => ({ ...tweet, accountId: account.accountId })),
     );
 
     set({ ingestTwitterArchiveProgress: { status: "applyingFilters" } });
