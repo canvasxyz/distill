@@ -16,7 +16,7 @@ class AppDatabase extends Dexie {
     this.version(1).stores({
       accounts: "accountId",
       profiles: "accountId",
-      tweets: "id,created_at",
+      tweets: "id,account_id,created_at",
       queryResults: "id",
       sessionData: "id",
     });
