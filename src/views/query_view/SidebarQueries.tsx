@@ -4,6 +4,10 @@ import type { QueryResult } from "./ai_utils";
 import type { CSSProperties, ReactNode } from "react";
 import { useState, useRef, useEffect } from "react";
 import { db } from "../../db";
+import {
+  itemContainerBase,
+  itemTitleBase,
+} from "../../components/itemContainerBase";
 
 function formatDateTime(dateStr?: string) {
   if (!dateStr) return "";
@@ -22,21 +26,6 @@ function formatDateTime(dateStr?: string) {
     })
   );
 }
-
-// Shared styles for sidebar items
-export const itemContainerBase: CSSProperties = {
-  cursor: "pointer",
-  padding: "10px 18px 6px",
-  display: "flex",
-  flexDirection: "column",
-  gap: "4px",
-  transition: "background 0.12s",
-};
-
-export const itemTitleBase: CSSProperties = {
-  fontSize: "13px",
-  wordBreak: "break-word",
-};
 
 const itemSubtitleBase: CSSProperties = {
   color: "#888",

@@ -23,24 +23,7 @@ export const allTweetsObservable = async () => {
 };
 
 export const queryResultsObservable = async () => {
-  const sessionData = await db.sessionData.toArray();
-  const activeAccountId = sessionData[0]?.activeAccountId ?? null;
-  if (activeAccountId === null) {
-    return [];
-  }
-  const accounts = await db.accounts
-    .where("accountId")
-    .equals(activeAccountId)
-    .toArray();
-  const activeAccount = accounts[0];
-  if (!activeAccount) {
-    return [];
-  }
-  const allResults = await db.queryResults.toArray();
-  // Filter by queriedHandle matching the active account's username
-  return allResults.filter(
-    (result) => result.queriedHandle === `@${activeAccount.username}`,
-  );
+  return await db.queryResults.toArray();
 };
 
 export const sessionDataObservable = async () => await db.sessionData.toArray();

@@ -1,6 +1,9 @@
 import { useNavigate } from "react-router";
 import { useStore } from "../state/store";
-import { itemContainerBase, itemTitleBase } from "./query_view/SidebarQueries";
+import {
+  itemContainerBase,
+  itemTitleBase,
+} from "../components/itemContainerBase";
 
 export const SidebarActions = () => {
   const navigate = useNavigate();
