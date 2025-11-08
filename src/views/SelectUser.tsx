@@ -13,7 +13,7 @@ export function SelectUser({
   selectedAccountId: string | null;
   setSelectedAccountId: (accountId: string) => void;
 }) {
-  const { accounts, allTweets, loadCommunityArchiveUserProgress, removeLocalArchive } = useStore();
+  const { accounts, allTweets, loadCommunityArchiveUserProgress, removeArchive } = useStore();
 
   const [showModal, setShowModal] = useState(false);
   const [profilesById, setProfilesById] = useState<Record<string, ProfileWithId>>({});
@@ -213,7 +213,7 @@ export function SelectUser({
                     </div>
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    {acc.fromArchive && (
+                    {
                       <button
                         type="button"
                         title="Remove archive"
@@ -232,7 +232,7 @@ export function SelectUser({
                             (idx > 0 && accounts[idx - 1]) ||
                             null;
 
-                          await removeLocalArchive(acc.accountId);
+                          await removeArchive(acc.accountId);
 
                           if (
                             selectedAccountId === acc.accountId &&
@@ -264,7 +264,7 @@ export function SelectUser({
                       >
                         ×
                       </button>
-                    )}
+                    }
                   </div>
                 </div>
               );
