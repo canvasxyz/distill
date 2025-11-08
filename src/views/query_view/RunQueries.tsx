@@ -141,12 +141,37 @@ export function RunQueries() {
   }, [tweetsSelectedForQuery]);
 
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const prevUsernameRef = useRef<string | null>(null);
+
+  const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
   useEffect(() => {
     if (!account) return;
     if (!selectedQuery) return;
     textareaRef.current?.focus();
   }, [account, selectedQuery]);
+
+  // When switching between archives, replace mentions of the previous
+  // account's handle with the new account's handle in the current query.
+  // Only replace exact handle matches (case-insensitive) when followed by
+  // whitespace to avoid matching larger substrings.
+  useEffect(() => {
+    const newUsername = account?.username ?? null;
+    const prevUsername = prevUsernameRef.current;
+    if (
+      newUsername &&
+      prevUsername &&
+      newUsername.toLowerCase() !== prevUsername.toLowerCase() &&
+      selectedQuery
+    ) {
+      const prevHandle = `@${prevUsername}`;
+      const newHandle = `@${newUsername}`;
+      const pattern = new RegExp(`${escapeRegExp(prevHandle)}(?=\\s)`, "gi");
+      const replaced = selectedQuery.replace(pattern, newHandle);
+      if (replaced !== selectedQuery) setSelectedQuery(replaced);
+    }
+    prevUsernameRef.current = newUsername;
+  }, [account?.username]);
 
   // Utility: only persist queries that don't reference a different @handle
   const shouldPersistQuery = (text: string, currentHandle: string) => {
