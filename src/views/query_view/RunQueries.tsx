@@ -561,6 +561,7 @@ export function RunQueries() {
         onClose={() => {
           setExampleQueriesModalIsOpen(false);
         }}
+        username={account ? account.username : ""}
         onSelectQuery={(query) => {
           setSelectedQuery(query);
           setExampleQueriesModalIsOpen(false);

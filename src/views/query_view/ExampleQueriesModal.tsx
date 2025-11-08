@@ -1,24 +1,20 @@
 import { useEffect, useMemo } from "react";
 import { replaceAccountName } from "./ai_utils";
-import { useStore } from "../../state/store";
 
 export function ExampleQueriesModal({
   isOpen,
   onClose,
   queries,
   onSelectQuery,
+  username,
 }: {
   isOpen: boolean;
   onClose: () => void;
   queries: string[];
   onSelectQuery?: (query: string) => void;
+  username?: string | null;
 }) {
-  const { accounts, activeAccountId } = useStore();
-
-  const account = useMemo(
-    () => accounts.filter((a) => a.accountId === activeAccountId)[0],
-    [accounts, activeAccountId],
-  );
+  const safeUsername = useMemo(() => username || "", [username]);
 
   // Prevent scroll on the underlying page when modal is open
   useEffect(() => {
@@ -109,7 +105,7 @@ export function ExampleQueriesModal({
             {queries.map((query, idx) => {
               const queryWithAccountName = replaceAccountName(
                 query,
-                account?.username || "",
+                safeUsername,
               );
               return (
                 <li
