@@ -39,7 +39,7 @@ function App() {
             onClick={() => navigate("/")}
             style={{ cursor: "pointer" }}
           >
-            🔎
+            💧
           </a>
         </div>
         <div style={{ flex: 1 }}>
