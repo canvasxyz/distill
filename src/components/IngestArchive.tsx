@@ -1,7 +1,11 @@
 import { useRef } from "react";
 import { useStore } from "../state/store";
 
-export const IngestArchive = () => {
+export const IngestArchive = ({
+  variant = "default",
+}: {
+  variant?: "default" | "compact";
+}) => {
   const { ingestTwitterArchive, ingestTwitterArchiveProgress } = useStore();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -14,6 +18,95 @@ export const IngestArchive = () => {
     }
   };
 
+  const progressLabel = ingestTwitterArchiveProgress
+    ? ingestTwitterArchiveProgress.status === "processingArchive"
+      ? "Processing archive..."
+      : ingestTwitterArchiveProgress.status === "addingAccount"
+        ? "Adding account"
+        : ingestTwitterArchiveProgress.status === "addingProfile"
+          ? "Adding profile"
+          : ingestTwitterArchiveProgress.status === "addingTweets"
+            ? "Adding tweets"
+            : ingestTwitterArchiveProgress.status === "applyingFilters"
+              ? "Applying filters"
+              : ingestTwitterArchiveProgress.status === "generatingTextIndex"
+                ? "Generating text index"
+                : "Working..."
+    : null;
+
+  if (variant === "compact") {
+    // Compact dropzone with dashed border and reduced padding
+    if (ingestTwitterArchiveProgress == null) {
+      return (
+        <div
+          style={{
+            display: "inline-block",
+            padding: "6px 12px",
+            border: "2px dashed #007bff",
+            borderRadius: "5px",
+            backgroundColor: "#f9f9f9",
+            cursor: "pointer",
+            transition: "background-color 0.2s",
+            whiteSpace: "nowrap",
+          }}
+          onClick={() => {
+            fileInputRef.current?.click();
+          }}
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={async (e) => {
+            e.preventDefault();
+            const file = e.dataTransfer.files[0];
+            if (file && file.type === "application/zip") {
+              await ingestTwitterArchive(file);
+            }
+          }}
+          onMouseEnter={(e) =>
+            (e.currentTarget.style.backgroundColor = "#e0e0e0")
+          }
+          onMouseLeave={(e) =>
+            (e.currentTarget.style.backgroundColor = "#f9f9f9")
+          }
+        >
+          <span
+            style={{
+              margin: 0,
+              color: "#007bff",
+              fontSize: 15,
+              fontWeight: 500,
+            }}
+          >
+            Upload Twitter Archive (.zip)
+          </span>
+          <input
+            id="file-upload"
+            ref={fileInputRef}
+            type="file"
+            accept=".zip"
+            onChange={handleFileUpload}
+            style={{ display: "none" }}
+          />
+        </div>
+      );
+    }
+
+    return (
+      <div
+        style={{
+          display: "inline-block",
+          padding: "8px 12px",
+          border: "2px dashed rgb(190, 222, 255)",
+          borderRadius: "5px",
+          backgroundColor: "#f9f9f9",
+          color: "#757575",
+          whiteSpace: "nowrap",
+        }}
+      >
+        <span style={{ fontSize: 15, fontWeight: 500 }}>{progressLabel}</span>
+      </div>
+    );
+  }
+
+  // Default large dropzone
   return ingestTwitterArchiveProgress == null ? (
     <div
       style={{
@@ -63,18 +156,7 @@ export const IngestArchive = () => {
         backgroundColor: "#f9f9f9",
       }}
     >
-      {ingestTwitterArchiveProgress.status === "processingArchive" &&
-        "Processing archive..."}
-      {ingestTwitterArchiveProgress.status === "addingAccount" &&
-        "Adding account"}
-      {ingestTwitterArchiveProgress.status === "addingProfile" &&
-        "Adding profile"}
-      {ingestTwitterArchiveProgress.status === "addingTweets" &&
-        "Adding tweets"}
-      {ingestTwitterArchiveProgress.status === "applyingFilters" &&
-        "Applying filters"}
-      {ingestTwitterArchiveProgress.status === "generatingTextIndex" &&
-        "Generating text index"}
+      {progressLabel}
     </div>
   );
 };

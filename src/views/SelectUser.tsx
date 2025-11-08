@@ -19,7 +19,64 @@ export function SelectUser({
     <div>
       {accounts.length > 0 && (
         <div style={{}}>
-          <h3>Select a user to query</h3>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: "12px",
+              marginBottom: "8px",
+            }}
+          >
+            <h3 style={{ margin: 0 }}>Select a user to query</h3>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "12px",
+              }}
+            >
+              <IngestArchive variant="compact" />
+              {loadCommunityArchiveUserProgress ? (
+                <button
+                  type="button"
+                  disabled={true}
+                  style={{
+                    padding: "8px 16px",
+                    color: "#fff",
+                    background: "#757575",
+                    border: "none",
+                    borderRadius: "6px",
+                    fontWeight: 500,
+                    fontSize: "15px",
+                    outline: "none",
+                  }}
+                >
+                  {getCommunityArchiveUserProgressLabel(
+                    loadCommunityArchiveUserProgress,
+                  )}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setShowModal(true)}
+                  style={{
+                    padding: "8px 16px",
+                    color: "#fff",
+                    background: "#1976d2",
+                    border: "none",
+                    borderRadius: "6px",
+                    fontWeight: 500,
+                    fontSize: "15px",
+                    cursor: "pointer",
+                    outline: "none",
+                  }}
+                >
+                  Select from Community Archive
+                </button>
+              )}
+            </div>
+          </div>
           <div
             style={{
               display: "flex",
@@ -66,55 +123,11 @@ export function SelectUser({
                 </div>
               );
             })}
-
-            {loadCommunityArchiveUserProgress ? (
-              <button
-                type="button"
-                disabled={true}
-                style={{
-                  marginTop: 12,
-                  marginBottom: 10,
-                  padding: "8px 16px",
-                  color: "#fff",
-                  background: "#757575",
-                  border: "none",
-                  borderRadius: "6px",
-                  fontWeight: 500,
-                  fontSize: "15px",
-
-                  outline: "none",
-                }}
-              >
-                {getCommunityArchiveUserProgressLabel(
-                  loadCommunityArchiveUserProgress,
-                )}
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setShowModal(true)}
-                style={{
-                  marginTop: 12,
-                  marginBottom: 10,
-                  padding: "8px 16px",
-                  color: "#fff",
-                  background: "#1976d2",
-                  border: "none",
-                  borderRadius: "6px",
-                  fontWeight: 500,
-                  fontSize: "15px",
-                  cursor: "pointer",
-                  outline: "none",
-                }}
-              >
-                ... or select a user from Community Archive
-              </button>
-            )}
           </div>
         </div>
       )}
 
-      <IngestArchive />
+      {accounts.length === 0 && <IngestArchive />}
 
       <CommunityArchiveUserModal
         showModal={showModal}
