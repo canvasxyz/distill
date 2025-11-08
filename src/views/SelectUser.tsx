@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useStore } from "../state/store";
 import { CommunityArchiveUserModal } from "../components/CommunityArchiveUserModal";
 import { IngestArchive } from "../components/IngestArchive";
 import { getCommunityArchiveUserProgressLabel } from "../components/CommunityArchiveUserProgress";
+import { db } from "../db";
+import type { ProfileWithId } from "../types";
 
 export function SelectUser({
   selectedAccountId,
@@ -11,9 +13,39 @@ export function SelectUser({
   selectedAccountId: string | null;
   setSelectedAccountId: (accountId: string) => void;
 }) {
-  const { accounts, loadCommunityArchiveUserProgress } = useStore();
+  const { accounts, allTweets, loadCommunityArchiveUserProgress, removeLocalArchive } = useStore();
 
   const [showModal, setShowModal] = useState(false);
+  const [profilesById, setProfilesById] = useState<Record<string, ProfileWithId>>({});
+  const [hoveredAccountId, setHoveredAccountId] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const loadProfiles = async () => {
+      const profiles = await db.profiles.toArray();
+      if (!cancelled) {
+        const map: Record<string, ProfileWithId> = {};
+        for (const p of profiles) map[p.accountId] = p;
+        setProfilesById(map);
+      }
+    };
+    loadProfiles();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const countsByAccount = useMemo(() => {
+    const map = new Map<string, { tweets: number; retweets: number }>();
+    for (const t of allTweets) {
+      const accId = t.account_id;
+      const isRt = t.full_text && t.full_text.trim().startsWith("RT @");
+      const prev = map.get(accId) || { tweets: 0, retweets: 0 };
+      if (isRt) prev.retweets += 1; else prev.tweets += 1;
+      map.set(accId, prev);
+    }
+    return map;
+  }, [allTweets]);
 
   return (
     <div>
@@ -28,7 +60,7 @@ export function SelectUser({
               marginBottom: "8px",
             }}
           >
-            <h3 style={{ margin: 0 }}>Select a user to query</h3>
+            <h3 style={{ margin: 0 }}>Select an archive</h3>
             <div
               style={{
                 display: "flex",
@@ -106,20 +138,134 @@ export function SelectUser({
                     justifyContent: "space-between",
                   }}
                   onMouseEnter={(e) => {
+                    setHoveredAccountId(acc.accountId);
                     if (!isActive) {
                       e.currentTarget.style.backgroundColor = "#f5f5f5";
                     }
                   }}
                   onMouseLeave={(e) => {
+                    setHoveredAccountId((prev) => (prev === acc.accountId ? null : prev));
                     if (!isActive) {
                       e.currentTarget.style.backgroundColor = "#fff";
                     }
                   }}
                 >
-                  <span style={{ fontWeight: isActive ? 600 : 400 }}>
-                    {acc.username || acc.accountDisplayName || acc.accountId}{" "}
-                    {acc.fromArchive && "(My archive)"}
-                  </span>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    {(() => {
+                      const profile = profilesById[acc.accountId];
+                      const size = 28;
+                      if (profile && profile.avatarMediaUrl) {
+                        return (
+                          <img
+                            src={profile.avatarMediaUrl}
+                            alt="avatar"
+                            width={size}
+                            height={size}
+                            style={{
+                              borderRadius: "50%",
+                              objectFit: "cover",
+                              flexShrink: 0,
+                              border: isActive ? "1px solid #1976d2" : "1px solid #ddd",
+                              background: "#fff",
+                            }}
+                          />
+                        );
+                      }
+                      // Fallback placeholder
+                      return (
+                        <div
+                          style={{
+                            width: size,
+                            height: size,
+                            borderRadius: "50%",
+                            background: "#e0e0e0",
+                            border: isActive ? "1px solid #1976d2" : "1px solid #ddd",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            color: "#666",
+                            fontSize: 12,
+                            flexShrink: 0,
+                          }}
+                        >
+                          {(acc.username || acc.accountDisplayName || "?")
+                            .toUpperCase()
+                            .slice(0, 1)}
+                        </div>
+                      );
+                    })()}
+                    <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+                      <span style={{ fontWeight: 600, color: isActive ? "#1976d2" : "#555" }}>
+                        {acc.username || acc.accountDisplayName || acc.accountId}{" "}
+                        {acc.fromArchive && "(My archive)"}
+                      </span>
+                      {(() => {
+                        const c = countsByAccount.get(acc.accountId) || {
+                          tweets: 0,
+                          retweets: 0,
+                        };
+                        return (
+                          <span style={{ color: isActive ? "#1565c0" : "#777" }}>
+                            {c.tweets} tweets · {c.retweets} retweets
+                          </span>
+                        );
+                      })()}
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    {acc.fromArchive && (
+                      <button
+                        type="button"
+                        title="Remove archive"
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          const ok = window.confirm(
+                            "Remove this archive? This will delete the locally stored tweets and profile for this account.",
+                          );
+                          if (!ok) return;
+
+                          const idx = accounts.findIndex(
+                            (a) => a.accountId === acc.accountId,
+                          );
+                          const next =
+                            (idx >= 0 && accounts[idx + 1]) ||
+                            (idx > 0 && accounts[idx - 1]) ||
+                            null;
+
+                          await removeLocalArchive(acc.accountId);
+
+                          if (
+                            selectedAccountId === acc.accountId &&
+                            next?.accountId
+                          ) {
+                            setSelectedAccountId(next.accountId);
+                          }
+                        }}
+                        style={{
+                          width: 22,
+                          height: 22,
+                          display: "inline-flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          borderRadius: 11,
+                          border: "1px solid #ddd",
+                          background: "#fff",
+                          color: "#888",
+                          cursor: "pointer",
+                          opacity: hoveredAccountId === acc.accountId ? 1 : 0,
+                          transition: "opacity 0.15s ease-in-out, background-color 0.2s",
+                        }}
+                        onMouseEnter={(e) => {
+                          (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#f0f0f0";
+                        }}
+                        onMouseLeave={(e) => {
+                          (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#fff";
+                        }}
+                      >
+                        ×
+                      </button>
+                    )}
+                  </div>
                 </div>
               );
             })}
