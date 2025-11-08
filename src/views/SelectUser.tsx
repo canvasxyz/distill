@@ -49,8 +49,7 @@ export function SelectUser({
 
   return (
     <div>
-      {accounts.length > 0 && (
-        <div style={{}}>
+      <div style={{}}>
           <div
             style={{
               display: "flex",
@@ -271,9 +270,6 @@ export function SelectUser({
             })}
           </div>
         </div>
-      )}
-
-      {accounts.length === 0 && <IngestArchive />}
 
       <CommunityArchiveUserModal
         showModal={showModal}
