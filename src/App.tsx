@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useStore } from "./state/store";
 import { PastQueries } from "./views/query_view/SidebarQueries";
 import { useNavigate } from "react-router";
+import { Box, Flex, Link } from "@radix-ui/themes";
 
 function App() {
   const { init, subscribe, unsubscribe } = useStore();
@@ -19,37 +20,40 @@ function App() {
   }, [init, subscribe, unsubscribe]);
 
   return (
-    <div style={{ height: "100vh", overflowY: "scroll", display: "flex" }}>
-      <div
+    <Flex style={{ height: "100vh", overflowY: "scroll" }}>
+      <Box
         style={{
           minWidth: 220,
           maxWidth: 220,
-          borderRight: "1px solid #ddd",
-          display: "flex",
-          flexDirection: "column",
           position: "sticky",
           top: 0,
           height: "100vh",
           overflowY: "auto",
+          borderRight: "1px solid var(--gray-6)",
         }}
       >
-        <div style={{ margin: "15px 20px", fontSize: 32 }}>
-          <a
-            type="link"
-            onClick={() => navigate("/")}
-            style={{ cursor: "pointer" }}
-          >
-            💧
-          </a>
-        </div>
-        <div style={{ flex: 1 }}>
-          <PastQueries />
-        </div>
-      </div>
-      <div style={{ flex: 1 }}>
+        <Flex direction="column" style={{ height: "100%" }}>
+          <Box p="4" pb="3">
+            <Link
+              onClick={() => navigate("/")}
+              style={{
+                cursor: "pointer",
+                fontSize: 32,
+                textDecoration: "none",
+              }}
+            >
+              💧
+            </Link>
+          </Box>
+          <Box style={{ flex: 1 }}>
+            <PastQueries />
+          </Box>
+        </Flex>
+      </Box>
+      <Box style={{ flex: 1 }}>
         <Outlet />
-      </div>
-    </div>
+      </Box>
+    </Flex>
   );
 }
 

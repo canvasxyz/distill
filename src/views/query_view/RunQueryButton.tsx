@@ -1,3 +1,5 @@
+import { Button, Text } from "@radix-ui/themes";
+
 const isMacPlatform =
   typeof navigator !== "undefined" &&
   /macintosh|mac os x/i.test(navigator.userAgent);
@@ -12,37 +14,18 @@ export function RunQueryButton({
   showShortcut?: boolean;
 }) {
   return (
-    <button
-      style={{
-        fontSize: "0.94em",
-        padding: "6px 16px",
-        borderRadius: "5px",
-        border: "1px solid #007bff",
-        background: disabled ? "#bfc9d1" : "#007bff",
-        color: disabled ? "#6c757d" : "white",
-        fontWeight: 500,
-        cursor: disabled ? "not-allowed" : "pointer",
-        transition: "background 0.1s",
-      }}
+    <Button
       onClick={disabled ? undefined : onClick}
-      onMouseEnter={
-        disabled
-          ? undefined
-          : (e) => (e.currentTarget.style.background = "#0072ef")
-      }
-      onMouseLeave={
-        disabled
-          ? undefined
-          : (e) => (e.currentTarget.style.background = "#007bff")
-      }
       disabled={disabled}
+      color="blue"
+      size="2"
     >
       Query
       {showShortcut && isMacPlatform && (
-        <span style={{ marginLeft: 8, fontSize: "0.85em", opacity: 0.8 }}>
+        <Text size="1" style={{ marginLeft: 8, opacity: 0.8 }}>
           ⌘⏎
-        </span>
+        </Text>
       )}
-    </button>
+    </Button>
   );
 }

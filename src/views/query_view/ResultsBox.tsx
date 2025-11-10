@@ -1,4 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
+import { Button, Flex, Text, Progress, Box, Card } from "@radix-ui/themes";
 
 export const CopyButton = ({ text }: { text: string }) => {
   const [copied, setCopied] = useState(false);
@@ -14,31 +15,14 @@ export const CopyButton = ({ text }: { text: string }) => {
   };
 
   return (
-    <button
+    <Button
       onClick={handleCopy}
-      style={{
-        background: copied ? "#4CAF50" : "#fff",
-        border: "1px solid #ccc",
-        borderRadius: "4px",
-        padding: "4px 8px",
-        cursor: "pointer",
-        fontSize: "12px",
-        color: copied ? "#fff" : "#333",
-        transition: "all 0.2s ease",
-      }}
-      onMouseEnter={(e) => {
-        if (!copied) {
-          e.currentTarget.style.background = "#f0f0f0";
-        }
-      }}
-      onMouseLeave={(e) => {
-        if (!copied) {
-          e.currentTarget.style.background = "#fff";
-        }
-      }}
+      variant={copied ? "solid" : "soft"}
+      color={copied ? "green" : "gray"}
+      size="1"
     >
       {copied ? "Copied!" : "Copy"}
-    </button>
+    </Button>
   );
 };
 
@@ -53,23 +37,16 @@ export const ProgressLabel = ({
     totalProgress > 0 && currentProgress >= totalProgress;
 
   return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        marginBottom: "8px",
-      }}
-    >
-      <span style={{ fontSize: "14px", color: "#666" }}>
+    <Flex justify="between" align="center" mb="2">
+      <Text size="2" color="gray">
         {allBatchesComplete
           ? "Summarizing results..."
           : "Processing batches..."}
-      </span>
-      <span style={{ fontSize: "14px", color: "#666" }}>
+      </Text>
+      <Text size="2" color="gray">
         {currentProgress} / {totalProgress}
-      </span>
-    </div>
+      </Text>
+    </Flex>
   );
 };
 
@@ -114,41 +91,20 @@ export function ProgressBar({
   const widthFraction = Math.min(1, baseFraction + easedFraction);
 
   return (
-    <>
-      <div
-        style={{
-          width: "100%",
-          height: "8px",
-          backgroundColor: "#e0e0e0",
-          borderRadius: "4px",
-          overflow: "hidden",
-        }}
-      >
-        <div
-          style={{
-            width: `${widthFraction * 100}%`,
-            height: "100%",
-            backgroundColor: "#4CAF50",
-            transition: "width 0.3s ease",
-          }}
-        />
-      </div>
-    </>
+    <Progress
+      value={widthFraction * 100}
+      style={{
+        height: "8px",
+        transition: "width 0.3s ease",
+      }}
+    />
   );
 }
 
 export function ResultsBox({ children }: { children: ReactNode }) {
   return (
-    <div
-      style={{
-        border: "1px solid #ccc",
-        borderRadius: "6px",
-        padding: "16px",
-        background: "#f5f5f5",
-        position: "relative",
-      }}
-    >
-      {children}
-    </div>
+    <Card>
+      <Box p="4">{children}</Box>
+    </Card>
   );
 }

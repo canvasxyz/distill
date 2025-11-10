@@ -28,6 +28,20 @@ import { AVAILABLE_LLM_CONFIGS } from "../../state/llm_query";
 import { FeaturedQueryCard } from "../../components/FeaturedQueryCard";
 import { BrowseMoreButton } from "../../components/BrowseMoreButton";
 import { SelectUser } from "../SelectUser";
+import {
+  Box,
+  Flex,
+  TextArea,
+  Select,
+  Checkbox,
+  RadioGroup,
+  Text,
+  Heading,
+  Grid,
+  Button,
+  Callout,
+  Separator,
+} from "@radix-ui/themes";
 
 export function RunQueries() {
   const [exampleQueriesModalIsOpen, setExampleQueriesModalIsOpen] =
@@ -224,24 +238,13 @@ export function RunQueries() {
       : `Most recent ${formatCompact(MAX_ARCHIVE_SIZE)}`;
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: "10px",
-        paddingBottom: "20px",
-      }}
-    >
+    <Flex direction="column" gap="3" pb="5">
       <SelectUser
         selectedAccountId={selectedAccountId}
         setSelectedAccountId={setSelectedAccountId}
       />
-      <div
-        style={{
-          marginTop: "24px",
-        }}
-      >
-        <textarea
+      <Box mt="6">
+        <TextArea
           ref={textareaRef}
           value={selectedQuery}
           disabled={isProcessing}
@@ -253,28 +256,13 @@ export function RunQueries() {
             if (isProcessing) return;
             handleRunQuery(selectedQuery);
           }}
-          rows={3}
-          style={{
-            width: "100%",
-            minHeight: "60px",
-            fontSize: "16px",
-            padding: "8px",
-            borderRadius: "6px",
-            border: "1px solid #ccc",
-            resize: "vertical",
-            boxSizing: "border-box",
-          }}
           placeholder="Type your query here..."
+          size="3"
+          rows={3}
+          style={{ minHeight: "60px" }}
         />
-      </div>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "12px",
-          marginBottom: "10px",
-        }}
-      >
+      </Box>
+      <Flex align="center" gap="3" mb="3">
         <RunQueryButton
           disabled={isProcessing}
           onClick={() => {
@@ -283,115 +271,93 @@ export function RunQueries() {
           showShortcut
         />
 
-        <div
-          style={{
-            height: "100%",
-            display: "flex",
-            flexDirection: "row",
-            alignItems: "center",
-            gap: "15px",
-            marginLeft: "10px",
-            fontSize: "90%",
-          }}
-        >
-          <label style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-            <input
-              type="radio"
-              disabled={isProcessing}
-              name="archiveMode"
-              checked={rangeSelection.type === "last-tweets"}
-              onChange={(e) => {
-                if (e.target.checked) {
-                  setRangeSelection({
-                    type: "last-tweets",
-                    numTweets: MAX_ARCHIVE_SIZE,
-                  });
-                }
-              }}
-              style={{ accentColor: "#007bff", marginTop: "2px" }}
-            />
-            {lastTweetsLabel}
-          </label>
-          <label
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
+        <Separator orientation="vertical" />
+
+        <Flex align="center" gap="4">
+          <RadioGroup.Root
+            value={rangeSelection.type}
+            onValueChange={(value) => {
+              if (value === "last-tweets") {
+                setRangeSelection({
+                  type: "last-tweets",
+                  numTweets: MAX_ARCHIVE_SIZE,
+                });
+              } else if (value === "date-range") {
+                setRangeSelection({
+                  type: "date-range",
+                  startDate: "",
+                  endDate: "",
+                });
+              }
             }}
-          >
-            <input
-              type="radio"
-              disabled={isProcessing}
-              name="archiveMode"
-              checked={rangeSelection.type === "date-range"}
-              onChange={(e) => {
-                if (e.target.checked)
-                  setRangeSelection({
-                    type: "date-range",
-                    startDate: "",
-                    endDate: "",
-                  });
-              }}
-              style={{ accentColor: "#007bff", marginTop: "2px" }}
-            />
-            Custom
-          </label>
-          <label
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-              marginLeft: "3px",
-            }}
-          >
-            <input
-              type="checkbox"
-              disabled={isProcessing || !hasReplies}
-              checked={includeReplies}
-              onChange={(e) => setIncludeReplies(e.target.checked)}
-            />
-            Replies
-          </label>
-          <label style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-            <input
-              type="checkbox"
-              disabled={isProcessing || !hasRetweets}
-              checked={includeRetweets}
-              onChange={(e) => setIncludeRetweets(e.target.checked)}
-            />
-            Retweets
-          </label>
-        </div>
-        <div style={{ flex: 1 }} />
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <select
-            id="model-select"
             disabled={isProcessing}
-            value={selectedConfigIndex}
-            onChange={(e) => setSelectedConfigIndex(Number(e.target.value))}
-            style={{
-              padding: "6px 8px",
-              borderRadius: 6,
-              border: "1px solid #ccc",
-              background: isProcessing ? "#f3f3f3" : "#fff",
-              width: 280,
-            }}
           >
+            <Flex gap="4">
+              <Text size="2" as="label">
+                <Flex align="center" gap="2">
+                  <RadioGroup.Item value="last-tweets" />
+                  {lastTweetsLabel}
+                </Flex>
+              </Text>
+              <Text size="2" as="label">
+                <Flex align="center" gap="2">
+                  <RadioGroup.Item value="date-range" />
+                  Custom
+                </Flex>
+              </Text>
+            </Flex>
+          </RadioGroup.Root>
+
+          <Separator orientation="vertical" />
+
+          <Text size="2" as="label">
+            <Flex align="center" gap="2">
+              <Checkbox
+                disabled={isProcessing || !hasReplies}
+                checked={includeReplies}
+                onCheckedChange={(checked) =>
+                  setIncludeReplies(checked === true)
+                }
+              />
+              Replies
+            </Flex>
+          </Text>
+          <Text size="2" as="label">
+            <Flex align="center" gap="2">
+              <Checkbox
+                disabled={isProcessing || !hasRetweets}
+                checked={includeRetweets}
+                onCheckedChange={(checked) =>
+                  setIncludeRetweets(checked === true)
+                }
+              />
+              Retweets
+            </Flex>
+          </Text>
+        </Flex>
+        <Box style={{ flex: 1 }} />
+        <Select.Root
+          value={String(selectedConfigIndex)}
+          onValueChange={(value) => setSelectedConfigIndex(Number(value))}
+          disabled={isProcessing}
+        >
+          <Select.Trigger style={{ width: 280 }} />
+          <Select.Content>
             {AVAILABLE_LLM_CONFIGS.map(
               ([model, provider, openrouterProvider, recommended], idx) => (
-                <option
+                <Select.Item
                   key={`${model}-${provider}-${openrouterProvider || ""}`}
-                  value={idx}
+                  value={String(idx)}
                 >
                   {recommended && "️⭐️ "}
                   {openrouterProvider && "🔀 "}
                   {model} - {openrouterProvider ?? provider}{" "}
-                </option>
+                </Select.Item>
               ),
             )}
-          </select>
-        </div>
-      </div>
+          </Select.Content>
+        </Select.Root>
+      </Flex>
       {rangeSelection.type === "date-range" && (
         <TweetFrequencyGraph
           tweetCounts={tweetCounts}
@@ -407,19 +373,9 @@ export function RunQueries() {
         />
       )}
       {errorMessage && (
-        <div
-          role="alert"
-          style={{
-            background: "#fde8e8",
-            border: "1px solid #f5c2c7",
-            color: "#842029",
-            padding: "10px 12px",
-            marginTop: "6px",
-            borderRadius: 6,
-          }}
-        >
-          {errorMessage}
-        </div>
+        <Callout.Root color="red" mt="2">
+          <Callout.Text>{errorMessage}</Callout.Text>
+        </Callout.Root>
       )}
 
       {isProcessing && currentRunningQuery && (
@@ -440,74 +396,39 @@ export function RunQueries() {
       {queryResult && (
         <>
           <ResultsBox>
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "row",
-                marginBottom: "-6px", // compensate for paragraph margins
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "4px",
-                  flex: 1,
-                }}
-              >
-                <h4 style={{ margin: 0 }}>{queryResult.query}</h4>
-                <span style={{ fontStyle: "italic", fontSize: "smaller" }}>
-                  {" "}
-                  completed in {(queryResult.totalRunTime / 1000).toFixed(
-                    2,
-                  )}{" "}
+            <Flex direction="row" mb="-2" gap="3">
+              <Flex direction="column" gap="1" style={{ flex: 1 }}>
+                <Heading size="4">{queryResult.query}</Heading>
+                <Text size="1" style={{ fontStyle: "italic" }}>
+                  completed in {(queryResult.totalRunTime / 1000).toFixed(2)}{" "}
                   seconds, {queryResult.totalTokens} tokens
-                </span>
-              </div>
-              <div style={{ marginLeft: "6px" }}>
-                <div style={{ display: "flex", gap: "6px", maxHeight: 36 }}>
-                  <button
-                    style={{
-                      border: "1px solid rgb(150, 234, 153)",
-                      borderRadius: "4px",
-                      padding: "4px 8px",
-                      background: "#fff",
-                      color: "#388e3c",
-                      fontSize: "12px",
-                      fontWeight: "bold",
-                      cursor: "pointer",
-                      transition: "all 0.2s ease",
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = "#e7f6e7";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = "#fff";
-                    }}
-                    onClick={() => {
-                      setShowBatchTweetsModal(true);
-                    }}
-                  >
-                    Evidence
-                  </button>
-                  <CopyButton text={queryResult.result} />
-                </div>
-              </div>
-            </div>
+                </Text>
+              </Flex>
+              <Flex gap="2" align="start">
+                <Button
+                  size="1"
+                  variant="soft"
+                  color="green"
+                  onClick={() => {
+                    setShowBatchTweetsModal(true);
+                  }}
+                >
+                  Evidence
+                </Button>
+                <CopyButton text={queryResult.result} />
+              </Flex>
+            </Flex>
             <Markdown remarkPlugins={[remarkGfm]}>
               {stripThink(queryResult.result)}
             </Markdown>
           </ResultsBox>
         </>
       )}
-      <div
-        style={{
-          marginTop: "6px",
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-          gap: "12px",
-          alignItems: "stretch",
-        }}
+      <Grid
+        columns={{ initial: "1", sm: "2", md: "3" }}
+        gap="3"
+        mt="2"
+        style={{ alignItems: "stretch" }}
       >
         {FEATURED_QUERIES_SINGULAR.map((baseQuery) => {
           const query = replaceAccountName(
@@ -516,26 +437,17 @@ export function RunQueries() {
           );
           return (
             <FeaturedQueryCard key={baseQuery} isProcessing={isProcessing}>
-              <div
+              <Text
+                color="blue"
                 style={{
-                  color: "#0056b3",
                   whiteSpace: "pre-wrap",
                   wordBreak: "break-word",
                   flex: 1,
-                  display: "flex",
-                  alignItems: "center",
                 }}
               >
                 {query}
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  width: "100%",
-                  gap: "8px",
-                }}
-              >
+              </Text>
+              <Flex justify="center" width="100%" gap="2">
                 <RunQueryButton
                   disabled={isProcessing}
                   onClick={() => {
@@ -545,25 +457,12 @@ export function RunQueries() {
                     textareaRef.current?.focus();
                   }}
                 />
-                <button
+                <Button
                   type="button"
                   disabled={isProcessing}
-                  style={{
-                    border: "1px solid #d0d5dd",
-                    borderRadius: "4px",
-                    padding: "6px 10px",
-                    background: "#eee",
-                    color: "#555",
-                    cursor: isProcessing ? "not-allowed" : "pointer",
-                    transition: "all 0.2s ease",
-                  }}
-                  onMouseEnter={(e) => {
-                    if (isProcessing) return;
-                    e.currentTarget.style.background = "#e2e6ea";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = "#eee";
-                  }}
+                  variant="soft"
+                  color="gray"
+                  size="2"
                   onClick={() => {
                     if (isProcessing) return;
                     setSelectedQuery(query);
@@ -571,12 +470,12 @@ export function RunQueries() {
                   }}
                 >
                   Edit
-                </button>
-              </div>
+                </Button>
+              </Flex>
             </FeaturedQueryCard>
           );
         })}
-      </div>
+      </Grid>
       <BrowseMoreButton
         isProcessing={isProcessing}
         onClick={() => {
@@ -601,6 +500,6 @@ export function RunQueries() {
         queryResult={queryResult}
         onClose={() => setShowBatchTweetsModal(false)}
       />
-    </div>
+    </Flex>
   );
 }

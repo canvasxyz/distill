@@ -2,32 +2,30 @@ import { useStore } from "../state/store";
 import { ModelQuerySection } from "./query_view/ModelQueryView";
 import { LoadingView } from "./LoadingView";
 import { FeedbackButtons } from "../components/FeedbackButtons";
+import { Box, Flex } from "@radix-ui/themes";
 
 export function MyArchiveView() {
   const { appIsReady } = useStore();
 
   return (
-    <div>
+    <Box>
       {appIsReady ? (
-        <div
+        <Flex
+          direction="column"
+          p="4"
           style={{
             maxHeight: "100vh",
-            display: "flex",
-            flexDirection: "column",
-            padding: "15px 20px",
             margin: "0 auto",
             maxWidth: "1200px",
           }}
         >
-          <>
-            <br />
-            <ModelQuerySection />
-            <FeedbackButtons />
-          </>
-        </div>
+          <Box h="2" />
+          <ModelQuerySection />
+          <FeedbackButtons />
+        </Flex>
       ) : (
         <LoadingView />
       )}
-    </div>
+    </Box>
   );
 }

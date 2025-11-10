@@ -1,10 +1,11 @@
-import { Fragment, useMemo } from "react";
+import { useMemo } from "react";
 import {
   PINNED_USERNAMES,
   useCommunityArchiveAccounts,
 } from "../hooks/useUsers";
 import { useStore } from "../state/store";
 import { Modal } from "./Modal";
+import { Grid, Flex, Avatar, Text, Button } from "@radix-ui/themes";
 
 export const CommunityArchiveUserModal = ({
   showModal,
@@ -20,7 +21,6 @@ export const CommunityArchiveUserModal = ({
     [],
   );
   const { loadCommunityArchiveUser } = useStore();
-  // Move the progress state inside the modal as well
 
   return (
     <Modal
@@ -28,108 +28,65 @@ export const CommunityArchiveUserModal = ({
       onClose={() => setShowModal(false)}
       title="Select a user from Community Archive"
     >
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr 1fr",
-          gap: "8px",
-          marginTop: "16px",
-          alignItems: "center",
-        }}
-      >
+      <Grid columns="3" gap="2" mt="4" align="center">
         {(otherUserAccounts || []).map((account, idx) => {
           const isPinned = pinnedSet.has(
             (account.username || "").toLowerCase(),
           );
           return (
-            <Fragment key={idx}>
-              <div
-                key={`avatar-${idx}`}
-                style={{ display: "flex", alignItems: "center" }}
-              >
+            <>
+              <Flex key={`avatar-${idx}`} align="center" gap="2">
                 {account.profile && account.profile.avatarMediaUrl ? (
-                  <img
+                  <Avatar
                     src={account.profile.avatarMediaUrl}
+                    size="2"
+                    radius="full"
+                    fallback="?"
                     onError={(e) =>
                       // @ts-expect-error "..."
                       (e.target.src =
                         "https://www.community-archive.org/_next/image?url=%2Fplaceholder.jpg&w=3840&q=75")
                     }
-                    style={{
-                      width: "36px",
-                      height: "36px",
-                      borderRadius: "50%",
-                      objectFit: "cover",
-                      border: "1px solid #ccc",
-                    }}
                   />
                 ) : (
-                  <div
-                    style={{
-                      width: "36px",
-                      height: "36px",
-                      borderRadius: "50%",
-                      backgroundColor: "#ddd",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: "20px",
-                      color: "#888",
-                    }}
-                  >
-                    ?
-                  </div>
+                  <Avatar size="2" radius="full" fallback="?" />
                 )}
-                <div style={{ marginLeft: 10 }}>{account.username}</div>
-              </div>
-              <div key={`tweets-${idx}`} style={{ textAlign: "center" }}>
+                <Text>{account.username}</Text>
+              </Flex>
+              <Text key={`tweets-${idx}`} style={{ textAlign: "center" }}>
                 {account.numTweets.toLocaleString()}
-              </div>
-              <div
+              </Text>
+              <Flex
                 key={`select-${idx}`}
-                style={{
-                  display: "flex",
-                  justifyContent: "flex-end",
-                  alignItems: "center",
-                  gap: "6px",
-                }}
+                justify="end"
+                align="center"
+                gap="2"
               >
                 {isPinned && (
-                  <span
+                  <Text
                     title="Pinned"
                     aria-label="Pinned account"
-                    style={{
-                      color: "#f5b301",
-                      fontSize: "14px",
-                      lineHeight: 1,
-                      marginRight: 4,
-                    }}
+                    color="amber"
+                    size="2"
                   >
                     ★
-                  </span>
+                  </Text>
                 )}
-                <button
-                  style={{
-                    padding: "4px 10px",
-                    borderRadius: "5px",
-                    border: "1px solid #1976d2",
-                    background: "#1976d2",
-                    color: "#fff",
-                    cursor: "pointer",
-                    fontWeight: 500,
-                  }}
+                <Button
+                  size="2"
+                  color="blue"
                   onClick={() => {
                     loadCommunityArchiveUser(account.accountId);
                     setShowModal(false);
                   }}
                 >
                   Select
-                </button>
-              </div>
-            </Fragment>
+                </Button>
+              </Flex>
+            </>
           );
         })}
-      </div>
+      </Grid>
     </Modal>
   );
 };

@@ -1,3 +1,5 @@
+import { Box, Link, Text } from "@radix-ui/themes";
+
 export const BrowseMoreButton = ({
   onClick,
   isProcessing,
@@ -5,25 +7,16 @@ export const BrowseMoreButton = ({
   onClick: () => void;
   isProcessing: boolean;
 }) => (
-  <div style={{ margin: "10px 0", textAlign: "center" }}>
-    <a
+  <Box style={{ margin: "10px 0", textAlign: "center" }}>
+    <Link
+      onClick={onClick}
       style={{
-        display: "inline",
-        color: "#0056B3cc",
-        fontSize: "16px",
         cursor: isProcessing ? "not-allowed" : "pointer",
         opacity: isProcessing ? 0.6 : 1,
       }}
-      onClick={onClick}
-      onMouseEnter={(e) => {
-        if (isProcessing) return;
-        e.currentTarget.style.color = "#0056B3";
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.color = "#0056B3cc";
-      }}
+      disabled={isProcessing}
     >
-      More examples...
-    </a>
-  </div>
+      <Text size="3">More examples...</Text>
+    </Link>
+  </Box>
 );

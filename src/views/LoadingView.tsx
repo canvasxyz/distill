@@ -1,39 +1,44 @@
+import { Box, Flex, Text } from "@radix-ui/themes";
+
 export function LoadingView() {
   return (
-    <div
+    <Box
       style={{
         position: "fixed",
         height: "100vh",
         width: "100vw",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        background: "#f7fafd",
-        flexDirection: "column",
-        gap: "24px",
+        background: "var(--gray-2)",
       }}
     >
-      <div
-        style={{
-          border: "8px solid #e0eafd",
-          borderTop: "8px solid #4b90e2",
-          borderRadius: "50%",
-          width: "72px",
-          height: "72px",
-          animation: "spin 1.2s linear infinite",
-        }}
-      />
-      <div style={{ fontSize: 22, color: "#26426a", fontWeight: 500 }}>
-        Loading, please wait...
-      </div>
-      <style>
-        {`
-          @keyframes spin {
-            0% { transform: rotate(0deg);}
-            100% { transform: rotate(360deg);}
-          }
-        `}
-      </style>
-    </div>
+      <Flex
+        direction="column"
+        align="center"
+        justify="center"
+        gap="6"
+        style={{ height: "100%" }}
+      >
+        <Box
+          style={{
+            border: "8px solid var(--blue-4)",
+            borderTop: "8px solid var(--blue-9)",
+            borderRadius: "50%",
+            width: "72px",
+            height: "72px",
+            animation: "spin 1.2s linear infinite",
+          }}
+        />
+        <Text size="5" weight="medium" color="gray">
+          Loading, please wait...
+        </Text>
+        <style>
+          {`
+            @keyframes spin {
+              0% { transform: rotate(0deg);}
+              100% { transform: rotate(360deg);}
+            }
+          `}
+        </style>
+      </Flex>
+    </Box>
   );
 }

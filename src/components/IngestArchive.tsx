@@ -1,5 +1,6 @@
 import { useRef } from "react";
 import { useStore } from "../state/store";
+import { Box, Text } from "@radix-ui/themes";
 
 export const IngestArchive = ({
   variant = "default",
@@ -38,13 +39,14 @@ export const IngestArchive = ({
     // Compact dropzone with dashed border and reduced padding
     if (ingestTwitterArchiveProgress == null) {
       return (
-        <div
+        <Box
+          as="label"
           style={{
             display: "inline-block",
             padding: "6px 12px",
-            border: "2px dashed #007bff",
+            border: "2px dashed var(--blue-9)",
             borderRadius: "5px",
-            backgroundColor: "#f9f9f9",
+            backgroundColor: "var(--gray-2)",
             cursor: "pointer",
             transition: "background-color 0.2s",
             whiteSpace: "nowrap",
@@ -52,31 +54,31 @@ export const IngestArchive = ({
           onClick={() => {
             fileInputRef.current?.click();
           }}
-          onDragOver={(e) => e.preventDefault()}
+          onDragOver={(e) => {
+            e.preventDefault();
+            e.currentTarget.style.backgroundColor = "var(--gray-3)";
+          }}
+          onDragLeave={(e) => {
+            e.currentTarget.style.backgroundColor = "var(--gray-2)";
+          }}
           onDrop={async (e) => {
             e.preventDefault();
+            e.currentTarget.style.backgroundColor = "var(--gray-2)";
             const file = e.dataTransfer.files[0];
             if (file && file.type === "application/zip") {
               await ingestTwitterArchive(file);
             }
           }}
           onMouseEnter={(e) =>
-            (e.currentTarget.style.backgroundColor = "#e0e0e0")
+            (e.currentTarget.style.backgroundColor = "var(--gray-3)")
           }
           onMouseLeave={(e) =>
-            (e.currentTarget.style.backgroundColor = "#f9f9f9")
+            (e.currentTarget.style.backgroundColor = "var(--gray-2)")
           }
         >
-          <span
-            style={{
-              margin: 0,
-              color: "#007bff",
-              fontSize: 15,
-              fontWeight: 500,
-            }}
-          >
+          <Text size="3" weight="medium" color="blue">
             Upload Twitter Archive (.zip)
-          </span>
+          </Text>
           <input
             id="file-upload"
             ref={fileInputRef}
@@ -85,57 +87,66 @@ export const IngestArchive = ({
             onChange={handleFileUpload}
             style={{ display: "none" }}
           />
-        </div>
+        </Box>
       );
     }
 
     return (
-      <div
+      <Box
         style={{
           display: "inline-block",
           padding: "8px 12px",
-          border: "2px dashed rgb(190, 222, 255)",
+          border: "2px dashed var(--blue-6)",
           borderRadius: "5px",
-          backgroundColor: "#f9f9f9",
-          color: "#757575",
+          backgroundColor: "var(--gray-2)",
           whiteSpace: "nowrap",
         }}
       >
-        <span style={{ fontSize: 15, fontWeight: 500 }}>{progressLabel}</span>
-      </div>
+        <Text size="3" weight="medium" color="gray">
+          {progressLabel}
+        </Text>
+      </Box>
     );
   }
 
   // Default large dropzone
   return ingestTwitterArchiveProgress == null ? (
-    <div
+    <Box
+      as="label"
       style={{
         textAlign: "center",
         marginTop: "20px",
         padding: "20px",
-        border: "2px dashed #007bff",
+        border: "2px dashed var(--blue-9)",
         borderRadius: "5px",
-        backgroundColor: "#f9f9f9",
+        backgroundColor: "var(--gray-2)",
         cursor: "pointer",
         transition: "background-color 0.2s",
       }}
       onClick={() => {
         fileInputRef.current?.click();
       }}
-      onDragOver={(e) => e.preventDefault()}
+      onDragOver={(e) => {
+        e.preventDefault();
+        e.currentTarget.style.backgroundColor = "var(--gray-3)";
+      }}
+      onDragLeave={(e) => {
+        e.currentTarget.style.backgroundColor = "var(--gray-2)";
+      }}
       onDrop={async (e) => {
         e.preventDefault();
+        e.currentTarget.style.backgroundColor = "var(--gray-2)";
         const file = e.dataTransfer.files[0];
         if (file && file.type === "application/zip") {
           await ingestTwitterArchive(file);
         }
       }}
-      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#e0e0e0")}
-      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#f9f9f9")}
+      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "var(--gray-3)")}
+      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "var(--gray-2)")}
     >
-      <p style={{ margin: "0", color: "#007bff" }}>
+      <Text color="blue" style={{ margin: 0 }}>
         Drag and drop your Twitter archive (.zip) here or click to open.
-      </p>
+      </Text>
       <input
         id="file-upload"
         ref={fileInputRef}
@@ -144,19 +155,19 @@ export const IngestArchive = ({
         onChange={handleFileUpload}
         style={{ display: "none" }}
       />
-    </div>
+    </Box>
   ) : (
-    <div
+    <Box
       style={{
         textAlign: "center",
         marginTop: "20px",
         padding: "20px",
-        border: "2px dashed rgb(190, 222, 255)",
+        border: "2px dashed var(--blue-6)",
         borderRadius: "5px",
-        backgroundColor: "#f9f9f9",
+        backgroundColor: "var(--gray-2)",
       }}
     >
-      {progressLabel}
-    </div>
+      <Text>{progressLabel}</Text>
+    </Box>
   );
 };
