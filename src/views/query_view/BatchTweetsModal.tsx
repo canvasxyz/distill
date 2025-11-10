@@ -2,6 +2,19 @@ import { useEffect, useMemo, useState } from "react";
 import { type QueryResult } from "./ai_utils";
 import { useStore } from "../../state/store";
 
+function formatDate(dateString: string) {
+  if (!dateString) return "";
+  // Try to parse dates like "Fri Sep 10 22:00:07 +0000 2021"
+  const parsed = new Date(dateString);
+  if (!isNaN(parsed.getTime())) {
+    const y = parsed.getFullYear();
+    const m = String(parsed.getMonth() + 1).padStart(2, "0");
+    const d = String(parsed.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  }
+  return dateString;
+}
+
 export function BatchTweetsModal({
   queryResult,
   isOpen,
@@ -255,19 +268,68 @@ export function BatchTweetsModal({
                                     marginRight: 10,
                                     flex: "1 1 auto",
                                     fontSize: 15,
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    gap: 3,
                                   }}
                                 >
                                   <span
                                     style={{
-                                      color: "#1976d2",
-                                      fontWeight: 500,
-                                      marginRight: 8,
-                                      fontSize: 13,
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: 6,
                                     }}
                                   >
-                                    @{accountIdToUsername.get(tweet.account_id)}
+                                    <span
+                                      style={{
+                                        color: "#1976d2",
+                                        fontWeight: 500,
+                                        marginRight: 8,
+                                        fontSize: 13,
+                                      }}
+                                    >
+                                      @
+                                      {accountIdToUsername.get(
+                                        tweet.account_id,
+                                      )}
+                                    </span>
+                                    <span
+                                      style={{
+                                        color: "#888",
+                                        fontSize: 12,
+                                        marginRight: 16,
+                                      }}
+                                      title={tweet.created_at}
+                                    >
+                                      {formatDate(tweet.created_at)}
+                                    </span>
+                                    <span
+                                      style={{
+                                        color: "#757575",
+                                        fontSize: 12,
+                                        marginRight: 10,
+                                        display: "inline-flex",
+                                        alignItems: "center",
+                                      }}
+                                      title={`${tweet.favorite_count ?? 0} Likes`}
+                                    >
+                                      <span style={{ marginRight: 2 }}>♥</span>
+                                      {tweet.favorite_count ?? 0}
+                                    </span>
+                                    <span
+                                      style={{
+                                        color: "#757575",
+                                        fontSize: 12,
+                                        display: "inline-flex",
+                                        alignItems: "center",
+                                      }}
+                                      title={`${tweet.retweet_count ?? 0} Retweets`}
+                                    >
+                                      <span style={{ marginRight: 2 }}>🔁</span>
+                                      {tweet.retweet_count ?? 0}
+                                    </span>
                                   </span>
-                                  {tweet.full_text}
+                                  <span>{tweet.full_text}</span>
                                 </span>
                               </li>
                             );
