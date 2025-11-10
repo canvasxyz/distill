@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { type QueryResult } from "./ai_utils";
+import { useStore } from "../../state/store";
 
 export function BatchTweetsModal({
   queryResult,
@@ -10,6 +11,16 @@ export function BatchTweetsModal({
   isOpen: boolean;
   onClose: () => void;
 }) {
+  const { accounts } = useStore();
+
+  const accountIdToUsername = useMemo(
+    () =>
+      new Map<string, string>(
+        (accounts || []).map((a) => [a.accountId, a.username]),
+      ),
+    [accounts],
+  );
+
   // Prevent scroll on the underlying page when modal is open
   useEffect(() => {
     if (isOpen) {
@@ -225,6 +236,11 @@ export function BatchTweetsModal({
                           }}
                         >
                           {tweets.map((tweet, idx) => {
+                            // Try to show the username, falling back to account_id if available
+
+                            const username = accountIdToUsername.get(
+                              tweet.account_id,
+                            );
                             return (
                               <li
                                 key={tweet.id_str}
@@ -246,6 +262,16 @@ export function BatchTweetsModal({
                                     fontSize: 15,
                                   }}
                                 >
+                                  <span
+                                    style={{
+                                      color: "#1976d2",
+                                      fontWeight: 500,
+                                      marginRight: 8,
+                                      fontSize: 13,
+                                    }}
+                                  >
+                                    @{username}
+                                  </span>
                                   {tweet.full_text}
                                 </span>
                               </li>

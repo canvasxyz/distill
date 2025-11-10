@@ -11,7 +11,7 @@ import {
   type RangeSelection,
 } from "../views/query_view/ai_utils";
 import PQueue from "p-queue";
-import type { Account, Tweet } from "../types";
+import type { Tweet } from "../types";
 import { getBatches } from "../utils";
 import { v7 as uuidv7 } from "uuid";
 import { db } from "../db";
@@ -67,7 +67,7 @@ export type LlmQuerySlice = {
   setSelectedConfigIndex: (idx: number) => void;
   submit: (
     filteredTweetsToAnalyse: Tweet[],
-    account: Account,
+    selectedAccountIds: string[],
     query: string,
     rangeSelection: RangeSelection,
   ) => void;
@@ -96,7 +96,7 @@ export const createLlmQuerySlice: StateCreator<
 
   submit: (
     filteredTweetsToAnalyse: Tweet[],
-    account: Account,
+    selectedAccountIds: string[],
     query: string,
     rangeSelection,
   ) => {
@@ -126,16 +126,19 @@ export const createLlmQuerySlice: StateCreator<
       errorMessage: null,
     });
 
-    const { llmQueryQueue, updateBatchStatus } = get();
+    const { llmQueryQueue, accounts, updateBatchStatus } = get();
+    const selectedAccounts = accounts.filter((a) =>
+      selectedAccountIds.includes(a.accountId),
+    );
 
-    // If there is no account, reset view state and exit early
-    if (!account) {
+    // If there are no selected accounts, reset view state and exit early
+    if (selectedAccounts.length === 0) {
       set({
         isProcessing: false,
         startedProcessingTime: null,
         currentRunningQuery: null,
         batchStatuses: {},
-        // keep errorMessage as-is; account is handled higher up in UI
+        errorMessage: "No accounts selected for query",
       });
       return;
     }
@@ -163,7 +166,7 @@ export const createLlmQuerySlice: StateCreator<
               queryResult = await submitQuery({
                 tweetsSample: batch,
                 query: { systemPrompt: batchSystemPrompt, prompt: query },
-                account,
+                accounts: selectedAccounts,
                 model,
                 provider,
                 openrouterProvider: openrouterProvider,
@@ -230,7 +233,7 @@ export const createLlmQuerySlice: StateCreator<
               finalQueryResult = await submitQuery({
                 tweetsSample: collectedTweets,
                 query: { systemPrompt: finalSystemPrompt, prompt: query },
-                account,
+                accounts: selectedAccounts,
                 model,
                 provider,
                 openrouterProvider: openrouterProvider,
@@ -278,7 +281,12 @@ export const createLlmQuerySlice: StateCreator<
             provider: openrouterProvider
               ? `${provider}-${openrouterProvider}`
               : provider,
-            queriedHandle: `@${account.username}`,
+            // For backward compatibility, set queriedHandle if single account
+            queriedHandle:
+              selectedAccounts.length === 1
+                ? `@${selectedAccounts[0].username}`
+                : undefined,
+            queriedAccountIds: selectedAccountIds,
           };
 
           db.queryResults.add(newQueryResult);

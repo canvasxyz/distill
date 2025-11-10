@@ -36,7 +36,7 @@ function formatRangeSelection(rangeSelection?: RangeSelection) {
 
 export function PastQueryDetailView() {
   const { queryId } = useParams<{ queryId: string }>();
-  const { queryResults } = useStore();
+  const { queryResults, accounts } = useStore();
   const navigate = useNavigate();
   const [showBatchTweetsModal, setShowBatchTweetsModal] = useState(false);
 
@@ -194,11 +194,34 @@ export function PastQueryDetailView() {
             >
               Result
             </h2>
-            {query.queriedHandle && (
-              <span style={{ color: "#666", fontSize: "12px", marginTop: 4 }}>
-                {query.queriedHandle}
-              </span>
-            )}
+            {(() => {
+              // Show queriedAccountIds if available (multi-user query)
+              if (query.queriedAccountIds && query.queriedAccountIds.length > 0) {
+                // Get account usernames from the store
+                const accountUsernames = query.queriedAccountIds
+                  .map((id) => {
+                    const account = accounts.find((a) => a.accountId === id);
+                    return account ? `@${account.username}` : id;
+                  })
+                  .join(", ");
+                return (
+                  <span style={{ color: "#666", fontSize: "12px", marginTop: 4 }}>
+                    {query.queriedAccountIds.length > 1
+                      ? `${query.queriedAccountIds.length} accounts: ${accountUsernames}`
+                      : accountUsernames}
+                  </span>
+                );
+              }
+              // Fall back to queriedHandle for backward compatibility
+              if (query.queriedHandle) {
+                return (
+                  <span style={{ color: "#666", fontSize: "12px", marginTop: 4 }}>
+                    {query.queriedHandle}
+                  </span>
+                );
+              }
+              return null;
+            })()}
           </div>
           <div
             style={{

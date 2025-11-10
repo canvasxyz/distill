@@ -28,6 +28,8 @@ import { AVAILABLE_LLM_CONFIGS } from "../../state/llm_query";
 import { FeaturedQueryCard } from "../../components/FeaturedQueryCard";
 import { BrowseMoreButton } from "../../components/BrowseMoreButton";
 import { SelectUser } from "../SelectUser";
+import { db } from "../../db";
+import type { Tweet } from "../../types";
 
 export function RunQueries() {
   const [exampleQueriesModalIsOpen, setExampleQueriesModalIsOpen] =
@@ -51,36 +53,59 @@ export function RunQueries() {
     setSelectedConfigIndex,
   } = useStore();
 
-  const [selectedAccountId, setSelectedAccountId] = useState<string | null>(
-    null,
-  );
+  const [selectedAccountIds, setSelectedAccountIds] = useState<string[]>([]);
 
-  const account = useMemo(
-    () => accounts.filter((a) => a.accountId === selectedAccountId)[0] || null,
+  // Fetch tweets from all selected accounts
+  const [tweetsFromSelectedAccounts, setTweetsFromSelectedAccounts] = useState<
+    Tweet[]
+  >([]);
+  useEffect(() => {
+    const fetchTweets = async () => {
+      if (selectedAccountIds.length === 0) {
+        setTweetsFromSelectedAccounts([]);
+        return;
+      }
+      const tweets = await db.tweets
+        .where("account_id")
+        .anyOf(selectedAccountIds)
+        .toArray();
+      setTweetsFromSelectedAccounts(tweets);
+    };
+    fetchTweets();
+  }, [selectedAccountIds]);
 
-    [accounts, selectedAccountId],
+  // Use tweets from selected accounts, or all tweets if none selected
+  const tweetsToAnalyse = useMemo(() => {
+    return selectedAccountIds.length > 0
+      ? tweetsFromSelectedAccounts
+      : allTweets || [];
+  }, [selectedAccountIds.length, tweetsFromSelectedAccounts, allTweets]);
+
+  const selectedAccounts = useMemo(
+    () => accounts.filter((a) => selectedAccountIds.includes(a.accountId)),
+    [accounts, selectedAccountIds],
   );
 
   const hasReplies = useMemo(
-    () => (allTweets || []).some((t) => Boolean(t.in_reply_to_user_id)),
-    [allTweets],
+    () => tweetsToAnalyse.some((t) => Boolean(t.in_reply_to_user_id)),
+    [tweetsToAnalyse],
   );
   const hasRetweets = useMemo(
-    () => (allTweets || []).some((t) => t.full_text.startsWith("RT ")),
-    [allTweets],
+    () => tweetsToAnalyse.some((t) => t.full_text.startsWith("RT ")),
+    [tweetsToAnalyse],
   );
 
   // Keep UI state intuitive: if none exist, ensure toggles are off
   useEffect(() => {
     if (!hasReplies && includeReplies) setIncludeReplies(false);
-  }, [hasReplies]);
+  }, [hasReplies, includeReplies]);
   useEffect(() => {
     if (!hasRetweets && includeRetweets) setIncludeRetweets(false);
-  }, [hasRetweets]);
+  }, [hasRetweets, includeRetweets]);
 
   const filteredTweetsToAnalyse = useMemo(
     () =>
-      (allTweets || []).filter((tweet) => {
+      tweetsToAnalyse.filter((tweet) => {
         if (!includeReplies && tweet.in_reply_to_user_id) {
           return false;
         }
@@ -89,7 +114,7 @@ export function RunQueries() {
         }
         return true;
       }),
-    [allTweets, includeReplies, includeRetweets],
+    [tweetsToAnalyse, includeReplies, includeRetweets],
   );
 
   const tweetCounts = useTweetCounts(filteredTweetsToAnalyse);
@@ -126,9 +151,19 @@ export function RunQueries() {
   const [showBatchTweetsModal, setShowBatchTweetsModal] = useState(false);
 
   const handleRunQuery = (queryText: string) => {
-    if (!account || queryText === "" || queryText.trim() === "") return;
+    if (
+      selectedAccountIds.length === 0 ||
+      queryText === "" ||
+      queryText.trim() === ""
+    )
+      return;
 
-    submit(filteredTweetsToAnalyse, account, queryText, rangeSelection);
+    submit(
+      filteredTweetsToAnalyse,
+      selectedAccountIds,
+      queryText,
+      rangeSelection,
+    );
   };
 
   const tweetsSelectedForQuery = useMemo(() => {
@@ -141,77 +176,38 @@ export function RunQueries() {
   }, [tweetsSelectedForQuery]);
 
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
-  const prevUsernameRef = useRef<string | null>(null);
-
-  const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
   useEffect(() => {
-    if (!account) return;
+    if (selectedAccountIds.length === 0) return;
     if (!selectedQuery) return;
     textareaRef.current?.focus();
-  }, [account, selectedQuery]);
+  }, [selectedAccountIds, selectedQuery]);
 
-  // When switching between archives, replace mentions of the previous
-  // account's handle with the new account's handle in the current query.
-  // Only replace exact handle matches (case-insensitive) when followed by
-  // whitespace to avoid matching larger substrings.
+  // Note: Removed handle replacement logic for multi-user queries
+  // Users can manually adjust @handles in queries when querying multiple accounts
+
+  // Restore last query from localStorage when accounts are available
   useEffect(() => {
-    const newUsername = account?.username ?? null;
-    const prevUsername = prevUsernameRef.current;
-    if (
-      newUsername &&
-      prevUsername &&
-      newUsername.toLowerCase() !== prevUsername.toLowerCase() &&
-      selectedQuery
-    ) {
-      const prevHandle = `@${prevUsername}`;
-      const newHandle = `@${newUsername}`;
-      const pattern = new RegExp(`${escapeRegExp(prevHandle)}(?=\\s)`, "gi");
-      const replaced = selectedQuery.replace(pattern, newHandle);
-      if (replaced !== selectedQuery) setSelectedQuery(replaced);
-    }
-    prevUsernameRef.current = newUsername;
-  }, [account?.username]);
-
-  // Utility: only persist queries that don't reference a different @handle
-  const shouldPersistQuery = (text: string, currentHandle: string) => {
-    if (!text) return true;
-    const handles = (text.match(/@[A-Za-z0-9_]{1,15}/g) || []).map((h) =>
-      h.toLowerCase(),
-    );
-    if (handles.length === 0) return true;
-    const uniq = new Set(handles);
-    uniq.delete(currentHandle.toLowerCase());
-    return uniq.size === 0; // persist only if remaining set is empty
-  };
-
-  // Restore last query from localStorage when account is available
-  useEffect(() => {
-    if (!account) return;
+    if (selectedAccountIds.length === 0) return;
     try {
       const saved = localStorage.getItem("llm:lastQuery");
-      const currentHandle = `@${account.username}`.toLowerCase();
-      if (saved && shouldPersistQuery(saved, currentHandle)) {
+      if (saved) {
         setSelectedQuery((prev) => (prev ? prev : saved));
       }
     } catch {
       // ignore storage errors
     }
-  }, [account]);
+  }, [selectedAccountIds.length]);
 
-  // Persist query text changes to localStorage when valid for this account
+  // Persist query text changes to localStorage
   useEffect(() => {
-    if (!account) return;
+    if (selectedAccountIds.length === 0) return;
     try {
-      const currentHandle = `@${account.username}`.toLowerCase();
-      if (shouldPersistQuery(selectedQuery, currentHandle)) {
-        localStorage.setItem("llm:lastQuery", selectedQuery || "");
-      }
-      // else: do not persist queries mentioning other handles
+      localStorage.setItem("llm:lastQuery", selectedQuery || "");
     } catch {
       // ignore storage errors
     }
-  }, [selectedQuery, account]);
+  }, [selectedQuery, selectedAccountIds.length]);
 
   const totalPostsCount = (allTweets || []).length;
   const lastTweetsLabel =
@@ -229,8 +225,8 @@ export function RunQueries() {
       }}
     >
       <SelectUser
-        selectedAccountId={selectedAccountId}
-        setSelectedAccountId={setSelectedAccountId}
+        selectedAccountIds={selectedAccountIds}
+        setSelectedAccountIds={setSelectedAccountIds}
       />
       <div
         style={{
@@ -508,7 +504,7 @@ export function RunQueries() {
         {FEATURED_QUERIES_SINGULAR.map((baseQuery) => {
           const query = replaceAccountName(
             baseQuery,
-            account ? account.username : "user",
+            selectedAccounts.length > 0 ? selectedAccounts[0].username : "user",
           );
           return (
             <FeaturedQueryCard key={baseQuery} isProcessing={isProcessing}>
@@ -586,7 +582,9 @@ export function RunQueries() {
         onClose={() => {
           setExampleQueriesModalIsOpen(false);
         }}
-        username={account ? account.username : ""}
+        username={
+          selectedAccounts.length > 0 ? selectedAccounts[0].username : ""
+        }
         onSelectQuery={(query) => {
           setSelectedQuery(query);
           setExampleQueriesModalIsOpen(false);

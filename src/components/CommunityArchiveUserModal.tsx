@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { Fragment, useMemo } from "react";
 import {
   PINNED_USERNAMES,
   useCommunityArchiveAccounts,
@@ -42,7 +42,7 @@ export const CommunityArchiveUserModal = ({
             (account.username || "").toLowerCase(),
           );
           return (
-            <>
+            <Fragment key={idx}>
               <div
                 key={`avatar-${idx}`}
                 style={{ display: "flex", alignItems: "center" }}
@@ -126,7 +126,7 @@ export const CommunityArchiveUserModal = ({
                   Select
                 </button>
               </div>
-            </>
+            </Fragment>
           );
         })}
       </div>

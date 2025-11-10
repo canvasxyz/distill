@@ -48,7 +48,10 @@ export type QueryResult = {
   provider: string;
   model: string;
   // The handle that was queried when this result was created (e.g. "@alice")
+  // Kept for backward compatibility with single-user queries
   queriedHandle?: string;
+  // Account IDs that were queried (for multi-user queries)
+  queriedAccountIds?: string[];
 };
 
 export const batchSystemPrompt =
@@ -60,26 +63,51 @@ export const finalSystemPrompt =
 export function replaceAccountName(text: string, accountName: string) {
   return text.replace(/\{account\}/g, `@${accountName}`);
 }
+
+export function replaceAccountNames(text: string, accounts: Account[]) {
+  if (accounts.length === 0) {
+    return text.replace(/\{account\}/g, "users");
+  } else if (accounts.length === 1) {
+    return text.replace(/\{account\}/g, `@${accounts[0].username}`);
+  } else {
+    const accountNames = accounts.map((acc) => `@${acc.username}`).join(", ");
+    // Replace {account} with the list of accounts, and adjust grammar if needed
+    return text
+      .replace(/\{account\}/g, accountNames)
+      .replace(/a user's/g, "users'")
+      .replace(/an archive/g, "archives");
+  }
+}
+
 export function makePromptMessages(
   tweetsSample: { id_str: string; full_text: string; created_at: string }[],
   query: Query,
-  account: Account,
+  accounts: Account[],
 ) {
+  const accountIdToUsername = new Map<string, string>(
+    (accounts || []).map((a) => [a.accountId, a.username]),
+  );
+
   return [
     {
       role: "system" as const,
-      content: `${replaceAccountName(query.systemPrompt || finalSystemPrompt, account.username)}
+      content: `${replaceAccountNames(query.systemPrompt || finalSystemPrompt, accounts)}
 
-        ${replaceAccountName(query.prompt, account.username)}`,
+        ${replaceAccountNames(query.prompt, accounts)}`,
     },
 
     {
       role: "user" as const,
       content: tweetsSample
-        .map(
-          (tweet) =>
-            `<Post id="${tweet.id_str}" date="${tweet.created_at}">${tweet.full_text}</Post>`,
-        )
+        .map((tweet) => {
+          // We expect Tweet to include account_id when passed in from callers
+          // Fallback to "unknown" if mapping is missing
+          // @ts-expect-error account_id exists on runtime Tweet objects
+          const accId: string | undefined = tweet.account_id;
+          const username =
+            (accId && accountIdToUsername.get(accId)) || "unknown";
+          return `<Post user="@${username}" id="${tweet.id_str}" date="${tweet.created_at}">${tweet.full_text}</Post>`;
+        })
         .join("\n"),
     },
   ];
@@ -90,16 +118,16 @@ export const serverUrl = "https://tweet-analysis-worker.bob-wbb.workers.dev";
 export async function submitQuery(params: {
   tweetsSample: Tweet[];
   query: Query;
-  account: Account;
+  accounts: Account[];
   model: string;
   provider: LLMQueryProvider;
   openrouterProvider?: string | null | undefined;
 }) {
-  const { tweetsSample, query, account, model, provider, openrouterProvider } =
+  const { tweetsSample, query, accounts, model, provider, openrouterProvider } =
     params;
   const startTime = performance.now();
 
-  const messages = makePromptMessages(tweetsSample, query, account);
+  const messages = makePromptMessages(tweetsSample, query, accounts);
   const aiParams: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming & {
     provider?: { only: string[] };
   } = {

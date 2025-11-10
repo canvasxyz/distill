@@ -150,7 +150,25 @@ function PastQueryItem({ query }: { query: QueryResult }) {
             ? query.query.slice(0, 80) + "…"
             : query.query}
         </span>
-        <span style={itemSubtitleBase}>{formatDateTime(query.id)}</span>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <span style={itemSubtitleBase}>{formatDateTime(query.id)}</span>
+          {query.queriedAccountIds && query.queriedAccountIds.length > 1 && (
+            <span
+              style={{
+                ...itemSubtitleBase,
+                backgroundColor: "#e3f2fd",
+                color: "#1976d2",
+                padding: "2px 6px",
+                borderRadius: "4px",
+                fontSize: "10px",
+                fontWeight: 500,
+              }}
+              title={`${query.queriedAccountIds.length} accounts`}
+            >
+              {query.queriedAccountIds.length} accounts
+            </span>
+          )}
+        </div>
         <div
           style={{
             position: "absolute",
