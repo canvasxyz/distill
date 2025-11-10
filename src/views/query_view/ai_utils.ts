@@ -78,7 +78,7 @@ export function makePromptMessages(
       content: tweetsSample
         .map(
           (tweet) =>
-            `<Post id="${tweet.id_str}" date="${tweet.created_at}" num_likes="${tweet.favorite_count}">${tweet.full_text}</Post>`,
+            `<Post id="${tweet.id_str}" date="${tweet.created_at}" num_likes="${tweet.favorite_count}" num_retweets="${tweet.retweet_count}">${tweet.full_text}</Post>`,
         )
         .join("\n"),
     },
