@@ -61,7 +61,7 @@ export function replaceAccountName(text: string, accountName: string) {
   return text.replace(/\{account\}/g, `@${accountName}`);
 }
 export function makePromptMessages(
-  tweetsSample: { id_str: string; full_text: string; created_at: string }[],
+  tweetsSample: Tweet[],
   query: Query,
   account: Account,
 ) {
@@ -78,7 +78,7 @@ export function makePromptMessages(
       content: tweetsSample
         .map(
           (tweet) =>
-            `<Post id="${tweet.id_str}" date="${tweet.created_at}">${tweet.full_text}</Post>`,
+            `<Post id="${tweet.id_str}" date="${tweet.created_at}" num_likes="${tweet.favorite_count}">${tweet.full_text}</Post>`,
         )
         .join("\n"),
     },
