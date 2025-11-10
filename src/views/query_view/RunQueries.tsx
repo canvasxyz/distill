@@ -81,6 +81,10 @@ export function RunQueries() {
   const filteredTweetsToAnalyse = useMemo(
     () =>
       (allTweets || []).filter((tweet) => {
+        if (tweet.account_id !== selectedAccountId) {
+          return false;
+        }
+
         if (!includeReplies && tweet.in_reply_to_user_id) {
           return false;
         }
@@ -89,7 +93,7 @@ export function RunQueries() {
         }
         return true;
       }),
-    [allTweets, includeReplies, includeRetweets],
+    [allTweets, selectedAccountId, includeReplies, includeRetweets],
   );
 
   const tweetCounts = useTweetCounts(filteredTweetsToAnalyse);
