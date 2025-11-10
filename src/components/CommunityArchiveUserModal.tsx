@@ -42,7 +42,7 @@ export const CommunityArchiveUserModal = ({
             (account.username || "").toLowerCase(),
           );
           return (
-            <Fragment>
+            <Fragment key={idx}>
               <div
                 key={`avatar-${idx}`}
                 style={{ display: "flex", alignItems: "center" }}
