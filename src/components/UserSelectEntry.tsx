@@ -40,6 +40,7 @@ export const UserSelectEntry = ({
         border: isSelected ? "1px solid #1976d2" : "1px solid #ddd",
         color: isSelected ? "#1976d2" : "#333",
         display: "flex",
+        flexGrow: "1",
         alignItems: "center",
         justifyContent: "space-between",
       }}
