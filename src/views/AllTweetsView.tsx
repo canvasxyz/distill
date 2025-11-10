@@ -10,8 +10,11 @@ function AllTweetsViewInner() {
 
   const [params] = useSearchParams();
   const searchParam = params.get("search");
+  const accountIdParam = params.get("account_id");
 
-  const filteredTweets = useFilterBySearchParam(searchParam, allTweets);
+  const filteredTweets = useFilterBySearchParam(searchParam, allTweets).filter(
+    (tweet) => (accountIdParam ? tweet.account_id === accountIdParam : true),
+  );
 
   const { itemsToDisplay, navigateNext, navigatePrevious } = usePagination({
     items: filteredTweets,

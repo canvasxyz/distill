@@ -13,10 +13,17 @@ export function SelectUser({
   selectedAccountId: string | null;
   setSelectedAccountId: (accountId: string) => void;
 }) {
-  const { accounts, allTweets, loadCommunityArchiveUserProgress, removeArchive } = useStore();
+  const {
+    accounts,
+    allTweets,
+    loadCommunityArchiveUserProgress,
+    removeArchive,
+  } = useStore();
 
   const [showModal, setShowModal] = useState(false);
-  const [profilesById, setProfilesById] = useState<Record<string, ProfileWithId>>({});
+  const [profilesById, setProfilesById] = useState<
+    Record<string, ProfileWithId>
+  >({});
   const [hoveredAccountId, setHoveredAccountId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -41,7 +48,8 @@ export function SelectUser({
       const accId = t.account_id;
       const isRt = t.full_text && t.full_text.trim().startsWith("RT @");
       const prev = map.get(accId) || { tweets: 0, retweets: 0 };
-      if (isRt) prev.retweets += 1; else prev.tweets += 1;
+      if (isRt) prev.retweets += 1;
+      else prev.tweets += 1;
       map.set(accId, prev);
     }
     return map;
@@ -50,76 +58,77 @@ export function SelectUser({
   return (
     <div>
       <div style={{}}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: "12px",
+            marginBottom: "8px",
+          }}
+        >
+          <h3 style={{ margin: 0 }}>Select an archive</h3>
           <div
             style={{
               display: "flex",
               alignItems: "center",
-              justifyContent: "space-between",
               gap: "12px",
-              marginBottom: "8px",
             }}
           >
-            <h3 style={{ margin: 0 }}>Select an archive</h3>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "12px",
-              }}
-            >
-              <IngestArchive variant="compact" />
-              {loadCommunityArchiveUserProgress ? (
-                <button
-                  type="button"
-                  disabled={true}
-                  style={{
-                    padding: "8px 16px",
-                    color: "#fff",
-                    background: "#757575",
-                    border: "none",
-                    borderRadius: "6px",
-                    fontWeight: 500,
-                    fontSize: "15px",
-                    outline: "none",
-                  }}
-                >
-                  {getCommunityArchiveUserProgressLabel(
-                    loadCommunityArchiveUserProgress,
-                  )}
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => setShowModal(true)}
-                  style={{
-                    padding: "8px 16px",
-                    color: "#fff",
-                    background: "#1976d2",
-                    border: "none",
-                    borderRadius: "6px",
-                    fontWeight: 500,
-                    fontSize: "15px",
-                    cursor: "pointer",
-                    outline: "none",
-                  }}
-                >
-                  Select from Community Archive
-                </button>
-              )}
-            </div>
+            <IngestArchive variant="compact" />
+            {loadCommunityArchiveUserProgress ? (
+              <button
+                type="button"
+                disabled={true}
+                style={{
+                  padding: "8px 16px",
+                  color: "#fff",
+                  background: "#757575",
+                  border: "none",
+                  borderRadius: "6px",
+                  fontWeight: 500,
+                  fontSize: "15px",
+                  outline: "none",
+                }}
+              >
+                {getCommunityArchiveUserProgressLabel(
+                  loadCommunityArchiveUserProgress,
+                )}
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setShowModal(true)}
+                style={{
+                  padding: "8px 16px",
+                  color: "#fff",
+                  background: "#1976d2",
+                  border: "none",
+                  borderRadius: "6px",
+                  fontWeight: 500,
+                  fontSize: "15px",
+                  cursor: "pointer",
+                  outline: "none",
+                }}
+              >
+                Select from Community Archive
+              </button>
+            )}
           </div>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "8px",
-            }}
-          >
-            {accounts.map((acc) => {
-              const isActive =
-                selectedAccountId && acc.accountId === selectedAccountId;
+        </div>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "8px",
+          }}
+        >
+          {accounts.map((acc) => {
+            const isActive =
+              selectedAccountId && acc.accountId === selectedAccountId;
 
-              return (
+            return (
+              <div style={{ display: "flex", gap: "10px" }}>
                 <div
                   key={acc.accountId}
                   onClick={async () => {
@@ -135,6 +144,7 @@ export function SelectUser({
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "space-between",
+                    flexGrow: "1",
                   }}
                   onMouseEnter={(e) => {
                     setHoveredAccountId(acc.accountId);
@@ -143,13 +153,17 @@ export function SelectUser({
                     }
                   }}
                   onMouseLeave={(e) => {
-                    setHoveredAccountId((prev) => (prev === acc.accountId ? null : prev));
+                    setHoveredAccountId((prev) =>
+                      prev === acc.accountId ? null : prev,
+                    );
                     if (!isActive) {
                       e.currentTarget.style.backgroundColor = "#fff";
                     }
                   }}
                 >
-                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: 10 }}
+                  >
                     {(() => {
                       const profile = profilesById[acc.accountId];
                       const size = 28;
@@ -164,7 +178,9 @@ export function SelectUser({
                               borderRadius: "50%",
                               objectFit: "cover",
                               flexShrink: 0,
-                              border: isActive ? "1px solid #1976d2" : "1px solid #ddd",
+                              border: isActive
+                                ? "1px solid #1976d2"
+                                : "1px solid #ddd",
                               background: "#fff",
                             }}
                           />
@@ -178,7 +194,9 @@ export function SelectUser({
                             height: size,
                             borderRadius: "50%",
                             background: "#e0e0e0",
-                            border: isActive ? "1px solid #1976d2" : "1px solid #ddd",
+                            border: isActive
+                              ? "1px solid #1976d2"
+                              : "1px solid #ddd",
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
@@ -193,9 +211,22 @@ export function SelectUser({
                         </div>
                       );
                     })()}
-                    <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-                      <span style={{ fontWeight: 600, color: isActive ? "#1976d2" : "#555" }}>
-                        {acc.username || acc.accountDisplayName || acc.accountId}{" "}
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "baseline",
+                        gap: 8,
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontWeight: 600,
+                          color: isActive ? "#1976d2" : "#555",
+                        }}
+                      >
+                        {acc.username ||
+                          acc.accountDisplayName ||
+                          acc.accountId}{" "}
                         {acc.fromArchive && "(My archive)"}
                       </span>
                       {(() => {
@@ -204,14 +235,18 @@ export function SelectUser({
                           retweets: 0,
                         };
                         return (
-                          <span style={{ color: isActive ? "#1565c0" : "#777" }}>
+                          <span
+                            style={{ color: isActive ? "#1565c0" : "#777" }}
+                          >
                             {c.tweets} tweets · {c.retweets} retweets
                           </span>
                         );
                       })()}
                     </div>
                   </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: 8 }}
+                  >
                     {
                       <button
                         type="button"
@@ -252,13 +287,18 @@ export function SelectUser({
                           color: "#888",
                           cursor: "pointer",
                           opacity: hoveredAccountId === acc.accountId ? 1 : 0,
-                          transition: "opacity 0.15s ease-in-out, background-color 0.2s",
+                          transition:
+                            "opacity 0.15s ease-in-out, background-color 0.2s",
                         }}
                         onMouseEnter={(e) => {
-                          (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#f0f0f0";
+                          (
+                            e.currentTarget as HTMLButtonElement
+                          ).style.backgroundColor = "#f0f0f0";
                         }}
                         onMouseLeave={(e) => {
-                          (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#fff";
+                          (
+                            e.currentTarget as HTMLButtonElement
+                          ).style.backgroundColor = "#fff";
                         }}
                       >
                         ×
@@ -266,10 +306,36 @@ export function SelectUser({
                     }
                   </div>
                 </div>
-              );
-            })}
-          </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    window.open(
+                      `#/all-tweets/?account_id=${acc.accountId}`,
+                      "_blank",
+                    );
+                  }}
+                  style={{
+                    marginLeft: 8,
+                    fontSize: 13,
+                    color: "#1769aa",
+                    background: "#e3f2fd",
+                    border: "1px solid #1976d2",
+                    padding: "3px 12px",
+                    borderRadius: "5px",
+                    textDecoration: "none",
+                    cursor: "pointer",
+                    transition: "background 0.15s, color 0.15s, border 0.15s",
+                  }}
+                  title="View tweets for this user"
+                >
+                  View tweets
+                </button>
+              </div>
+            );
+          })}
         </div>
+      </div>
 
       <CommunityArchiveUserModal
         showModal={showModal}
