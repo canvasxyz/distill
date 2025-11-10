@@ -125,7 +125,7 @@ export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
       const { data: pageTweets, error } = await supabase
         .schema("public")
         .from("tweets")
-        .select("*")
+        .select("*, tweet_media(*)")
         .eq("account_id", accountId)
         .range(page * pageSize, (page + 1) * pageSize - 1);
 

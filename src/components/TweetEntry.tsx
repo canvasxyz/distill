@@ -11,6 +11,10 @@ export function TweetEntry({ tweet }: { tweet: Tweet }) {
 
   const borderColor = "#b3ffb5";
 
+  const imageUrls = tweet.tweet_media
+    ? tweet.tweet_media.map((entry) => entry.media_url)
+    : [];
+
   return (
     <div
       style={{
@@ -49,6 +53,26 @@ export function TweetEntry({ tweet }: { tweet: Tweet }) {
         </div>
         {/* tweet body */}
         <span>&quot;{tweet.full_text}&quot;</span>
+        {/* If there are images, show them */}
+        {imageUrls.length > 0 && (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+            {imageUrls.map((url) => (
+              <img
+                key={url}
+                src={url}
+                alt="Tweet media"
+                style={{
+                  maxWidth: "180px",
+                  maxHeight: "180px",
+                  borderRadius: "6px",
+                  objectFit: "cover",
+                  border: "1px solid #c1e7c1",
+                  marginTop: "2px",
+                }}
+              />
+            ))}
+          </div>
+        )}
         {/* labels */}
         <div style={{ display: "flex", gap: "10px" }}>
           <span

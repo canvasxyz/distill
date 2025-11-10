@@ -22,6 +22,17 @@ export type Profile = {
 
 export type ProfileWithId = { accountId: string } & Profile;
 
+type TweetMedia = {
+  width: number;
+  height: number;
+  media_id: number;
+  tweet_id: string;
+  media_url: string;
+  media_type: "photo";
+  updated_at: string;
+  archive_upload_id: number;
+};
+
 export type Tweet = {
   id: string;
   id_str: string;
@@ -40,5 +51,6 @@ export type Tweet = {
   in_reply_to_screen_name?: string;
   lang: string;
   source: string;
+  tweet_media: TweetMedia[];
   raw_json: string;
 };
