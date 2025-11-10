@@ -80,7 +80,7 @@ export function replaceAccountNames(text: string, accounts: Account[]) {
 }
 
 export function makePromptMessages(
-  tweetsSample: { id_str: string; full_text: string; created_at: string }[],
+  tweetsSample: Tweet[],
   query: Query,
   accounts: Account[],
 ) {
@@ -102,11 +102,11 @@ export function makePromptMessages(
         .map((tweet) => {
           // We expect Tweet to include account_id when passed in from callers
           // Fallback to "unknown" if mapping is missing
-          // @ts-expect-error account_id exists on runtime Tweet objects
           const accId: string | undefined = tweet.account_id;
           const username =
             (accId && accountIdToUsername.get(accId)) || "unknown";
-          return `<Post user="@${username}" id="${tweet.id_str}" date="${tweet.created_at}">${tweet.full_text}</Post>`;
+
+          return `<Post user="@${username}" id="${tweet.id_str}" date="${tweet.created_at}" num_likes="${tweet.favorite_count}" num_retweets="${tweet.retweet_count}">${tweet.full_text}</Post>`;
         })
         .join("\n"),
     },
