@@ -40,7 +40,6 @@ export const IngestArchive = ({
     if (ingestTwitterArchiveProgress == null) {
       return (
         <Box
-          as="label"
           style={{
             display: "inline-block",
             padding: "6px 12px",
@@ -112,7 +111,6 @@ export const IngestArchive = ({
   // Default large dropzone
   return ingestTwitterArchiveProgress == null ? (
     <Box
-      as="label"
       style={{
         textAlign: "center",
         marginTop: "20px",
@@ -141,8 +139,12 @@ export const IngestArchive = ({
           await ingestTwitterArchive(file);
         }
       }}
-      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "var(--gray-3)")}
-      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "var(--gray-2)")}
+      onMouseEnter={(e) =>
+        (e.currentTarget.style.backgroundColor = "var(--gray-3)")
+      }
+      onMouseLeave={(e) =>
+        (e.currentTarget.style.backgroundColor = "var(--gray-2)")
+      }
     >
       <Text color="blue" style={{ margin: 0 }}>
         Drag and drop your Twitter archive (.zip) here or click to open.

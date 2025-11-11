@@ -1,6 +1,14 @@
 import { useMemo } from "react";
 import { replaceAccountName } from "./ai_utils";
-import { Heading, Flex, Box, IconButton, Text, Button, Dialog } from "@radix-ui/themes";
+import {
+  Heading,
+  Flex,
+  Box,
+  IconButton,
+  Text,
+  Button,
+  Dialog,
+} from "@radix-ui/themes";
 
 export function ExampleQueriesModal({
   isOpen,
@@ -19,7 +27,9 @@ export function ExampleQueriesModal({
 
   return (
     <Dialog.Root open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <Dialog.Content style={{ width: "90%", maxWidth: 768, maxHeight: "80vh" }}>
+      <Dialog.Content
+        style={{ width: "90%", maxWidth: 768, maxHeight: "80vh" }}
+      >
         <Flex direction="column" gap="4" style={{ height: "100%" }}>
           <Flex justify="between" align="center" mb="2">
             <Dialog.Title>
@@ -39,7 +49,7 @@ export function ExampleQueriesModal({
               overflowY: "auto",
             }}
           >
-            <Box as="ul" style={{ padding: 0, margin: 0, listStyle: "none" }}>
+            <Box style={{ padding: 0, margin: 0, listStyle: "none" }}>
               {queries.map((query, idx) => {
                 const queryWithAccountName = replaceAccountName(
                   query,
@@ -47,7 +57,6 @@ export function ExampleQueriesModal({
                 );
                 return (
                   <Box
-                    as="li"
                     key={idx}
                     style={{
                       padding: "10px 0",

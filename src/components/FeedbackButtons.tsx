@@ -1,4 +1,4 @@
-import { Box, Flex, Link, Button } from "@radix-ui/themes";
+import { Box, Link, Button } from "@radix-ui/themes";
 
 export const FeedbackButtons = () => {
   return (

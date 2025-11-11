@@ -19,7 +19,7 @@ export function MyArchiveView() {
             maxWidth: "1200px",
           }}
         >
-          <Box h="2" />
+          <Box height="2" />
           <ModelQuerySection />
           <FeedbackButtons />
         </Flex>
