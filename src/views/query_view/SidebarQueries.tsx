@@ -266,6 +266,32 @@ function RunQueryItem() {
   );
 }
 
+function ArchiveChatItem() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const isActive = location.pathname === "/";
+
+  return (
+    <SidebarItemContainer
+      isActive={isActive}
+      onClick={() => navigate("/chat")}
+      onMouseEnter={undefined}
+      onMouseLeave={undefined}
+    >
+      <span
+        style={{
+          ...itemTitleBase,
+          color: isActive ? "#1976d2" : "#333",
+        }}
+      >
+        Archive Chat (experimental)
+      </span>
+      {/* empty second line to match PastQueryItem height */}
+      <span style={itemSubtitleBase}></span>
+    </SidebarItemContainer>
+  );
+}
+
 export function PastQueries() {
   const { queryResults } = useStore();
 
@@ -277,6 +303,7 @@ export function PastQueries() {
       }}
     >
       <RunQueryItem />
+      <ArchiveChatItem />
       {(!queryResults || queryResults.length === 0) && (
         <div
           style={{
