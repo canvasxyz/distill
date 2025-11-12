@@ -284,7 +284,7 @@ function ArchiveChatItem() {
           color: isActive ? "#1976d2" : "#333",
         }}
       >
-        Archive Chat
+        Archive Chat (experimental)
       </span>
       {/* empty second line to match PastQueryItem height */}
       <span style={itemSubtitleBase}></span>
