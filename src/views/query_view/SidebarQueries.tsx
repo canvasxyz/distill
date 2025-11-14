@@ -1,7 +1,7 @@
 import { useStore } from "../../state/store";
 import { useNavigate, useLocation } from "react-router";
 import type { QueryResult } from "./ai_utils";
-import type { CSSProperties, ReactNode } from "react";
+import type { ReactNode } from "react";
 import { useState, useRef, useEffect } from "react";
 import { db } from "../../db";
 import {
