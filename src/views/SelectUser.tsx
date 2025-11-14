@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useStore } from "../state/store";
 import { CommunityArchiveUserModal } from "../components/CommunityArchiveUserModal";
 import { IngestArchive } from "../components/IngestArchive";
+import { ArchiveDropZone } from "../components/ArchiveDropZone";
 import { getCommunityArchiveUserProgressLabel } from "../components/CommunityArchiveUserProgress";
 import { db } from "../db";
 import type { ProfileWithId } from "../types";
@@ -63,6 +64,7 @@ export function SelectUser({
         <Heading size="4">Select an archive</Heading>
         <Flex align="center" gap="3">
           <IngestArchive variant="compact" />
+          <ArchiveDropZone />
           {loadCommunityArchiveUserProgress ? (
             <Button disabled variant="soft" color="gray">
               {getCommunityArchiveUserProgressLabel(

@@ -1,3 +1,8 @@
+/* Default line height */
+body {
+  line-height: 1.35;
+}
+
 /* Hover state styles */
 .sidebar-item-container {
   transition: background 0.12s;

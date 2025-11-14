@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { useStore } from "../state/store";
-import { Box, Text } from "@radix-ui/themes";
+import { Box, Text, Button } from "@radix-ui/themes";
 
 export const IngestArchive = ({
   variant = "default",
@@ -36,42 +36,32 @@ export const IngestArchive = ({
     : null;
 
   if (variant === "compact") {
-    // Compact dropzone with dashed border and reduced padding
+    // Compact dropzone styled as button to match "Select from Community Archive"
     if (ingestTwitterArchiveProgress == null) {
       return (
-        <Box
-          className="dropzone-hover"
-          style={{
-            display: "inline-block",
-            padding: "6px 12px",
-            border: "2px dashed var(--sky-9)",
-            borderRadius: "5px",
-            backgroundColor: "var(--gray-2)",
-            cursor: "pointer",
-            whiteSpace: "nowrap",
-          }}
+        <Button
+          type="button"
+          color="blue"
           onClick={() => {
             fileInputRef.current?.click();
           }}
           onDragOver={(e) => {
             e.preventDefault();
-            e.currentTarget.style.backgroundColor = "var(--gray-3)";
+            e.currentTarget.style.backgroundColor = "var(--blue-4)";
           }}
           onDragLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "var(--gray-2)";
+            e.currentTarget.style.backgroundColor = "";
           }}
           onDrop={async (e) => {
             e.preventDefault();
-            e.currentTarget.style.backgroundColor = "var(--gray-2)";
+            e.currentTarget.style.backgroundColor = "";
             const file = e.dataTransfer.files[0];
             if (file && file.type === "application/zip") {
               await ingestTwitterArchive(file);
             }
           }}
         >
-          <Text size="3" weight="medium" color="blue">
-            Upload Twitter Archive (.zip)
-          </Text>
+          Upload Twitter Archive (.zip)
           <input
             id="file-upload"
             ref={fileInputRef}
@@ -80,7 +70,7 @@ export const IngestArchive = ({
             onChange={handleFileUpload}
             style={{ display: "none" }}
           />
-        </Box>
+        </Button>
       );
     }
 

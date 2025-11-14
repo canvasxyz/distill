@@ -234,8 +234,8 @@ export function RunQueries() {
   const totalPostsCount = (allTweets || []).length;
   const lastTweetsLabel =
     totalPostsCount < MAX_ARCHIVE_SIZE
-      ? "All posts"
-      : `Most recent ${formatCompact(MAX_ARCHIVE_SIZE)}`;
+        ? (<>All&nbsp;posts</>)
+        : (<>Most&nbsp;recent&nbsp;{formatCompact(MAX_ARCHIVE_SIZE)}</>);
 
   return (
     <Flex direction="column" gap="3" pb="5">
