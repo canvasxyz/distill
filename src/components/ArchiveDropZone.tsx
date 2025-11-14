@@ -1,10 +1,24 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Box } from "@radix-ui/themes";
 import { useStore } from "../state/store";
 
 export function ArchiveDropZone() {
   const { ingestTwitterArchive, ingestTwitterArchiveProgress } = useStore();
   const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const handleFileUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      await ingestTwitterArchive(file);
+    }
+  };
+
+  const handleClick = () => {
+    fileInputRef.current?.click();
+  };
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -37,22 +51,33 @@ export function ArchiveDropZone() {
   }
 
   return (
-    <Box
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
-      onDrop={handleDrop}
-      style={{
-        width: "60px",
-        height: "36px",
-        border: "3px dashed",
-        borderColor: isDragging ? "var(--blue-9)" : "var(--blue-7)",
-        borderRadius: "6px",
-        backgroundColor: "transparent",
-        cursor: "pointer",
-        transition: "border-color 0.2s ease",
-        flexShrink: 0,
-      }}
-      title="Drop zip archive here"
-    />
+    <>
+      <Box
+        onClick={handleClick}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        style={{
+          width: "54px",
+          height: "36px",
+          border: "3px dashed",
+          borderColor: isDragging ? "var(--blue-10)" : "var(--blue-8)",
+          borderRadius: "6px",
+          backgroundColor: "transparent",
+          cursor: "pointer",
+          transition: "border-color 0.2s ease",
+          flexShrink: 0,
+          boxSizing: "border-box",
+        }}
+        title="Drop zip archive here or click to upload"
+      />
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".zip"
+        onChange={handleFileUpload}
+        style={{ display: "none" }}
+      />
+    </>
   );
 }
