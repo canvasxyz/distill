@@ -3,6 +3,7 @@ import { Box, Flex, Link } from "@radix-ui/themes";
 import * as Dialog from "@radix-ui/react-dialog";
 import { useNavigate, useLocation } from "react-router";
 import { PastQueries } from "../views/query_view/SidebarQueries";
+import { Header } from "./Header";
 import "./ResponsiveSidebar.css";
 
 export function ResponsiveSidebar() {
@@ -17,22 +18,29 @@ export function ResponsiveSidebar() {
 
   const sidebarContent = (
     <Flex direction="column" style={{ height: "100%" }}>
-      <Box p="4" pb="3">
-        <Link
-          onClick={() => {
-            navigate("/");
-            setMobileOpen(false);
-          }}
-          style={{
-            cursor: "pointer",
-            fontSize: 32,
-            textDecoration: "none",
-          }}
-        >
-          💧
-        </Link>
-      </Box>
-      <Box style={{ flex: 1 }}>
+      <Header
+        leftContent={
+          <Link
+            onClick={() => {
+              navigate("/");
+              setMobileOpen(false);
+            }}
+            style={{
+              cursor: "pointer",
+              fontSize: 24,
+              textDecoration: "none",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              lineHeight: 1,
+            }}
+          >
+            💧
+          </Link>
+        }
+        justifyContent="flex-start"
+      />
+      <Box style={{ flex: 1, overflowY: "auto" }}>
         <PastQueries />
       </Box>
     </Flex>
@@ -49,8 +57,9 @@ export function ResponsiveSidebar() {
           position: "sticky",
           top: 0,
           height: "100vh",
-          overflowY: "auto",
-          borderRight: "1px solid var(--gray-6)",
+          display: "flex",
+          flexDirection: "column",
+          boxShadow: "2px 0 4px rgba(0, 0, 0, 0.1)",
         }}
       >
         {sidebarContent}

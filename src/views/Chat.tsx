@@ -10,6 +10,7 @@ import type { ToolCall } from "openai/resources/beta/threads/runs.mjs";
 import { supabase } from "../supabase";
 import { AVAILABLE_LLM_CONFIGS } from "../state/llm_query";
 import { serverUrl } from "./query_view/ai_utils";
+import { Header } from "../components/Header";
 
 const callOpenRouterOnce = async (
   openAiMessages: ChatCompletionMessageParam[],
@@ -227,18 +228,9 @@ function Chat() {
           "ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji",
       }}
     >
-      <header
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          padding: "10px 16px",
-          background: "var(--gray-12)",
-          color: "var(--gray-2)",
-        }}
-      >
-        <div style={{ fontWeight: 600 }}>Community Archive Chat</div>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+      <Header
+        leftContent={<div style={{ fontWeight: 600 }}>Community Archive Chat</div>}
+        rightContent={
           <button
             style={{
               padding: "6px 10px",
@@ -255,8 +247,8 @@ function Chat() {
           >
             Clear
           </button>
-        </div>
-      </header>
+        }
+      />
 
       <main style={{ overflow: "hidden" }}>
         <div

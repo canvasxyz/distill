@@ -1,13 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { useStore } from "../state/store";
-import { CommunityArchiveUserModal } from "../components/CommunityArchiveUserModal";
-import { getCommunityArchiveUserProgressLabel } from "../components/CommunityArchiveUserProgress";
 import { db } from "../db";
 import type { ProfileWithId } from "../types";
 import { ViewTweetsButton } from "../components/ViewTweetsButton";
 import { UserSelectEntry } from "../components/UserSelectEntry";
-import { ArchiveDropZone } from "../components/ArchiveDropZone";
-import { Box, Flex, Heading, Button } from "@radix-ui/themes";
+import { Box, Flex } from "@radix-ui/themes";
 
 export function SelectUser({
   selectedAccountId,
@@ -19,11 +16,9 @@ export function SelectUser({
   const {
     accounts,
     allTweets,
-    loadCommunityArchiveUserProgress,
     removeArchive,
   } = useStore();
 
-  const [showModal, setShowModal] = useState(false);
   const [profilesById, setProfilesById] = useState<
     Record<string, ProfileWithId>
   >({});
@@ -59,27 +54,6 @@ export function SelectUser({
 
   return (
     <Box>
-      <Flex align="center" justify="between" gap="3" mb="2">
-        <Heading size="4">Select an archive</Heading>
-        <Flex align="center" gap="3">
-          <ArchiveDropZone />
-          {loadCommunityArchiveUserProgress ? (
-            <Button disabled variant="soft" color="gray">
-              {getCommunityArchiveUserProgressLabel(
-                loadCommunityArchiveUserProgress,
-              )}
-            </Button>
-          ) : (
-            <Button
-              type="button"
-              onClick={() => setShowModal(true)}
-              color="blue"
-            >
-              Select from Community Archive
-            </Button>
-          )}
-        </Flex>
-      </Flex>
       <Flex direction="column" gap="2">
         {accounts.map((acc) => (
           <Flex key={acc.accountId} gap="3">
@@ -122,11 +96,6 @@ export function SelectUser({
           </Flex>
         ))}
       </Flex>
-
-      <CommunityArchiveUserModal
-        showModal={showModal}
-        setShowModal={setShowModal}
-      />
     </Box>
   );
 }

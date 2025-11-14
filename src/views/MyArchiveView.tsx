@@ -1,28 +1,82 @@
+import { useState } from "react";
 import { useStore } from "../state/store";
 import { ModelQuerySection } from "./query_view/ModelQueryView";
 import { LoadingView } from "./LoadingView";
 import { FeedbackButtons } from "../components/FeedbackButtons";
+import { ArchiveDropZone } from "../components/ArchiveDropZone";
+import { CommunityArchiveUserModal } from "../components/CommunityArchiveUserModal";
+import { getCommunityArchiveUserProgressLabel } from "../components/CommunityArchiveUserProgress";
+import { Header } from "../components/Header";
 import { Box, Flex } from "@radix-ui/themes";
 
 export function MyArchiveView() {
-  const { appIsReady } = useStore();
+  const { appIsReady, loadCommunityArchiveUserProgress } = useStore();
+  const [showModal, setShowModal] = useState(false);
 
   return (
-    <Box>
+    <Box style={{ width: "100%", overflow: "hidden" }}>
       {appIsReady ? (
-        <Flex
-          direction="column"
-          p="4"
-          style={{
-            maxHeight: "100vh",
-            margin: "0 auto",
-            maxWidth: "1200px",
-          }}
-        >
-          <Box height="2" />
-          <ModelQuerySection />
-          <FeedbackButtons />
-        </Flex>
+        <>
+          <Header
+            leftContent={<div style={{ fontWeight: 600 }}>Run Query</div>}
+            rightContent={
+              <>
+                <ArchiveDropZone />
+                {loadCommunityArchiveUserProgress ? (
+                  <button
+                    style={{
+                      padding: "6px 10px",
+                      borderRadius: 6,
+                      border: "1px solid var(--gray-9)",
+                      background: "var(--gray-11)",
+                      color: "var(--gray-2)",
+                      cursor: "not-allowed",
+                      opacity: 0.5,
+                      fontSize: "0.875rem",
+                    }}
+                    disabled
+                  >
+                    {getCommunityArchiveUserProgressLabel(
+                      loadCommunityArchiveUserProgress,
+                    )}
+                  </button>
+                ) : (
+                  <button
+                    style={{
+                      padding: "6px 10px",
+                      borderRadius: 6,
+                      border: "1px solid var(--gray-9)",
+                      background: "var(--gray-11)",
+                      color: "var(--gray-2)",
+                      cursor: "pointer",
+                      fontSize: "0.875rem",
+                    }}
+                    onClick={() => setShowModal(true)}
+                  >
+                    Select from Community Archive
+                  </button>
+                )}
+              </>
+            }
+          />
+          <Flex
+            direction="column"
+            p="4"
+            style={{
+              maxHeight: "100vh",
+              margin: "0 auto",
+              maxWidth: "1200px",
+            }}
+          >
+            <Box height="2" />
+            <ModelQuerySection />
+            <FeedbackButtons />
+          </Flex>
+          <CommunityArchiveUserModal
+            showModal={showModal}
+            setShowModal={setShowModal}
+          />
+        </>
       ) : (
         <LoadingView />
       )}
