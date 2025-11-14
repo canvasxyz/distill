@@ -443,6 +443,7 @@ export function RunQueries() {
                   whiteSpace: "pre-wrap",
                   wordBreak: "break-word",
                   flex: 1,
+                  lineHeight: 1.35,
                 }}
               >
                 {query}

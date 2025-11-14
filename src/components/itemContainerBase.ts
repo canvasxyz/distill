@@ -11,6 +11,5 @@ export const itemContainerBase: CSSProperties = {
 };
 
 export const itemTitleBase: CSSProperties = {
-  fontSize: "13px",
   wordBreak: "break-word",
 };
