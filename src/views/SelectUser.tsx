@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { useStore } from "../state/store";
 import { db } from "../db";
 import type { ProfileWithId } from "../types";
-import { ViewTweetsButton } from "../components/ViewTweetsButton";
 import { UserSelectEntry } from "../components/UserSelectEntry";
 import { Box, Flex } from "@radix-ui/themes";
 
@@ -11,7 +10,7 @@ export function SelectUser({
   setSelectedAccountId,
 }: {
   selectedAccountId: string | null;
-  setSelectedAccountId: (accountId: string) => void;
+  setSelectedAccountId: (accountId: string | null) => void;
 }) {
   const {
     accounts,
@@ -54,46 +53,49 @@ export function SelectUser({
 
   return (
     <Box>
-      <Flex direction="column" gap="2">
+      <Flex direction="column" gap="2" style={{ margin: "18px 0 24px" }}>
         {accounts.map((acc) => (
-          <Flex key={acc.accountId} gap="3">
-            <UserSelectEntry
-              acc={acc}
-              profile={profilesById[acc.accountId]}
-              onClick={() => setSelectedAccountId(acc.accountId)}
-              onClickRemove={async () => {
-                const ok = window.confirm(
-                  "Remove this archive? This will delete the locally stored tweets and profile for this account.",
-                );
-                if (!ok) return;
-
-                const idx = accounts.findIndex(
-                  (a) => a.accountId === acc.accountId,
-                );
-                const next =
-                  (idx >= 0 && accounts[idx + 1]) ||
-                  (idx > 0 && accounts[idx - 1]) ||
-                  null;
-
-                await removeArchive(acc.accountId);
-
-                if (selectedAccountId === acc.accountId && next?.accountId) {
-                  setSelectedAccountId(next.accountId);
-                }
-              }}
-              isActive={
-                selectedAccountId ? acc.accountId === selectedAccountId : false
+          <UserSelectEntry
+            key={acc.accountId}
+            acc={acc}
+            profile={profilesById[acc.accountId]}
+            onClick={() => {
+              if (selectedAccountId === acc.accountId) {
+                setSelectedAccountId(null);
+              } else {
+                setSelectedAccountId(acc.accountId);
               }
-              numTweets={
-                (countsByAccount.get(acc.accountId) || { tweets: 0 }).tweets
-              }
-              numRetweets={
-                (countsByAccount.get(acc.accountId) || { retweets: 0 }).retweets
-              }
-            />
+            }}
+            onClickRemove={async () => {
+              const ok = window.confirm(
+                "Remove this archive? This will delete the locally stored tweets and profile for this account.",
+              );
+              if (!ok) return;
 
-            <ViewTweetsButton account={acc} />
-          </Flex>
+              const idx = accounts.findIndex(
+                (a) => a.accountId === acc.accountId,
+              );
+              const next =
+                (idx >= 0 && accounts[idx + 1]) ||
+                (idx > 0 && accounts[idx - 1]) ||
+                null;
+
+              await removeArchive(acc.accountId);
+
+              if (selectedAccountId === acc.accountId && next?.accountId) {
+                setSelectedAccountId(next.accountId);
+              }
+            }}
+            isActive={
+              selectedAccountId ? acc.accountId === selectedAccountId : false
+            }
+            numTweets={
+              (countsByAccount.get(acc.accountId) || { tweets: 0 }).tweets
+            }
+            numRetweets={
+              (countsByAccount.get(acc.accountId) || { retweets: 0 }).retweets
+            }
+          />
         ))}
       </Flex>
     </Box>

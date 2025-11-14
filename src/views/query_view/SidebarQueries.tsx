@@ -4,6 +4,7 @@ import type { QueryResult } from "./ai_utils";
 import type { ReactNode } from "react";
 import { useState, useRef, useEffect } from "react";
 import { db } from "../../db";
+import * as NavigationMenu from "@radix-ui/react-navigation-menu";
 import {
   itemContainerBase,
   itemTitleBase,
@@ -68,6 +69,7 @@ function PastQueryItem({ query }: { query: QueryResult }) {
   const buttonRef = useRef<HTMLButtonElement>(null);
 
   const isActive = location.pathname === `/query/${query.id}`;
+  const path = `/query/${query.id}`;
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -106,22 +108,23 @@ function PastQueryItem({ query }: { query: QueryResult }) {
   };
 
   return (
-    <SidebarItemContainer
-      isActive={isActive}
-      onClick={(e) => {
-        // Don't navigate if clicking on the button or dropdown area
-        const clickedOnButton = buttonRef.current?.contains(e.target as Node);
-        const clickedOnDropdown = dropdownRef.current?.contains(
-          e.target as Node,
-        );
+    <NavigationMenu.Item value={query.id}>
+      <SidebarItemContainer
+        isActive={isActive}
+        onClick={(e) => {
+          // Don't navigate if clicking on the button or dropdown area
+          const clickedOnButton = buttonRef.current?.contains(e.target as Node);
+          const clickedOnDropdown = dropdownRef.current?.contains(
+            e.target as Node,
+          );
 
-        if (!showDropdown && !clickedOnButton && !clickedOnDropdown) {
-          navigate(`/query/${query.id}`);
-        }
-      }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
+          if (!showDropdown && !clickedOnButton && !clickedOnDropdown) {
+            navigate(path);
+          }
+        }}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
       <div
         style={{
           display: "flex",
@@ -216,7 +219,8 @@ function PastQueryItem({ query }: { query: QueryResult }) {
           )}
         </div>
       </div>
-    </SidebarItemContainer>
+      </SidebarItemContainer>
+    </NavigationMenu.Item>
   );
 }
 
@@ -226,49 +230,53 @@ function RunQueryItem() {
   const isActive = location.pathname === "/";
 
   return (
-    <SidebarItemContainer
-      isActive={isActive}
-      onClick={() => navigate("/")}
-      onMouseEnter={undefined}
-      onMouseLeave={undefined}
-    >
-      <span
-        style={{
-          ...itemTitleBase,
-          color: isActive ? "var(--sky-11)" : "var(--gray-12)",
-        }}
+    <NavigationMenu.Item value="run-query">
+      <SidebarItemContainer
+        isActive={isActive}
+        onClick={() => navigate("/")}
+        onMouseEnter={undefined}
+        onMouseLeave={undefined}
       >
-        Run Query
-      </span>
-      {/* empty second line to match PastQueryItem height */}
-      <Text size="1" style={{ visibility: "hidden" }}> </Text>
-    </SidebarItemContainer>
+        <span
+          style={{
+            ...itemTitleBase,
+            color: isActive ? "var(--sky-11)" : "var(--gray-12)",
+          }}
+        >
+          Run Query
+        </span>
+        {/* empty second line to match PastQueryItem height */}
+        <Text size="1" style={{ visibility: "hidden" }}> </Text>
+      </SidebarItemContainer>
+    </NavigationMenu.Item>
   );
 }
 
 function ArchiveChatItem() {
   const navigate = useNavigate();
   const location = useLocation();
-  const isActive = location.pathname === "/";
+  const isActive = location.pathname === "/chat";
 
   return (
-    <SidebarItemContainer
-      isActive={isActive}
-      onClick={() => navigate("/chat")}
-      onMouseEnter={undefined}
-      onMouseLeave={undefined}
-    >
-      <span
-        style={{
-          ...itemTitleBase,
-          color: isActive ? "var(--sky-11)" : "var(--gray-12)",
-        }}
+    <NavigationMenu.Item value="archive-chat">
+      <SidebarItemContainer
+        isActive={isActive}
+        onClick={() => navigate("/chat")}
+        onMouseEnter={undefined}
+        onMouseLeave={undefined}
       >
-        Archive Chat (experimental)
-      </span>
-      {/* empty second line to match PastQueryItem height */}
-      <Text size="1" style={{ visibility: "hidden" }}> </Text>
-    </SidebarItemContainer>
+        <span
+          style={{
+            ...itemTitleBase,
+            color: isActive ? "var(--sky-11)" : "var(--gray-12)",
+          }}
+        >
+          Archive Chat (experimental)
+        </span>
+        {/* empty second line to match PastQueryItem height */}
+        <Text size="1" style={{ visibility: "hidden" }}> </Text>
+      </SidebarItemContainer>
+    </NavigationMenu.Item>
   );
 }
 

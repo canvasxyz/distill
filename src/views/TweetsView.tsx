@@ -28,20 +28,20 @@ export function TweetsView({
 
   return (
     <div
-      style={{ height: "100vh", overflowY: "auto", scrollbarGutter: "stable" }}
+      style={{ height: "calc(100vh - 52px)", overflowY: "auto", scrollbarGutter: "stable" }}
     >
       <div
         style={{
           maxHeight: "100vh",
           display: "flex",
           flexDirection: "column",
-          paddingLeft: "10px",
-          paddingRight: "10px",
+          paddingLeft: "16px",
+          paddingRight: "16px",
+          paddingTop: "16px",
           margin: "0 auto",
           maxWidth: "1200px", // limit width for readability on large screens
         }}
       >
-        <h1>{title}</h1>
         {blurb && (
           <div style={{ marginBottom: "10px" }}>
             <em>{blurb}</em>

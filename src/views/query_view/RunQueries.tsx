@@ -239,15 +239,11 @@ export function RunQueries() {
 
   return (
     <Flex direction="column" gap="3" pb="5">
-      <SelectUser
-        selectedAccountId={selectedAccountId}
-        setSelectedAccountId={setSelectedAccountId}
-      />
       <Box mt="6">
         <TextArea
           ref={textareaRef}
           value={selectedQuery}
-          disabled={isProcessing}
+          disabled={isProcessing || !account}
           onChange={(e) => setSelectedQuery(e.target.value)}
           onKeyDown={(event) => {
             if (event.key !== "Enter") return;
@@ -256,7 +252,7 @@ export function RunQueries() {
             if (isProcessing) return;
             handleRunQuery(selectedQuery);
           }}
-          placeholder="Type your query here..."
+          placeholder={account ? "Type your query here..." : "Select a user to query..."}
           size="3"
           rows={3}
           style={{ minHeight: "60px" }}
@@ -264,7 +260,7 @@ export function RunQueries() {
       </Box>
       <Flex align="center" gap="3" mb="3">
         <RunQueryButton
-          disabled={isProcessing}
+          disabled={isProcessing || !account}
           onClick={() => {
             handleRunQuery(selectedQuery);
           }}
@@ -290,7 +286,7 @@ export function RunQueries() {
                 });
               }
             }}
-            disabled={isProcessing}
+            disabled={isProcessing || !account}
           >
             <Flex gap="4">
               <Text size="2" as="label">
@@ -313,7 +309,7 @@ export function RunQueries() {
           <Text size="2" as="label">
             <Flex align="center" gap="2">
               <Checkbox
-                disabled={isProcessing || !hasReplies}
+                disabled={isProcessing || !account || !hasReplies}
                 checked={includeReplies}
                 onCheckedChange={(checked) =>
                   setIncludeReplies(checked === true)
@@ -325,7 +321,7 @@ export function RunQueries() {
           <Text size="2" as="label">
             <Flex align="center" gap="2">
               <Checkbox
-                disabled={isProcessing || !hasRetweets}
+                disabled={isProcessing || !account || !hasRetweets}
                 checked={includeRetweets}
                 onCheckedChange={(checked) =>
                   setIncludeRetweets(checked === true)
@@ -339,7 +335,7 @@ export function RunQueries() {
         <Select.Root
           value={String(selectedConfigIndex)}
           onValueChange={(value) => setSelectedConfigIndex(Number(value))}
-          disabled={isProcessing}
+          disabled={isProcessing || !account}
         >
           <Select.Trigger style={{ width: 280 }} />
           <Select.Content>
@@ -424,16 +420,22 @@ export function RunQueries() {
           </ResultsBox>
         </>
       )}
+      <Box style={{ maxWidth: "800px", margin: "auto", width: "100%" }}>
+        <SelectUser
+          selectedAccountId={selectedAccountId}
+          setSelectedAccountId={setSelectedAccountId}
+        />
+      </Box>
       <Grid
         columns={{ initial: "1", sm: "2", md: "3" }}
         gap="3"
         mt="2"
-        style={{ alignItems: "stretch" }}
+        style={{ alignItems: "stretch", maxWidth: "800px", margin: "auto" }}
       >
         {FEATURED_QUERIES_SINGULAR.map((baseQuery) => {
           const query = replaceAccountName(
             baseQuery,
-            account ? account.username : "user",
+            account ? account.username : "this user",
           );
           return (
             <FeaturedQueryCard key={baseQuery} isProcessing={isProcessing}>
@@ -450,7 +452,7 @@ export function RunQueries() {
               </Text>
               <Flex justify="center" width="100%" gap="2">
                 <RunQueryButton
-                  disabled={isProcessing}
+                  disabled={isProcessing || !account}
                   onClick={() => {
                     if (isProcessing) return;
                     setSelectedQuery(query);
@@ -460,7 +462,7 @@ export function RunQueries() {
                 />
                 <Button
                   type="button"
-                  disabled={isProcessing}
+                  disabled={isProcessing || !account}
                   variant="soft"
                   color="gray"
                   size="2"

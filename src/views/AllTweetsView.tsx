@@ -4,6 +4,8 @@ import { ShowIfTweetsLoaded } from "./ShowIfTweetsLoaded";
 import { useStore } from "../state/store";
 import { useFilterBySearchParam } from "../hooks/useFilterBySearchParam";
 import { useSearchParams } from "react-router";
+import { Header } from "../components/Header";
+import { Box } from "@radix-ui/themes";
 
 function AllTweetsViewInner() {
   const { allTweets } = useStore();
@@ -35,8 +37,13 @@ function AllTweetsViewInner() {
 
 export function AllTweetsView() {
   return (
-    <ShowIfTweetsLoaded>
-      <AllTweetsViewInner />
-    </ShowIfTweetsLoaded>
+    <Box style={{ width: "100%", overflow: "hidden" }}>
+      <ShowIfTweetsLoaded>
+        <Header
+          leftContent={<div style={{ fontWeight: 600 }}>All Tweets</div>}
+        />
+        <AllTweetsViewInner />
+      </ShowIfTweetsLoaded>
+    </Box>
   );
 }

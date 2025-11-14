@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { Box, Flex, Link } from "@radix-ui/themes";
+import { Box, Link } from "@radix-ui/themes";
 import * as Dialog from "@radix-ui/react-dialog";
+import * as NavigationMenu from "@radix-ui/react-navigation-menu";
 import { useNavigate, useLocation } from "react-router";
 import { PastQueries } from "../views/query_view/SidebarQueries";
 import { Header } from "./Header";
@@ -17,7 +18,15 @@ export function ResponsiveSidebar() {
   }, [location.pathname]);
 
   const sidebarContent = (
-    <Flex direction="column" style={{ height: "100%" }}>
+    <NavigationMenu.Root
+      orientation="vertical"
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        height: "100%",
+        width: "100%",
+      }}
+    >
       <Header
         leftContent={
           <Link
@@ -40,10 +49,22 @@ export function ResponsiveSidebar() {
         }
         justifyContent="flex-start"
       />
-      <Box style={{ flex: 1, overflowY: "auto" }}>
-        <PastQueries />
-      </Box>
-    </Flex>
+      <NavigationMenu.List
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          flex: 1,
+          overflowY: "auto",
+          listStyle: "none",
+          margin: 0,
+          padding: 0,
+        }}
+      >
+        <Box style={{ flex: 1, overflowY: "auto" }}>
+          <PastQueries />
+        </Box>
+      </NavigationMenu.List>
+    </NavigationMenu.Root>
   );
 
   return (

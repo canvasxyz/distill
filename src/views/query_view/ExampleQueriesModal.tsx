@@ -23,7 +23,7 @@ export function ExampleQueriesModal({
   onSelectQuery?: (query: string) => void;
   username?: string | null;
 }) {
-  const safeUsername = useMemo(() => username || "", [username]);
+  const safeUsername = useMemo(() => username || "this user", [username]);
 
   return (
     <Dialog.Root open={isOpen} onOpenChange={(open) => !open && onClose()}>

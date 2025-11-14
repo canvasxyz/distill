@@ -58,6 +58,10 @@ export const finalSystemPrompt =
   "You will be given a prompt, followed by a list of tweets. Review the tweets and provide an answer to the prompt. Do not create tables in your response.";
 
 export function replaceAccountName(text: string, accountName: string) {
+  // If accountName is "this user", don't add @ prefix
+  if (accountName === "this user") {
+    return text.replace(/\{account\}/g, accountName);
+  }
   return text.replace(/\{account\}/g, `@${accountName}`);
 }
 export function makePromptMessages(
