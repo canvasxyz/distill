@@ -221,8 +221,8 @@ function Chat() {
         display: "grid",
         gridTemplateRows: "auto 1fr auto",
         height: "100dvh",
-        color: "#0f172a",
-        background: "#f8fafc",
+        color: "var(--gray-12)",
+        background: "var(--gray-2)",
         fontFamily:
           "ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji",
       }}
@@ -233,8 +233,8 @@ function Chat() {
           alignItems: "center",
           justifyContent: "space-between",
           padding: "10px 16px",
-          background: "#0f172a",
-          color: "#e2e8f0",
+          background: "var(--gray-12)",
+          color: "var(--gray-2)",
         }}
       >
         <div style={{ fontWeight: 600 }}>Community Archive Chat</div>
@@ -243,9 +243,9 @@ function Chat() {
             style={{
               padding: "6px 10px",
               borderRadius: 6,
-              border: "1px solid #334155",
-              background: "#111827",
-              color: "#e2e8f0",
+              border: "1px solid var(--gray-9)",
+              background: "var(--gray-11)",
+              color: "var(--gray-2)",
               cursor: messages.length === 0 ? "not-allowed" : "pointer",
               opacity: messages.length === 0 ? 0.5 : 1,
             }}
@@ -288,7 +288,7 @@ function Chat() {
                       <div
                         style={{
                           fontSize: 12,
-                          color: "#475569",
+                          color: "var(--gray-10)",
                           margin: "0 0 4px 4px",
                         }}
                       >
@@ -301,8 +301,8 @@ function Chat() {
                           padding: "10px 12px",
                           borderRadius: 10,
                           lineHeight: 1.35,
-                          background: "white",
-                          border: "1px solid #e2e8f0",
+                          background: "var(--color-background)",
+                          border: "1px solid var(--gray-6)",
                           boxShadow: "0 1px 2px rgba(0,0,0,0.03)",
                           color: "inherit",
                         }}
@@ -321,9 +321,9 @@ function Chat() {
                       padding: "10px 12px",
                       borderRadius: 10,
                       lineHeight: 1.35,
-                      background: "#2563eb",
-                      color: "white",
-                      border: "1px solid #1d4ed8",
+                      background: "var(--sky-9)",
+                      color: "var(--sky-12)",
+                      border: "1px solid var(--sky-10)",
                     }}
                   >
                     <Markdown remarkPlugins={[remarkGfm]}>
@@ -339,8 +339,8 @@ function Chat() {
                       padding: "10px 12px",
                       borderRadius: 10,
                       lineHeight: 1.35,
-                      background: "white",
-                      border: "1px solid #e2e8f0",
+                      background: "var(--color-background)",
+                      border: "1px solid var(--gray-6)",
                       boxShadow: "0 1px 2px rgba(0,0,0,0.03)",
                       color: "inherit",
                     }}
@@ -389,8 +389,8 @@ function Chat() {
           gridTemplateColumns: "1fr auto",
           gap: 8,
           padding: 10,
-          background: "#f1f5f9",
-          borderTop: "1px solid #e2e8f0",
+          background: "var(--gray-3)",
+          borderTop: "1px solid var(--gray-6)",
         }}
       >
         <input
@@ -398,10 +398,10 @@ function Chat() {
           style={{
             padding: "10px 12px",
             borderRadius: 8,
-            border: "1px solid #cbd5e1",
+            border: "1px solid var(--gray-7)",
             outline: "none",
-            background: "white",
-            color: "#0f172a",
+            background: "var(--color-background)",
+            color: "var(--gray-12)",
           }}
           placeholder="Type a message and press Enter…"
           value={input}
@@ -412,9 +412,9 @@ function Chat() {
           style={{
             padding: "10px 14px",
             borderRadius: 8,
-            border: "1px solid #1d4ed8",
-            background: "#2563eb",
-            color: "white",
+            border: "1px solid var(--sky-10)",
+            background: "var(--sky-9)",
+            color: "var(--sky-12)",
             cursor: input.trim() ? "pointer" : "not-allowed",
             opacity: input.trim() ? 1 : 0.5,
           }}

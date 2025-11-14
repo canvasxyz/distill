@@ -59,7 +59,7 @@ export function TweetsView({
               maxWidth: "400px",
               padding: "6px 8px",
               marginRight: "10px",
-              border: "1px solid #ccc",
+              border: "1px solid var(--gray-6)",
               borderRadius: "4px",
               fontSize: "16px",
             }}
@@ -87,14 +87,14 @@ export function TweetsView({
             disabled={!navigatePrevious}
             onClick={navigatePrevious}
             style={{
-              backgroundColor: "white",
+              backgroundColor: "var(--color-background)",
               borderRadius: "5px",
               padding: "5px",
-              border: "1px solid black",
+              border: "1px solid var(--gray-9)",
               transition: "background-color 0.1s",
             }}
             onMouseEnter={(e) =>
-              (e.currentTarget.style.backgroundColor = "#f0f0f0")
+              (e.currentTarget.style.backgroundColor = "var(--gray-3)")
             }
             onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "")}
           >
@@ -111,14 +111,14 @@ export function TweetsView({
               }
             }}
             style={{
-              backgroundColor: "white",
+              backgroundColor: "var(--color-background)",
               borderRadius: "5px",
               padding: "5px",
-              border: "1px solid black",
+              border: "1px solid var(--gray-9)",
               transition: "background-color 0.1s",
             }}
             onMouseEnter={(e) =>
-              (e.currentTarget.style.backgroundColor = "#f0f0f0")
+              (e.currentTarget.style.backgroundColor = "var(--gray-3)")
             }
             onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "")}
           >

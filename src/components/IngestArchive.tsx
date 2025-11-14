@@ -43,7 +43,7 @@ export const IngestArchive = ({
           style={{
             display: "inline-block",
             padding: "6px 12px",
-            border: "2px dashed var(--blue-9)",
+            border: "2px dashed var(--sky-9)",
             borderRadius: "5px",
             backgroundColor: "var(--gray-2)",
             cursor: "pointer",
@@ -95,7 +95,7 @@ export const IngestArchive = ({
         style={{
           display: "inline-block",
           padding: "8px 12px",
-          border: "2px dashed var(--blue-6)",
+          border: "2px dashed var(--sky-6)",
           borderRadius: "5px",
           backgroundColor: "var(--gray-2)",
           whiteSpace: "nowrap",

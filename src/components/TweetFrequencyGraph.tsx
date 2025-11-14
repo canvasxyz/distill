@@ -98,14 +98,14 @@ export function TweetFrequencyGraph({
   return (
     <div
       style={{
-        border: "1px solid #ddd",
+        border: "1px solid var(--gray-6)",
         borderRadius: "8px",
         padding: "16px",
-        background: "#fafbfc",
+        background: "var(--gray-2)",
         marginBottom: "12px",
       }}
     >
-      <div style={{ fontSize: "16px", color: "#222", marginBottom: 16 }}>
+      <div style={{ fontSize: "16px", color: "var(--gray-12)", marginBottom: 16 }}>
         {tweetCounts.length === 0 || !startDate || !endDate ? (
           "Click and drag to select a date range"
         ) : (
@@ -125,10 +125,10 @@ export function TweetFrequencyGraph({
         width={graphWidth}
         height={graphHeight + 40}
         style={{
-          border: "1px solid #ddd",
+          border: "1px solid var(--gray-6)",
           borderRadius: "4px",
           cursor: "crosshair",
-          background: "#fff",
+          background: "var(--color-background)",
         }}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
@@ -139,11 +139,11 @@ export function TweetFrequencyGraph({
           const x = index * barWidth;
           const y = graphHeight - barHeight + 20;
 
-          let fillColor = "#e0e0e0";
+          let fillColor = "var(--gray-6)";
           if (isInSelectedRange(data.date)) {
-            fillColor = "#4CAF50";
+            fillColor = "var(--green-9)";
           } else if (isDragging && isInDragRange(index)) {
-            fillColor = "#81C784";
+            fillColor = "var(--green-7)";
           }
 
           return (
@@ -164,7 +164,7 @@ export function TweetFrequencyGraph({
                   y={graphHeight + 35}
                   textAnchor="middle"
                   fontSize="10"
-                  fill="#666"
+                  fill="var(--gray-10)"
                   style={{ userSelect: "none" }}
                 >
                   {new Date(data.date).toLocaleDateString("en-US", {

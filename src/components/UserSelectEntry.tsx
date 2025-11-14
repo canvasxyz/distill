@@ -29,9 +29,9 @@ export const UserSelectEntry = ({
       style={{
         cursor: isActive ? "default" : "pointer",
         flexGrow: "1",
-        backgroundColor: isActive ? "var(--blue-3)" : undefined,
+        backgroundColor: isActive ? "var(--sky-3)" : undefined,
         border: isActive
-          ? "1px solid var(--blue-7)"
+          ? "1px solid var(--sky-7)"
           : "1px solid var(--gray-6)",
         borderRadius: "6px",
       }}

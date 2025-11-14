@@ -54,11 +54,11 @@ export function PastQueryDetailView() {
         <button
           onClick={() => navigate("/")}
           style={{
-            border: "1px solid #ccc",
+            border: "1px solid var(--gray-6)",
             borderRadius: "4px",
             padding: "8px 16px",
-            background: "#fff",
-            color: "#333",
+            background: "var(--color-background)",
+            color: "var(--gray-12)",
             fontSize: "14px",
             cursor: "pointer",
             marginBottom: "20px",
@@ -66,7 +66,7 @@ export function PastQueryDetailView() {
         >
           ← Back Home
         </button>
-        <div style={{ color: "#888", fontSize: "16px" }}>Query not found</div>
+        <div style={{ color: "var(--gray-9)", fontSize: "16px" }}>Query not found</div>
       </div>
     );
   }
@@ -90,20 +90,20 @@ export function PastQueryDetailView() {
         <button
           onClick={() => navigate("/")}
           style={{
-            border: "1px solid #ccc",
+            border: "1px solid var(--gray-6)",
             borderRadius: "4px",
             padding: "8px 16px",
-            background: "#fff",
-            color: "#333",
+            background: "var(--color-background)",
+            color: "var(--gray-12)",
             fontSize: "14px",
             cursor: "pointer",
             transition: "background 0.2s",
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = "#f5f5f5";
+            e.currentTarget.style.background = "var(--gray-3)";
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.background = "#fff";
+            e.currentTarget.style.background = "var(--color-background)";
           }}
         >
           ← Back Home
@@ -121,20 +121,20 @@ export function PastQueryDetailView() {
             }
           }}
           style={{
-            border: "1px solid #ccc",
+            border: "1px solid var(--gray-6)",
             borderRadius: "4px",
             padding: "8px 16px",
-            background: "#fff",
-            color: "#333",
+            background: "var(--color-background)",
+            color: "var(--gray-12)",
             fontSize: "14px",
             cursor: "pointer",
             transition: "background 0.2s",
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = "#f5f5f5";
+            e.currentTarget.style.background = "var(--gray-3)";
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.background = "#fff";
+            e.currentTarget.style.background = "var(--color-background)";
           }}
         >
           Delete
@@ -151,7 +151,7 @@ export function PastQueryDetailView() {
             margin: "0 0 12px 0",
             fontSize: "20px",
             fontWeight: 600,
-            color: "#333",
+            color: "var(--gray-12)",
           }}
         >
           Query
@@ -159,11 +159,11 @@ export function PastQueryDetailView() {
         <div
           style={{
             padding: "12px 16px",
-            background: "#f8f9fa",
-            border: "1px solid #ddd",
+            background: "var(--gray-2)",
+            border: "1px solid var(--gray-6)",
             borderRadius: "6px",
             fontSize: "15px",
-            color: "#333",
+            color: "var(--gray-12)",
           }}
         >
           {query.query}
@@ -189,13 +189,13 @@ export function PastQueryDetailView() {
                 margin: 0,
                 fontSize: "20px",
                 fontWeight: 600,
-                color: "#333",
+                color: "var(--gray-12)",
               }}
             >
               Result
             </h2>
             {query.queriedHandle && (
-              <span style={{ color: "#666", fontSize: "12px", marginTop: 4 }}>
+              <span style={{ color: "var(--gray-10)", fontSize: "12px", marginTop: 4 }}>
                 {query.queriedHandle}
               </span>
             )}
@@ -209,21 +209,21 @@ export function PastQueryDetailView() {
           >
             <button
               style={{
-                border: "1px solid rgb(150, 234, 153)",
+                border: "1px solid var(--green-6)",
                 borderRadius: "4px",
                 padding: "4px 8px",
-                background: "#fff",
-                color: "#388e3c",
+                background: "var(--color-background)",
+                color: "var(--green-11)",
                 fontSize: "12px",
                 fontWeight: "bold",
                 cursor: "pointer",
                 transition: "all 0.2s ease",
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = "#e7f6e7";
+                e.currentTarget.style.background = "var(--green-3)";
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = "#fff";
+                e.currentTarget.style.background = "var(--color-background)";
               }}
               onClick={() => {
                 setShowBatchTweetsModal(true);
@@ -238,11 +238,11 @@ export function PastQueryDetailView() {
           style={{
             fontFamily: "inherit",
             fontSize: "15px",
-            color: "#0c254d",
+            color: "var(--gray-12)",
             borderRadius: "4px",
-            border: "1px solid #aaa",
+            border: "1px solid var(--gray-7)",
             padding: "10px 12px",
-            background: "#fff",
+            background: "var(--color-background)",
             minHeight: "32px",
           }}
         >
@@ -253,20 +253,20 @@ export function PastQueryDetailView() {
       </div>
 
       <div
-        style={{
-          marginTop: "20px",
-          padding: "16px",
-          background: "#f8f9fa",
-          border: "1px solid #ddd",
-          borderRadius: "6px",
-        }}
-      >
+          style={{
+            marginTop: "20px",
+            padding: "16px",
+            background: "var(--gray-2)",
+            border: "1px solid var(--gray-6)",
+            borderRadius: "6px",
+          }}
+        >
         <h3
           style={{
             margin: "0 0 12px 0",
             fontSize: "16px",
             fontWeight: 600,
-            color: "#333",
+            color: "var(--gray-12)",
           }}
         >
           Query Details
@@ -274,36 +274,36 @@ export function PastQueryDetailView() {
         <div
           style={{
             fontSize: "14px",
-            color: "#555",
+            color: "var(--gray-11)",
             display: "flex",
             gap: "20px",
             flexWrap: "wrap",
           }}
         >
           <span>
-            <span style={{ color: "#62b47a", fontWeight: 500 }}>
+            <span style={{ color: "var(--green-10)", fontWeight: 500 }}>
               Total Run Time:
             </span>{" "}
             {(query.totalRunTime / 1000).toFixed(2)}s
           </span>
           <span>
-            <span style={{ color: "#baac4e", fontWeight: 500 }}>Range:</span>{" "}
+            <span style={{ color: "var(--yellow-10)", fontWeight: 500 }}>Range:</span>{" "}
             {formatRangeSelection(query.rangeSelection)}
           </span>
           <span>
-            <span style={{ color: "#4e52ba", fontWeight: 500 }}>Provider:</span>{" "}
+            <span style={{ color: "var(--sky-11)", fontWeight: 500 }}>Provider:</span>{" "}
             {query.provider}
           </span>
           <span>
-            <span style={{ color: "#bf4962", fontWeight: 500 }}>Model:</span>{" "}
+            <span style={{ color: "var(--red-10)", fontWeight: 500 }}>Model:</span>{" "}
             {query.model}
           </span>
           <span>
-            <span style={{ color: "#bf4962", fontWeight: 500 }}>Tokens:</span>{" "}
+            <span style={{ color: "var(--red-10)", fontWeight: 500 }}>Tokens:</span>{" "}
             {query.totalTokens}
           </span>
           <span>
-            <span style={{ color: "#888", fontWeight: 500 }}>Date:</span>{" "}
+            <span style={{ color: "var(--gray-9)", fontWeight: 500 }}>Date:</span>{" "}
             {formatDateTime(extractTimestampFromUUIDv7(query.id))}
           </span>
         </div>

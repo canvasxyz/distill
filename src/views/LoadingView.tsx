@@ -19,8 +19,8 @@ export function LoadingView() {
       >
         <Box
           style={{
-            border: "8px solid var(--blue-4)",
-            borderTop: "8px solid var(--blue-9)",
+            border: "8px solid var(--sky-4)",
+            borderTop: "8px solid var(--sky-9)",
             borderRadius: "50%",
             width: "72px",
             height: "72px",
