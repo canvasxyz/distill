@@ -8,6 +8,7 @@ import { CopyButton } from "./ResultsBox";
 import { BatchTweetsModal } from "./BatchTweetsModal";
 import type { RangeSelection } from "./ai_utils";
 import { db } from "../../db";
+import { Button, Text, Heading } from "@radix-ui/themes";
 
 function formatDateTime(d: Date) {
   if (isNaN(d.getTime())) return "";
@@ -51,22 +52,15 @@ export function PastQueryDetailView() {
           margin: "0 auto",
         }}
       >
-        <button
+        <Button
           onClick={() => navigate("/")}
-          style={{
-            border: "1px solid var(--gray-6)",
-            borderRadius: "4px",
-            padding: "8px 16px",
-            background: "var(--color-background)",
-            color: "var(--gray-12)",
-            fontSize: "14px",
-            cursor: "pointer",
-            marginBottom: "20px",
-          }}
+          variant="outline"
+          size="2"
+          style={{ marginBottom: "20px" }}
         >
           ← Back Home
-        </button>
-        <div style={{ color: "var(--gray-9)", fontSize: "16px" }}>Query not found</div>
+        </Button>
+        <Text size="3" color="gray">Query not found</Text>
       </div>
     );
   }
@@ -87,29 +81,15 @@ export function PastQueryDetailView() {
           marginBottom: "20px",
         }}
       >
-        <button
+        <Button
           onClick={() => navigate("/")}
-          style={{
-            border: "1px solid var(--gray-6)",
-            borderRadius: "4px",
-            padding: "8px 16px",
-            background: "var(--color-background)",
-            color: "var(--gray-12)",
-            fontSize: "14px",
-            cursor: "pointer",
-            transition: "background 0.2s",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = "var(--gray-3)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = "var(--color-background)";
-          }}
+          variant="outline"
+          size="2"
         >
           ← Back Home
-        </button>
+        </Button>
 
-        <button
+        <Button
           aria-label="Delete this query"
           onClick={async () => {
             const ok = confirm("Delete this query? This cannot be undone.");
@@ -120,25 +100,12 @@ export function PastQueryDetailView() {
               navigate("/");
             }
           }}
-          style={{
-            border: "1px solid var(--gray-6)",
-            borderRadius: "4px",
-            padding: "8px 16px",
-            background: "var(--color-background)",
-            color: "var(--gray-12)",
-            fontSize: "14px",
-            cursor: "pointer",
-            transition: "background 0.2s",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = "var(--gray-3)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = "var(--color-background)";
-          }}
+          variant="outline"
+          size="2"
+          color="red"
         >
           Delete
-        </button>
+        </Button>
       </div>
 
       <div
@@ -146,27 +113,16 @@ export function PastQueryDetailView() {
           marginBottom: "20px",
         }}
       >
-        <h2
-          style={{
-            margin: "0 0 12px 0",
-            fontSize: "20px",
-            fontWeight: 600,
-            color: "var(--gray-12)",
-          }}
-        >
-          Query
-        </h2>
+        <Heading size="5" mb="3">Query</Heading>
         <div
           style={{
             padding: "12px 16px",
             background: "var(--gray-2)",
             border: "1px solid var(--gray-6)",
             borderRadius: "6px",
-            fontSize: "15px",
-            color: "var(--gray-12)",
           }}
         >
-          {query.query}
+          <Text size="3">{query.query}</Text>
         </div>
       </div>
 
@@ -184,20 +140,11 @@ export function PastQueryDetailView() {
           }}
         >
           <div style={{ display: "flex", flexDirection: "column" }}>
-            <h2
-              style={{
-                margin: 0,
-                fontSize: "20px",
-                fontWeight: 600,
-                color: "var(--gray-12)",
-              }}
-            >
-              Result
-            </h2>
+            <Heading size="5" mb="0">Result</Heading>
             {query.queriedHandle && (
-              <span style={{ color: "var(--gray-10)", fontSize: "12px", marginTop: 4 }}>
+              <Text size="1" color="gray" style={{ marginTop: 4 }}>
                 {query.queriedHandle}
-              </span>
+              </Text>
             )}
           </div>
           <div
@@ -207,7 +154,8 @@ export function PastQueryDetailView() {
               gap: "10px",
             }}
           >
-            <button
+            <Button
+              className="button-hover-green-3"
               style={{
                 border: "1px solid var(--green-6)",
                 borderRadius: "4px",
@@ -219,26 +167,19 @@ export function PastQueryDetailView() {
                 cursor: "pointer",
                 transition: "all 0.2s ease",
               }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = "var(--green-3)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "var(--color-background)";
-              }}
               onClick={() => {
                 setShowBatchTweetsModal(true);
               }}
+              size="1"
             >
               Evidence
-            </button>
+            </Button>
             <CopyButton text={query.result} />
           </div>
         </div>
         <div
           style={{
             fontFamily: "inherit",
-            fontSize: "15px",
-            color: "var(--gray-12)",
             borderRadius: "4px",
             border: "1px solid var(--gray-7)",
             padding: "10px 12px",
@@ -261,20 +202,9 @@ export function PastQueryDetailView() {
             borderRadius: "6px",
           }}
         >
-        <h3
-          style={{
-            margin: "0 0 12px 0",
-            fontSize: "16px",
-            fontWeight: 600,
-            color: "var(--gray-12)",
-          }}
-        >
-          Query Details
-        </h3>
+        <Heading size="4" mb="3">Query Details</Heading>
         <div
           style={{
-            fontSize: "14px",
-            color: "var(--gray-11)",
             display: "flex",
             gap: "20px",
             flexWrap: "wrap",

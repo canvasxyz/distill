@@ -8,6 +8,7 @@ import {
   itemContainerBase,
   itemTitleBase,
 } from "../../components/itemContainerBase";
+import { Text } from "@radix-ui/themes";
 
 function formatDateTime(dateStr?: string) {
   if (!dateStr) return "";
@@ -27,11 +28,7 @@ function formatDateTime(dateStr?: string) {
   );
 }
 
-const itemSubtitleBase: CSSProperties = {
-  color: "var(--gray-9)",
-  fontSize: "11px",
-  fontWeight: 400,
-};
+// itemSubtitleBase is now handled by Text component with size="1"
 
 function SidebarItemContainer({
   children,
@@ -49,19 +46,13 @@ function SidebarItemContainer({
   return (
     <div
       onClick={onClick}
+      className={`sidebar-item-container ${isActive ? "active" : ""}`}
       style={{
         ...itemContainerBase,
-        background: isActive ? "var(--sky-3)" : undefined,
         position: "relative",
       }}
-      onMouseEnter={(e) => {
-        if (!isActive) e.currentTarget.style.background = "var(--sky-2)";
-        onMouseEnter?.(e);
-      }}
-      onMouseLeave={(e) => {
-        if (!isActive) e.currentTarget.style.background = "";
-        onMouseLeave?.(e);
-      }}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
     >
       {children}
     </div>
@@ -150,7 +141,7 @@ function PastQueryItem({ query }: { query: QueryResult }) {
             ? query.query.slice(0, 80) + "…"
             : query.query}
         </span>
-        <span style={itemSubtitleBase}>{formatDateTime(query.id)}</span>
+        <Text size="1" color="gray">{formatDateTime(query.id)}</Text>
         <div
           style={{
             position: "absolute",
@@ -164,6 +155,7 @@ function PastQueryItem({ query }: { query: QueryResult }) {
               e.stopPropagation();
               setShowDropdown(!showDropdown);
             }}
+            className="button-color-hover"
             style={{
               display: isHovered ? "flex" : "none",
               alignItems: "center",
@@ -178,13 +170,6 @@ function PastQueryItem({ query }: { query: QueryResult }) {
               color: "var(--gray-10)",
               fontSize: "14px",
               lineHeight: 1,
-              transition: "background 0.2s, color 0.2s",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.color = "var(--gray-12)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.color = "var(--gray-10)";
             }}
             aria-label="More options"
           >
@@ -212,6 +197,7 @@ function PastQueryItem({ query }: { query: QueryResult }) {
                   e.stopPropagation();
                   handleDelete();
                 }}
+                className="dropdown-button-hover"
                 style={{
                   width: "100%",
                   padding: "8px 12px",
@@ -222,12 +208,6 @@ function PastQueryItem({ query }: { query: QueryResult }) {
                   fontSize: "13px",
                   color: "var(--red-11)",
                   transition: "background 0.2s",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = "var(--gray-3)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = "transparent";
                 }}
               >
                 Delete
@@ -261,7 +241,7 @@ function RunQueryItem() {
         Run Query
       </span>
       {/* empty second line to match PastQueryItem height */}
-      <span style={itemSubtitleBase}></span>
+      <Text size="1" style={{ visibility: "hidden" }}> </Text>
     </SidebarItemContainer>
   );
 }
@@ -287,7 +267,7 @@ function ArchiveChatItem() {
         Archive Chat (experimental)
       </span>
       {/* empty second line to match PastQueryItem height */}
-      <span style={itemSubtitleBase}></span>
+      <Text size="1" style={{ visibility: "hidden" }}> </Text>
     </SidebarItemContainer>
   );
 }
@@ -305,15 +285,10 @@ export function PastQueries() {
       <RunQueryItem />
       <ArchiveChatItem />
       {(!queryResults || queryResults.length === 0) && (
-        <div
-          style={{
-            padding: "20px 18px",
-            color: "var(--gray-9)",
-            fontSize: "13px",
-            fontStyle: "italic",
-          }}
-        >
-          No past queries yet
+        <div style={{ padding: "20px 18px" }}>
+          <Text size="2" color="gray" style={{ fontStyle: "italic" }}>
+            No past queries yet
+          </Text>
         </div>
       )}
       {queryResults.map((query) => (

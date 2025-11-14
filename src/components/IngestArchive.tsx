@@ -40,6 +40,7 @@ export const IngestArchive = ({
     if (ingestTwitterArchiveProgress == null) {
       return (
         <Box
+          className="dropzone-hover"
           style={{
             display: "inline-block",
             padding: "6px 12px",
@@ -47,7 +48,6 @@ export const IngestArchive = ({
             borderRadius: "5px",
             backgroundColor: "var(--gray-2)",
             cursor: "pointer",
-            transition: "background-color 0.2s",
             whiteSpace: "nowrap",
           }}
           onClick={() => {
@@ -68,12 +68,6 @@ export const IngestArchive = ({
               await ingestTwitterArchive(file);
             }
           }}
-          onMouseEnter={(e) =>
-            (e.currentTarget.style.backgroundColor = "var(--gray-3)")
-          }
-          onMouseLeave={(e) =>
-            (e.currentTarget.style.backgroundColor = "var(--gray-2)")
-          }
         >
           <Text size="3" weight="medium" color="blue">
             Upload Twitter Archive (.zip)
@@ -111,15 +105,15 @@ export const IngestArchive = ({
   // Default large dropzone
   return ingestTwitterArchiveProgress == null ? (
     <Box
+      className="dropzone-hover"
       style={{
         textAlign: "center",
         marginTop: "20px",
         padding: "20px",
-        border: "2px dashed var(--blue-9)",
+        border: "2px dashed var(--sky-9)",
         borderRadius: "5px",
         backgroundColor: "var(--gray-2)",
         cursor: "pointer",
-        transition: "background-color 0.2s",
       }}
       onClick={() => {
         fileInputRef.current?.click();
@@ -139,12 +133,6 @@ export const IngestArchive = ({
           await ingestTwitterArchive(file);
         }
       }}
-      onMouseEnter={(e) =>
-        (e.currentTarget.style.backgroundColor = "var(--gray-3)")
-      }
-      onMouseLeave={(e) =>
-        (e.currentTarget.style.backgroundColor = "var(--gray-2)")
-      }
     >
       <Text color="blue" style={{ margin: 0 }}>
         Drag and drop your Twitter archive (.zip) here or click to open.
@@ -164,7 +152,7 @@ export const IngestArchive = ({
         textAlign: "center",
         marginTop: "20px",
         padding: "20px",
-        border: "2px dashed var(--blue-6)",
+        border: "2px dashed var(--sky-6)",
         borderRadius: "5px",
         backgroundColor: "var(--gray-2)",
       }}

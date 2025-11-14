@@ -1,5 +1,6 @@
 import { useRef } from "react";
 import { TweetEntry } from "../components/TweetEntry";
+import { Button } from "@radix-ui/themes";
 
 import type { Tweet } from "../types";
 import { useSearchParams } from "react-router";
@@ -83,24 +84,15 @@ export function TweetsView({
             justifyContent: "end",
           }}
         >
-          <button
+          <Button
             disabled={!navigatePrevious}
             onClick={navigatePrevious}
-            style={{
-              backgroundColor: "var(--color-background)",
-              borderRadius: "5px",
-              padding: "5px",
-              border: "1px solid var(--gray-9)",
-              transition: "background-color 0.1s",
-            }}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.backgroundColor = "var(--gray-3)")
-            }
-            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "")}
+            variant="outline"
+            size="2"
           >
             Previous
-          </button>
-          <button
+          </Button>
+          <Button
             disabled={!navigateNext}
             onClick={async () => {
               if (navigateNext) {
@@ -110,20 +102,11 @@ export function TweetsView({
                 }
               }
             }}
-            style={{
-              backgroundColor: "var(--color-background)",
-              borderRadius: "5px",
-              padding: "5px",
-              border: "1px solid var(--gray-9)",
-              transition: "background-color 0.1s",
-            }}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.backgroundColor = "var(--gray-3)")
-            }
-            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "")}
+            variant="outline"
+            size="2"
           >
             Next
-          </button>
+          </Button>
         </div>
       </div>
     </div>
