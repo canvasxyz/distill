@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { type QueryResult } from "./ai_utils";
 import { useStore } from "../../state/store";
+import { Heading, IconButton } from "@radix-ui/themes";
 
 function formatDate(dateString: string) {
   if (!dateString) return "";
@@ -115,24 +116,17 @@ export function BatchTweetsModal({
             paddingBottom: 12,
           }}
         >
-          <h2 style={{ margin: 0, fontSize: 22, flex: 1 }}>Evidence</h2>
+          <Heading size="6" style={{ flex: 1, margin: 0 }}>Evidence</Heading>
 
-          <button
-            style={{
-              border: "none",
-              background: "transparent",
-              fontSize: "22px",
-              cursor: "pointer",
-              color: "var(--gray-10)",
-              fontWeight: "bold",
-              marginLeft: 12,
-              alignSelf: "flex-start",
-            }}
+          <IconButton
+            variant="ghost"
+            size="3"
             onClick={onClose}
             aria-label="Close modal"
+            style={{ marginLeft: 12, alignSelf: "flex-start" }}
           >
             &times;
-          </button>
+          </IconButton>
         </div>
         <p>
           To generate the query result, Twitter Archive Explorer first extracts

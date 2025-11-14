@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { sumNumbers } from "../utils";
+import { Text } from "@radix-ui/themes";
 
 // Helper component to show tweet count in a range
 export function SelectedTweetCount({
@@ -105,7 +106,7 @@ export function TweetFrequencyGraph({
         marginBottom: "12px",
       }}
     >
-      <div style={{ fontSize: "16px", color: "var(--gray-12)", marginBottom: 16 }}>
+      <Text size="3" style={{ marginBottom: 16 }}>
         {tweetCounts.length === 0 || !startDate || !endDate ? (
           "Click and drag to select a date range"
         ) : (
@@ -120,7 +121,7 @@ export function TweetFrequencyGraph({
             {endDateLastDayOfMonth.toLocaleDateString()}
           </>
         )}
-      </div>
+      </Text>
       <svg
         width={graphWidth}
         height={graphHeight + 40}
