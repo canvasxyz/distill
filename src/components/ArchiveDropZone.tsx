@@ -58,9 +58,13 @@ export function ArchiveDropZone() {
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         style={{
-          width: "54px",
           height: "32px",
+          fontSize: "0.88em",
+          fontWeight: 600,
+          color: "#2a89d1",
+          padding: "3px 9px",
           border: "2.5px dashed #0090FF",
+          borderColor: isDragging ? "var(--blue-10)" : "var(--blue-8)",
           borderRadius: "6px",
           backgroundColor: "transparent",
           cursor: "pointer",
@@ -69,7 +73,9 @@ export function ArchiveDropZone() {
           boxSizing: "border-box",
         }}
         title="Drop zip archive here or click to upload"
-      />
+          >
+        Upload .zip
+      </Box>
       <input
         ref={fileInputRef}
         type="file"

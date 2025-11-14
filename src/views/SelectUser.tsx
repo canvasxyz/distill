@@ -1,13 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { useStore } from "../state/store";
 import { CommunityArchiveUserModal } from "../components/CommunityArchiveUserModal";
-import { IngestArchive } from "../components/IngestArchive";
-import { ArchiveDropZone } from "../components/ArchiveDropZone";
 import { getCommunityArchiveUserProgressLabel } from "../components/CommunityArchiveUserProgress";
 import { db } from "../db";
 import type { ProfileWithId } from "../types";
 import { ViewTweetsButton } from "../components/ViewTweetsButton";
 import { UserSelectEntry } from "../components/UserSelectEntry";
+import { ArchiveDropZone } from "../components/ArchiveDropZone";
 import { Box, Flex, Heading, Button } from "@radix-ui/themes";
 
 export function SelectUser({
@@ -63,7 +62,6 @@ export function SelectUser({
       <Flex align="center" justify="between" gap="3" mb="2">
         <Heading size="4">Select an archive</Heading>
         <Flex align="center" gap="3">
-          <IngestArchive variant="compact" />
           <ArchiveDropZone />
           {loadCommunityArchiveUserProgress ? (
             <Button disabled variant="soft" color="gray">
