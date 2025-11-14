@@ -25,7 +25,7 @@ const router = createHashRouter([
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <Theme>
+    <Theme appearance="light" accentColor="sky">
       <RouterProvider router={router} />
     </Theme>
   </StrictMode>,

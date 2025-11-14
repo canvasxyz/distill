@@ -28,7 +28,7 @@ function formatDateTime(dateStr?: string) {
 }
 
 const itemSubtitleBase: CSSProperties = {
-  color: "#888",
+  color: "var(--gray-9)",
   fontSize: "11px",
   fontWeight: 400,
 };
@@ -51,11 +51,11 @@ function SidebarItemContainer({
       onClick={onClick}
       style={{
         ...itemContainerBase,
-        background: isActive ? "#e3f2fd" : undefined,
+        background: isActive ? "var(--sky-3)" : undefined,
         position: "relative",
       }}
       onMouseEnter={(e) => {
-        if (!isActive) e.currentTarget.style.background = "#f7faff";
+        if (!isActive) e.currentTarget.style.background = "var(--sky-2)";
         onMouseEnter?.(e);
       }}
       onMouseLeave={(e) => {
@@ -143,7 +143,7 @@ function PastQueryItem({ query }: { query: QueryResult }) {
         <span
           style={{
             ...itemTitleBase,
-            color: isActive ? "#1976d2" : "#333",
+            color: isActive ? "var(--sky-11)" : "var(--gray-12)",
           }}
         >
           {query.query.length > 80
@@ -170,21 +170,21 @@ function PastQueryItem({ query }: { query: QueryResult }) {
               justifyContent: "center",
               width: "24px",
               height: "24px",
-              border: "1px solid #eee",
-              background: "#fff",
+              border: "1px solid var(--gray-5)",
+              background: "var(--color-background)",
               cursor: "pointer",
               borderRadius: "4px",
               padding: "4px",
-              color: "#666",
+              color: "var(--gray-10)",
               fontSize: "14px",
               lineHeight: 1,
               transition: "background 0.2s, color 0.2s",
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.color = "#333";
+              e.currentTarget.style.color = "var(--gray-12)";
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.color = "#666";
+              e.currentTarget.style.color = "var(--gray-10)";
             }}
             aria-label="More options"
           >
@@ -197,8 +197,8 @@ function PastQueryItem({ query }: { query: QueryResult }) {
                 position: "absolute",
                 top: "28px",
                 right: 0,
-                background: "#fff",
-                border: "1px solid #ccc",
+                background: "var(--color-background)",
+                border: "1px solid var(--gray-6)",
                 borderRadius: "4px",
                 boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
                 zIndex: 1000,
@@ -220,11 +220,11 @@ function PastQueryItem({ query }: { query: QueryResult }) {
                   textAlign: "left",
                   cursor: "pointer",
                   fontSize: "13px",
-                  color: "#d32f2f",
+                  color: "var(--red-11)",
                   transition: "background 0.2s",
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = "#f5f5f5";
+                  e.currentTarget.style.background = "var(--gray-3)";
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.background = "transparent";
@@ -255,7 +255,7 @@ function RunQueryItem() {
       <span
         style={{
           ...itemTitleBase,
-          color: isActive ? "#1976d2" : "#333",
+          color: isActive ? "var(--sky-11)" : "var(--gray-12)",
         }}
       >
         Run Query
@@ -281,7 +281,7 @@ function ArchiveChatItem() {
       <span
         style={{
           ...itemTitleBase,
-          color: isActive ? "#1976d2" : "#333",
+          color: isActive ? "var(--sky-11)" : "var(--gray-12)",
         }}
       >
         Archive Chat (experimental)
@@ -308,7 +308,7 @@ export function PastQueries() {
         <div
           style={{
             padding: "20px 18px",
-            color: "#888",
+            color: "var(--gray-9)",
             fontSize: "13px",
             fontStyle: "italic",
           }}

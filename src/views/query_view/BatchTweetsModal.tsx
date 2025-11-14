@@ -97,7 +97,7 @@ export function BatchTweetsModal({
           width: "90%",
           maxWidth: 768,
           maxHeight: "80vh",
-          background: "#fff",
+          background: "var(--color-background)",
           borderRadius: "12px",
           boxShadow: "0 2px 16px rgba(0,0,0,0.18)",
           padding: "32px 24px 24px 24px",
@@ -123,7 +123,7 @@ export function BatchTweetsModal({
               background: "transparent",
               fontSize: "22px",
               cursor: "pointer",
-              color: "#666",
+              color: "var(--gray-10)",
               fontWeight: "bold",
               marginLeft: 12,
               alignSelf: "flex-start",
@@ -167,7 +167,7 @@ export function BatchTweetsModal({
                 key={batchId}
                 style={{
                   marginBottom: batchIdx < batchesByKey.length - 1 ? "16px" : 0,
-                  border: "1px solid #e0e0e0",
+                  border: "1px solid var(--gray-6)",
                   borderRadius: "8px",
                   overflow: "hidden",
                 }}
@@ -178,7 +178,7 @@ export function BatchTweetsModal({
                     width: "100%",
                     padding: "12px 16px",
                     border: "none",
-                    background: "#f8f9fa",
+                    background: "var(--gray-2)",
                     cursor: "pointer",
                     display: "flex",
                     alignItems: "center",
@@ -191,7 +191,7 @@ export function BatchTweetsModal({
                       style={{
                         fontSize: 16,
                         fontWeight: 600,
-                        color: "#333",
+                        color: "var(--gray-12)",
                       }}
                     >
                       Batch {parseInt(batchId) + 1}
@@ -200,7 +200,7 @@ export function BatchTweetsModal({
                       style={{
                         fontSize: 12,
                         fontWeight: 400,
-                        color: "#666",
+                        color: "var(--gray-10)",
                         marginLeft: "12px",
                       }}
                     >
@@ -215,7 +215,7 @@ export function BatchTweetsModal({
                   <span
                     style={{
                       fontSize: 18,
-                      color: "#666",
+                      color: "var(--gray-10)",
                       transform: isExpanded ? "rotate(90deg)" : "rotate(0deg)",
                       transition: "transform 0.2s",
                     }}
@@ -224,7 +224,7 @@ export function BatchTweetsModal({
                   </span>
                 </button>
                 {isExpanded && (
-                  <div style={{ padding: "16px", background: "#fff" }}>
+                  <div style={{ padding: "16px", background: "var(--color-background)" }}>
                     {tweets.length > 0 && (
                       <div
                         style={{
@@ -236,7 +236,7 @@ export function BatchTweetsModal({
                             fontSize: 14,
                             fontWeight: 600,
                             margin: "0 0 12px 0",
-                            color: "#333",
+                            color: "var(--gray-12)",
                           }}
                         >
                           Evidence ({tweets.length})
@@ -256,7 +256,7 @@ export function BatchTweetsModal({
                                   padding: "10px 0",
                                   borderBottom:
                                     idx !== tweets.length - 1
-                                      ? "1px solid #eee"
+                                      ? "1px solid var(--gray-5)"
                                       : undefined,
                                   display: "flex",
                                   alignItems: "center",
@@ -282,7 +282,7 @@ export function BatchTweetsModal({
                                   >
                                     <span
                                       style={{
-                                        color: "#1976d2",
+                                        color: "var(--sky-11)",
                                         fontWeight: 500,
                                         marginRight: 8,
                                         fontSize: 13,
@@ -295,7 +295,7 @@ export function BatchTweetsModal({
                                     </span>
                                     <span
                                       style={{
-                                        color: "#888",
+                                        color: "var(--gray-9)",
                                         fontSize: 12,
                                         marginRight: 16,
                                       }}
@@ -305,7 +305,7 @@ export function BatchTweetsModal({
                                     </span>
                                     <span
                                       style={{
-                                        color: "#757575",
+                                        color: "var(--gray-10)",
                                         fontSize: 12,
                                         marginRight: 10,
                                         display: "inline-flex",
@@ -318,7 +318,7 @@ export function BatchTweetsModal({
                                     </span>
                                     <span
                                       style={{
-                                        color: "#757575",
+                                        color: "var(--gray-10)",
                                         fontSize: 12,
                                         display: "inline-flex",
                                         alignItems: "center",
@@ -344,7 +344,7 @@ export function BatchTweetsModal({
                             fontSize: 14,
                             fontWeight: 600,
                             margin: "0 0 12px 0",
-                            color: "#d32f2f",
+                            color: "var(--red-11)",
                           }}
                         >
                           Hallucinations ({hallucinatedIds.length})
@@ -364,7 +364,7 @@ export function BatchTweetsModal({
                                   padding: "10px 0",
                                   borderBottom:
                                     idx !== hallucinatedIds.length - 1
-                                      ? "1px solid #eee"
+                                      ? "1px solid var(--gray-5)"
                                       : undefined,
                                   display: "flex",
                                   alignItems: "center",
@@ -377,7 +377,7 @@ export function BatchTweetsModal({
                                     flex: "1 1 auto",
                                     fontSize: 15,
                                     fontFamily: "monospace",
-                                    color: "#666",
+                                    color: "var(--gray-10)",
                                   }}
                                 >
                                   {tweetId}
