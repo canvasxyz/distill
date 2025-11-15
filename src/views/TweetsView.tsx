@@ -40,6 +40,9 @@ export function TweetsView({
           paddingTop: "16px",
           margin: "0 auto",
           maxWidth: "1200px", // limit width for readability on large screens
+          width: "100%",
+          boxSizing: "border-box",
+          overflowX: "hidden",
         }}
       >
         {blurb && (

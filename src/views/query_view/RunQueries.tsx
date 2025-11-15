@@ -290,7 +290,7 @@ export function RunQueries() {
     );
 
   return (
-    <Box style={{ maxWidth: "800px", margin: "auto", width: "100%" }}>
+    <Box style={{ maxWidth: "800px", margin: "auto", width: "100%", boxSizing: "border-box", padding: "0 16px" }}>
       <Flex direction="column" gap="3" pb="5">
         <Box mt="6">
           <SelectUser

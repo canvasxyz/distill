@@ -19,9 +19,9 @@ function App() {
 
   return (
     <>
-      <Flex style={{ minHeight: "100vh" }}>
+      <Flex style={{ minHeight: "100vh", overflowX: "hidden", width: "100%" }}>
         <ResponsiveSidebar />
-        <Box style={{ flex: 1, minWidth: 0, height: "100vh", overflowY: "auto" }}>
+        <Box style={{ flex: 1, minWidth: 0, height: "100vh", overflowY: "auto", overflowX: "hidden", maxWidth: "100%" }}>
           <Outlet />
         </Box>
       </Flex>

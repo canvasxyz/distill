@@ -51,6 +51,8 @@ export function PastQueryDetailView() {
           maxWidth: "1200px",
           margin: "auto",
           width: "100%",
+          boxSizing: "border-box",
+          overflowX: "hidden",
         }}
       >
         <Button
@@ -83,6 +85,8 @@ export function PastQueryDetailView() {
         maxWidth: "800px",
         margin: "auto",
         width: "100%",
+        boxSizing: "border-box",
+        overflowX: "hidden",
       }}
     >
       <div

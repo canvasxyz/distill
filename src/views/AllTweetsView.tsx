@@ -37,7 +37,7 @@ function AllTweetsViewInner() {
 
 export function AllTweetsView() {
   return (
-    <Box>
+    <Box style={{ width: "100%", overflowX: "hidden" }}>
       <ShowIfTweetsLoaded>
         <Header
           leftContent={<div style={{ fontWeight: 600 }}>All Tweets</div>}

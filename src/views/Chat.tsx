@@ -223,6 +223,8 @@ function Chat() {
         display: "grid",
         gridTemplateRows: "auto 1fr auto",
         height: "100dvh",
+        width: "100%",
+        overflowX: "hidden",
       }}
     >
       <Header

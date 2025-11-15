@@ -61,6 +61,9 @@ export function MyArchiveView() {
             style={{
               margin: "0 auto",
               maxWidth: "1200px",
+              width: "100%",
+              boxSizing: "border-box",
+              overflowX: "hidden",
             }}
           >
             <Box height="2" />
