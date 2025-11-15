@@ -8,6 +8,7 @@ import { MyArchiveView } from "./views/MyArchiveView.tsx";
 import { AllTweetsView } from "./views/AllTweetsView.tsx";
 import { PastQueryDetailView } from "./views/query_view/PastQueryDetailView.tsx";
 import Chat from "./views/Chat.tsx";
+import { NotFound } from "./views/NotFound.tsx";
 import { ThemeProvider } from "./components/ThemeProvider";
 
 const router = createHashRouter([
@@ -19,6 +20,7 @@ const router = createHashRouter([
       { path: "all-tweets", Component: AllTweetsView },
       { path: "chat", Component: Chat },
       { path: "query/:queryId", Component: PastQueryDetailView },
+      { path: "*", Component: NotFound },
     ],
   },
 ]);
