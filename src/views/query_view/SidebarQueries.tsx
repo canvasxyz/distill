@@ -260,7 +260,7 @@ function RunQueryItem() {
             fontSize: "96%",
           }}
         >
-          Run Query
+          Archive Search
         </span>
         {/* empty second line to match PastQueryItem height */}
         <Text size="1" style={{ visibility: "hidden" }}>
@@ -300,9 +300,7 @@ function ArchiveChatItem() {
 export function PastQueries() {
   const { queryResults } = useStore();
 
-  const sortedQueries = queryResults
-    ? [...queryResults].reverse()
-    : [];
+  const sortedQueries = queryResults ? [...queryResults].reverse() : [];
 
   return (
     <div style={{ display: "flex", flexDirection: "column" }}>

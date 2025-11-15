@@ -6,46 +6,52 @@ import { ArchiveDropZone } from "../components/ArchiveDropZone";
 import { CommunityArchiveUserModal } from "../components/CommunityArchiveUserModal";
 import { getCommunityArchiveUserProgressLabel } from "../components/CommunityArchiveUserProgress";
 import { Header } from "../components/Header";
-import { Box, Flex } from "@radix-ui/themes";
+import { Box, Flex, IconButton, Button } from "@radix-ui/themes";
+import { useTheme } from "../components/ThemeProvider";
 
 export function MyArchiveView() {
   const { appIsReady, loadCommunityArchiveUserProgress } = useStore();
   const [showModal, setShowModal] = useState(false);
+  const { appearance, toggleTheme } = useTheme();
 
   return (
     <Box style={{ width: "100%" }}>
       {appIsReady ? (
         <>
           <Header
-            leftContent={<div style={{ fontWeight: 600 }}>Run Query</div>}
+            leftContent={<div style={{ fontWeight: 600 }}>Distill Search</div>}
             rightContent={
               <>
                 <ArchiveDropZone />
                 {loadCommunityArchiveUserProgress ? (
-                  <button
-                    style={{
-                      padding: "6px 10px",
-                      borderRadius: 6,
-                      fontSize: "0.875rem",
-                    }}
-                    disabled
-                  >
+                  <Button disabled size="2" variant="outline" color="indigo">
                     {getCommunityArchiveUserProgressLabel(
                       loadCommunityArchiveUserProgress,
                     )}
-                  </button>
+                  </Button>
                 ) : (
-                  <button
-                    style={{
-                      padding: "6px 10px",
-                      borderRadius: 6,
-                      fontSize: "0.875rem",
-                    }}
+                  <Button
                     onClick={() => setShowModal(true)}
+                    size="2"
+                    variant="outline"
+                    color="blue"
                   >
                     Select from Community Archive
-                  </button>
+                  </Button>
                 )}
+                <IconButton
+                  onClick={toggleTheme}
+                  variant="outline"
+                  size="2"
+                  style={{ padding: "0 2px" }}
+                  title={
+                    appearance === "dark"
+                      ? "Switch to light theme"
+                      : "Switch to dark theme"
+                  }
+                >
+                  {appearance === "dark" ? "☀️" : "🌙"}
+                </IconButton>
               </>
             }
           />

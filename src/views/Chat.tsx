@@ -225,7 +225,9 @@ function Chat() {
       }}
     >
       <Header
-        leftContent={<div style={{ fontWeight: 600 }}>Community Archive Chat</div>}
+        leftContent={
+          <div style={{ fontWeight: 600 }}>Archive Chat (Experimental)</div>
+        }
         rightContent={
           <button
             style={{

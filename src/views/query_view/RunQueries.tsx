@@ -485,6 +485,7 @@ export function RunQueries() {
                 <Box py="1">{query}</Box>
                 <Flex justify="center" width="100%" gap="2">
                   <RunQueryButton
+                    variant="outline"
                     disabled={isProcessing || !account}
                     onClick={() => {
                       if (isProcessing) return;
@@ -496,7 +497,7 @@ export function RunQueries() {
                   <Button
                     type="button"
                     disabled={isProcessing || !account}
-                    variant="soft"
+                    variant="outline"
                     color="gray"
                     size="2"
                     onClick={() => {

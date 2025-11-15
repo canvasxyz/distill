@@ -9,6 +9,12 @@ body {
 .radix-themes {
   --default-font-size: 15px;
   --default-line-height: 1.45;
+  --color-background: #fcf7f5;
+}
+
+:is(.dark, .dark-theme),
+:is(.dark, .dark-theme) :where(.radix-themes:not(.light, .light-theme)) {
+  --color-background: #2f3134;
 }
 
 .query-result-markdown p:first-child {

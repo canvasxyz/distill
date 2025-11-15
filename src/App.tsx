@@ -4,7 +4,6 @@ import { useEffect } from "react";
 import { useStore } from "./state/store";
 import { Box, Flex } from "@radix-ui/themes";
 import { ResponsiveSidebar } from "./components/ResponsiveSidebar";
-import { ThemeSwitcher } from "./components/ThemeSwitcher";
 
 function App() {
   const { init, subscribe, unsubscribe } = useStore();
@@ -26,7 +25,6 @@ function App() {
           <Outlet />
         </Box>
       </Flex>
-      <ThemeSwitcher />
     </>
   );
 }
