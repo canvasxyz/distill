@@ -61,9 +61,17 @@ export function PastQueryDetailView() {
         >
           ← Back Home
         </Button>
-        <Text size="3" color="gray">
-          Query not found
-        </Text>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            width: "100%",
+          }}
+        >
+          <Text size="3" color="gray">
+            Query not found
+          </Text>
+        </div>
       </div>
     );
   }

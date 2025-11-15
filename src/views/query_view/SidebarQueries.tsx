@@ -154,6 +154,11 @@ function PastQueryItem({ query }: { query: QueryResult }) {
               ? query.query.slice(0, 80) + "…"
               : query.query}
           </span>
+          {query.queriedHandle && (
+            <Text size="1" color="gray">
+              {query.queriedHandle}
+            </Text>
+          )}
           <Text size="1" color="gray">
             {formatDateTime(query.id)}
           </Text>
@@ -295,6 +300,10 @@ function ArchiveChatItem() {
 export function PastQueries() {
   const { queryResults } = useStore();
 
+  const sortedQueries = queryResults
+    ? [...queryResults].reverse()
+    : [];
+
   return (
     <div style={{ display: "flex", flexDirection: "column" }}>
       <RunQueryItem />
@@ -313,7 +322,7 @@ export function PastQueries() {
           color="gray"
         />
       )}
-      {queryResults.map((query) => (
+      {sortedQueries.map((query) => (
         <PastQueryItem key={query.id} query={query} />
       ))}
       <br />
