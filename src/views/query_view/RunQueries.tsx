@@ -63,6 +63,7 @@ export function RunQueries() {
     errorMessage,
     selectedConfigIndex,
     setSelectedConfigIndex,
+    lastLoadedAccountId,
   } = useStore();
 
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(
@@ -160,6 +161,8 @@ export function RunQueries() {
 
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const prevUsernameRef = useRef<string | null>(null);
+  const lastAutoSelectedAccountIdRef = useRef<string | null>(null);
+  const hasRestoredFromStorageRef = useRef(false);
 
   const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
@@ -231,278 +234,324 @@ export function RunQueries() {
     }
   }, [selectedQuery, account]);
 
+  // Persist selected account ID to localStorage
+  useEffect(() => {
+    if (selectedAccountId) {
+      try {
+        localStorage.setItem("llm:lastSelectedAccountId", selectedAccountId);
+      } catch {
+        // ignore storage errors
+      }
+    }
+  }, [selectedAccountId]);
+
+  // Restore last selected account from localStorage after accounts are loaded
+  useEffect(() => {
+    if (
+      hasRestoredFromStorageRef.current ||
+      selectedAccountId !== null ||
+      accounts.length === 0
+    ) {
+      return;
+    }
+
+    try {
+      const savedAccountId = localStorage.getItem("llm:lastSelectedAccountId");
+      if (
+        savedAccountId &&
+        accounts.some((a) => a.accountId === savedAccountId)
+      ) {
+        setSelectedAccountId(savedAccountId);
+        hasRestoredFromStorageRef.current = true;
+      }
+    } catch {
+      // ignore storage errors
+    }
+  }, [accounts, selectedAccountId, setSelectedAccountId]);
+
+  // Automatically select newly loaded archive
+  useEffect(() => {
+    if (
+      lastLoadedAccountId &&
+      lastLoadedAccountId !== lastAutoSelectedAccountIdRef.current &&
+      accounts.some((a) => a.accountId === lastLoadedAccountId)
+    ) {
+      setSelectedAccountId(lastLoadedAccountId);
+      lastAutoSelectedAccountIdRef.current = lastLoadedAccountId;
+      hasRestoredFromStorageRef.current = true; // Prevent restoring from storage after auto-selecting new archive
+    }
+  }, [lastLoadedAccountId, accounts, setSelectedAccountId]);
+
   const totalPostsCount = (allTweets || []).length;
   const lastTweetsLabel =
-    totalPostsCount < MAX_ARCHIVE_SIZE
-        ? (<>All&nbsp;posts</>)
-        : (<>Most&nbsp;recent&nbsp;{formatCompact(MAX_ARCHIVE_SIZE)}</>);
+    totalPostsCount < MAX_ARCHIVE_SIZE ? (
+      <>All posts</>
+    ) : (
+      <>Most recent {formatCompact(MAX_ARCHIVE_SIZE)}</>
+    );
 
   return (
-    <Flex direction="column" gap="3" pb="5">
-      <Box mt="6">
-        <TextArea
-          ref={textareaRef}
-          value={selectedQuery}
-          disabled={isProcessing || !account}
-          onChange={(e) => setSelectedQuery(e.target.value)}
-          onKeyDown={(event) => {
-            if (event.key !== "Enter") return;
-            if (!event.metaKey) return;
-            event.preventDefault();
-            if (isProcessing) return;
-            handleRunQuery(selectedQuery);
-          }}
-          placeholder={account ? "Type your query here..." : "Select a user to query..."}
-          size="3"
-          rows={3}
-          style={{ minHeight: "60px" }}
-        />
-      </Box>
-      <Flex align="center" gap="3" mb="3">
-        <RunQueryButton
-          disabled={isProcessing || !account}
-          onClick={() => {
-            handleRunQuery(selectedQuery);
-          }}
-          showShortcut
-        />
-
-        <Separator orientation="vertical" />
-
-        <Flex align="center" gap="4">
-          <RadioGroup.Root
-            value={rangeSelection.type}
-            onValueChange={(value) => {
-              if (value === "last-tweets") {
-                setRangeSelection({
-                  type: "last-tweets",
-                  numTweets: MAX_ARCHIVE_SIZE,
-                });
-              } else if (value === "date-range") {
-                setRangeSelection({
-                  type: "date-range",
-                  startDate: "",
-                  endDate: "",
-                });
-              }
-            }}
+    <Box style={{ maxWidth: "800px", margin: "auto", width: "100%" }}>
+      <Flex direction="column" gap="3" pb="5">
+        <Box mt="6">
+          <SelectUser
+            selectedAccountId={selectedAccountId}
+            setSelectedAccountId={setSelectedAccountId}
+          />
+        </Box>
+        <Box>
+          <TextArea
+            ref={textareaRef}
+            value={selectedQuery}
             disabled={isProcessing || !account}
-          >
-            <Flex gap="4">
-              <Text size="2" as="label">
-                <Flex align="center" gap="2">
-                  <RadioGroup.Item value="last-tweets" />
-                  {lastTweetsLabel}
-                </Flex>
-              </Text>
-              <Text size="2" as="label">
-                <Flex align="center" gap="2">
-                  <RadioGroup.Item value="date-range" />
-                  Custom
-                </Flex>
-              </Text>
-            </Flex>
-          </RadioGroup.Root>
-
-          <Separator orientation="vertical" />
-
-          <Text size="2" as="label">
-            <Flex align="center" gap="2">
-              <Checkbox
-                disabled={isProcessing || !account || !hasReplies}
-                checked={includeReplies}
-                onCheckedChange={(checked) =>
-                  setIncludeReplies(checked === true)
-                }
-              />
-              Replies
-            </Flex>
-          </Text>
-          <Text size="2" as="label">
-            <Flex align="center" gap="2">
-              <Checkbox
-                disabled={isProcessing || !account || !hasRetweets}
-                checked={includeRetweets}
-                onCheckedChange={(checked) =>
-                  setIncludeRetweets(checked === true)
-                }
-              />
-              Retweets
-            </Flex>
-          </Text>
-        </Flex>
-        <Box style={{ flex: 1 }} />
-        <Select.Root
-          value={String(selectedConfigIndex)}
-          onValueChange={(value) => setSelectedConfigIndex(Number(value))}
-          disabled={isProcessing || !account}
-        >
-          <Select.Trigger style={{ width: 280 }} />
-          <Select.Content>
-            {AVAILABLE_LLM_CONFIGS.map(
-              ([model, provider, openrouterProvider, recommended], idx) => (
-                <Select.Item
-                  key={`${model}-${provider}-${openrouterProvider || ""}`}
-                  value={String(idx)}
-                >
-                  {recommended && "️⭐️ "}
-                  {openrouterProvider && "🔀 "}
-                  {model} - {openrouterProvider ?? provider}{" "}
-                </Select.Item>
-              ),
-            )}
-          </Select.Content>
-        </Select.Root>
-      </Flex>
-      {rangeSelection.type === "date-range" && (
-        <TweetFrequencyGraph
-          tweetCounts={tweetCounts}
-          startDate={rangeSelection.startDate}
-          endDate={rangeSelection.endDate}
-          onRangeSelect={(newStartDate, newEndDate) => {
-            setRangeSelection({
-              type: "date-range",
-              startDate: newStartDate,
-              endDate: newEndDate,
-            });
-          }}
-        />
-      )}
-      {errorMessage && (
-        <Callout.Root color="red" mt="2">
-          <Callout.Text>{errorMessage}</Callout.Text>
-        </Callout.Root>
-      )}
-
-      {isProcessing && currentRunningQuery && (
-        <ResultsBox>
-          <ProgressLabel
-            currentProgress={currentProgress}
-            totalProgress={totalProgress}
+            onChange={(e) => setSelectedQuery(e.target.value)}
+            onKeyDown={(event) => {
+              if (event.key !== "Enter") return;
+              if (!event.metaKey) return;
+              event.preventDefault();
+              if (isProcessing) return;
+              handleRunQuery(selectedQuery);
+            }}
+            placeholder={
+              account ? "Type your query here..." : "Select a user to query..."
+            }
+            size="3"
+            rows={3}
+            style={{ minHeight: "60px" }}
           />
-          <ProgressBar
-            currentProgress={currentProgress}
-            totalProgress={totalProgress}
-            startedAtMs={startedProcessingTime}
-            isProcessing={isProcessing}
-            numBatches={batchCount || totalProgress}
+        </Box>
+        <Flex align="center" gap="3" mb="3">
+          <RunQueryButton
+            disabled={isProcessing || !account}
+            onClick={() => {
+              handleRunQuery(selectedQuery);
+            }}
+            showShortcut
           />
-        </ResultsBox>
-      )}
-      {queryResult && (
-        <>
-          <ResultsBox>
-            <Flex direction="row" mb="-2" gap="3">
-              <Flex direction="column" gap="1" style={{ flex: 1 }}>
-                <Heading size="4">{queryResult.query}</Heading>
-                <Text size="1" style={{ fontStyle: "italic" }}>
-                  completed in {(queryResult.totalRunTime / 1000).toFixed(2)}{" "}
-                  seconds, {queryResult.totalTokens} tokens
+
+          <Flex align="center" gap="4" ml="1">
+            <RadioGroup.Root
+              value={rangeSelection.type}
+              onValueChange={(value) => {
+                if (value === "last-tweets") {
+                  setRangeSelection({
+                    type: "last-tweets",
+                    numTweets: MAX_ARCHIVE_SIZE,
+                  });
+                } else if (value === "date-range") {
+                  setRangeSelection({
+                    type: "date-range",
+                    startDate: "",
+                    endDate: "",
+                  });
+                }
+              }}
+              disabled={isProcessing || !account}
+            >
+              <Flex gap="2">
+                <Text size="2" as="label">
+                  <Flex align="center" gap="2" style={{ textWrap: "nowrap" }}>
+                    <RadioGroup.Item value="last-tweets" />
+                    {lastTweetsLabel}
+                  </Flex>
+                </Text>
+                <Text size="2" as="label">
+                  <Flex align="center" gap="2">
+                    <RadioGroup.Item value="date-range" />
+                    Custom
+                  </Flex>
                 </Text>
               </Flex>
-              <Flex gap="2" align="start">
-                <Button
-                  size="1"
-                  variant="soft"
-                  color="green"
-                  onClick={() => {
-                    setShowBatchTweetsModal(true);
-                  }}
-                >
-                  Evidence
-                </Button>
-                <CopyButton text={queryResult.result} />
-              </Flex>
-            </Flex>
-            <Markdown remarkPlugins={[remarkGfm]}>
-              {stripThink(queryResult.result)}
-            </Markdown>
-          </ResultsBox>
-        </>
-      )}
-      <Box style={{ maxWidth: "800px", margin: "auto", width: "100%" }}>
-        <SelectUser
-          selectedAccountId={selectedAccountId}
-          setSelectedAccountId={setSelectedAccountId}
-        />
-      </Box>
-      <Grid
-        columns={{ initial: "1", sm: "2", md: "3" }}
-        gap="3"
-        mt="2"
-        style={{ alignItems: "stretch", maxWidth: "800px", margin: "auto" }}
-      >
-        {FEATURED_QUERIES_SINGULAR.map((baseQuery) => {
-          const query = replaceAccountName(
-            baseQuery,
-            account ? account.username : "this user",
-          );
-          return (
-            <FeaturedQueryCard key={baseQuery} isProcessing={isProcessing}>
-              <Text
-                color="blue"
-                style={{
-                  whiteSpace: "pre-wrap",
-                  wordBreak: "break-word",
-                  flex: 1,
-                  lineHeight: 1.35,
-                }}
-              >
-                {query}
-              </Text>
-              <Flex justify="center" width="100%" gap="2">
-                <RunQueryButton
-                  disabled={isProcessing || !account}
-                  onClick={() => {
-                    if (isProcessing) return;
-                    setSelectedQuery(query);
-                    handleRunQuery(query);
-                    textareaRef.current?.focus();
-                  }}
+            </RadioGroup.Root>
+
+            <Separator orientation="vertical" />
+
+            <Text size="2" as="label">
+              <Flex align="center" gap="2">
+                <Checkbox
+                  disabled={isProcessing || !account || !hasReplies}
+                  checked={includeReplies}
+                  onCheckedChange={(checked) =>
+                    setIncludeReplies(checked === true)
+                  }
                 />
-                <Button
-                  type="button"
-                  disabled={isProcessing || !account}
-                  variant="soft"
-                  color="gray"
-                  size="2"
-                  onClick={() => {
-                    if (isProcessing) return;
-                    setSelectedQuery(query);
-                    textareaRef.current?.focus();
-                  }}
-                >
-                  Edit
-                </Button>
+                Replies
               </Flex>
-            </FeaturedQueryCard>
-          );
-        })}
-      </Grid>
-      <BrowseMoreButton
-        isProcessing={isProcessing}
-        onClick={() => {
-          if (isProcessing) return;
-          setExampleQueriesModalIsOpen(true);
-        }}
-      />
-      <ExampleQueriesModal
-        queries={EXAMPLE_QUERIES_SINGULAR}
-        isOpen={exampleQueriesModalIsOpen}
-        onClose={() => {
-          setExampleQueriesModalIsOpen(false);
-        }}
-        username={account ? account.username : ""}
-        onSelectQuery={(query) => {
-          setSelectedQuery(query);
-          setExampleQueriesModalIsOpen(false);
-        }}
-      />
-      <BatchTweetsModal
-        isOpen={showBatchTweetsModal}
-        queryResult={queryResult}
-        onClose={() => setShowBatchTweetsModal(false)}
-      />
-    </Flex>
+            </Text>
+            <Text size="2" as="label">
+              <Flex align="center" gap="2">
+                <Checkbox
+                  disabled={isProcessing || !account || !hasRetweets}
+                  checked={includeRetweets}
+                  onCheckedChange={(checked) =>
+                    setIncludeRetweets(checked === true)
+                  }
+                />
+                RTs
+              </Flex>
+            </Text>
+          </Flex>
+          <Box style={{ flex: 1 }} />
+          <Select.Root
+            value={String(selectedConfigIndex)}
+            onValueChange={(value) => setSelectedConfigIndex(Number(value))}
+            disabled={isProcessing || !account}
+          >
+            <Select.Trigger style={{ maxWidth: 280 }} />
+            <Select.Content>
+              {AVAILABLE_LLM_CONFIGS.map(
+                ([model, provider, openrouterProvider, recommended], idx) => (
+                  <Select.Item
+                    key={`${model}-${provider}-${openrouterProvider || ""}`}
+                    value={String(idx)}
+                  >
+                    {recommended && "️⭐️ "}
+                    {openrouterProvider && "🔀 "}
+                    {model} - {openrouterProvider ?? provider}{" "}
+                  </Select.Item>
+                ),
+              )}
+            </Select.Content>
+          </Select.Root>
+        </Flex>
+        {rangeSelection.type === "date-range" && (
+          <TweetFrequencyGraph
+            tweetCounts={tweetCounts}
+            startDate={rangeSelection.startDate}
+            endDate={rangeSelection.endDate}
+            onRangeSelect={(newStartDate, newEndDate) => {
+              setRangeSelection({
+                type: "date-range",
+                startDate: newStartDate,
+                endDate: newEndDate,
+              });
+            }}
+          />
+        )}
+        {errorMessage && (
+          <Callout.Root color="red" mt="2">
+            <Callout.Text>{errorMessage}</Callout.Text>
+          </Callout.Root>
+        )}
+
+        {isProcessing && currentRunningQuery && (
+          <ResultsBox>
+            <Box pt="1" pb="2">
+              <ProgressLabel
+                currentProgress={currentProgress}
+                totalProgress={totalProgress}
+              />
+              <ProgressBar
+                currentProgress={currentProgress}
+                totalProgress={totalProgress}
+                startedAtMs={startedProcessingTime}
+                isProcessing={isProcessing}
+                numBatches={batchCount || totalProgress}
+              />
+            </Box>
+          </ResultsBox>
+        )}
+        {queryResult && (
+          <>
+            <ResultsBox>
+              <Flex direction="row" gap="3" py="2">
+                <Flex direction="column" gap="1" style={{ flex: 1 }}>
+                  <Heading size="4">{queryResult.query}</Heading>
+                  <Text size="1" style={{ fontStyle: "italic" }}>
+                    completed in {(queryResult.totalRunTime / 1000).toFixed(2)}{" "}
+                    seconds, {queryResult.totalTokens} tokens
+                  </Text>
+                </Flex>
+                <Flex gap="2" align="start">
+                  <Button
+                    size="1"
+                    variant="soft"
+                    color="green"
+                    onClick={() => {
+                      setShowBatchTweetsModal(true);
+                    }}
+                  >
+                    Evidence
+                  </Button>
+                  <CopyButton text={queryResult.result} />
+                </Flex>
+              </Flex>
+              <div className="query-result-markdown">
+                <Markdown remarkPlugins={[remarkGfm]}>
+                  {stripThink(queryResult.result)}
+                </Markdown>
+              </div>
+            </ResultsBox>
+          </>
+        )}
+        <Grid
+          columns={{ initial: "1", sm: "2", md: "3" }}
+          gap="3"
+          mt="2"
+          style={{ alignItems: "stretch" }}
+        >
+          {FEATURED_QUERIES_SINGULAR.map((baseQuery) => {
+            const query = replaceAccountName(
+              baseQuery,
+              account ? account.username : "this user",
+            );
+            return (
+              <FeaturedQueryCard key={baseQuery} isProcessing={isProcessing}>
+                <Box py="1">{query}</Box>
+                <Flex justify="center" width="100%" gap="2">
+                  <RunQueryButton
+                    disabled={isProcessing || !account}
+                    onClick={() => {
+                      if (isProcessing) return;
+                      setSelectedQuery(query);
+                      handleRunQuery(query);
+                      textareaRef.current?.focus();
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    disabled={isProcessing || !account}
+                    variant="soft"
+                    color="gray"
+                    size="2"
+                    onClick={() => {
+                      if (isProcessing) return;
+                      setSelectedQuery(query);
+                      textareaRef.current?.focus();
+                    }}
+                  >
+                    Edit
+                  </Button>
+                </Flex>
+              </FeaturedQueryCard>
+            );
+          })}
+        </Grid>
+        <BrowseMoreButton
+          isProcessing={isProcessing}
+          onClick={() => {
+            if (isProcessing) return;
+            setExampleQueriesModalIsOpen(true);
+          }}
+        />
+        <ExampleQueriesModal
+          queries={EXAMPLE_QUERIES_SINGULAR}
+          isOpen={exampleQueriesModalIsOpen}
+          onClose={() => {
+            setExampleQueriesModalIsOpen(false);
+          }}
+          username={account ? account.username : ""}
+          onSelectQuery={(query) => {
+            setSelectedQuery(query);
+            setExampleQueriesModalIsOpen(false);
+          }}
+        />
+        <BatchTweetsModal
+          isOpen={showBatchTweetsModal}
+          queryResult={queryResult}
+          onClose={() => setShowBatchTweetsModal(false)}
+        />
+      </Flex>
+    </Box>
   );
 }

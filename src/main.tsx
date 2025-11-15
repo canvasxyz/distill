@@ -1,4 +1,3 @@
-import { Theme } from "@radix-ui/themes";
 import "@radix-ui/themes/styles.css";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
@@ -9,6 +8,7 @@ import { MyArchiveView } from "./views/MyArchiveView.tsx";
 import { AllTweetsView } from "./views/AllTweetsView.tsx";
 import { PastQueryDetailView } from "./views/query_view/PastQueryDetailView.tsx";
 import Chat from "./views/Chat.tsx";
+import { ThemeProvider } from "./components/ThemeProvider";
 
 const router = createHashRouter([
   {
@@ -25,8 +25,8 @@ const router = createHashRouter([
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <Theme appearance="light" accentColor="sky">
+    <ThemeProvider>
       <RouterProvider router={router} />
-    </Theme>
+    </ThemeProvider>
   </StrictMode>,
 );

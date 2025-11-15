@@ -14,7 +14,7 @@ export function MyArchiveView() {
   const [showModal, setShowModal] = useState(false);
 
   return (
-    <Box style={{ width: "100%", overflow: "hidden" }}>
+    <Box style={{ width: "100%" }}>
       {appIsReady ? (
         <>
           <Header
@@ -27,11 +27,6 @@ export function MyArchiveView() {
                     style={{
                       padding: "6px 10px",
                       borderRadius: 6,
-                      border: "1px solid var(--gray-9)",
-                      background: "var(--gray-11)",
-                      color: "var(--gray-2)",
-                      cursor: "not-allowed",
-                      opacity: 0.5,
                       fontSize: "0.875rem",
                     }}
                     disabled
@@ -45,10 +40,6 @@ export function MyArchiveView() {
                     style={{
                       padding: "6px 10px",
                       borderRadius: 6,
-                      border: "1px solid var(--gray-9)",
-                      background: "var(--gray-11)",
-                      color: "var(--gray-2)",
-                      cursor: "pointer",
                       fontSize: "0.875rem",
                     }}
                     onClick={() => setShowModal(true)}
@@ -63,7 +54,6 @@ export function MyArchiveView() {
             direction="column"
             p="4"
             style={{
-              maxHeight: "100vh",
               margin: "0 auto",
               maxWidth: "1200px",
             }}

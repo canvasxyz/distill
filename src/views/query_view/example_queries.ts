@@ -94,7 +94,7 @@ export const EXAMPLE_QUERIES_PLURAL = [
 
 export const FEATURED_QUERIES_SINGULAR = [
   "What kinds of topics does {account} post about?",
-  "Based on these tweets, what Enneagram and MBTI types are {account}? You may list multiple options.",
+  "Based on these tweets, what Enneagram and MBTI types are {account}?",
   "What were the main eras or turning points in {account}'s life?",
   "What are {account}'s two best tweets? And which one is {account}'s worst?",
 ];

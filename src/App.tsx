@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useStore } from "./state/store";
 import { Box, Flex } from "@radix-ui/themes";
 import { ResponsiveSidebar } from "./components/ResponsiveSidebar";
+import { ThemeSwitcher } from "./components/ThemeSwitcher";
 
 function App() {
   const { init, subscribe, unsubscribe } = useStore();
@@ -18,12 +19,15 @@ function App() {
   }, [init, subscribe, unsubscribe]);
 
   return (
-    <Flex style={{ height: "100vh", overflowY: "scroll" }}>
-      <ResponsiveSidebar />
-      <Box style={{ flex: 1, minWidth: 0 }}>
-        <Outlet />
-      </Box>
-    </Flex>
+    <>
+      <Flex style={{ minHeight: "100vh" }}>
+        <ResponsiveSidebar />
+        <Box style={{ flex: 1, minWidth: 0, height: "100vh", overflowY: "auto" }}>
+          <Outlet />
+        </Box>
+      </Flex>
+      <ThemeSwitcher />
+    </>
   );
 }
 

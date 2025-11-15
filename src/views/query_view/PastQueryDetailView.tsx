@@ -4,7 +4,7 @@ import { useState } from "react";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { extractTimestampFromUUIDv7, stripThink } from "../../utils";
-import { CopyButton } from "./ResultsBox";
+import { CopyButton, ResultsBox } from "./ResultsBox";
 import { BatchTweetsModal } from "./BatchTweetsModal";
 import type { RangeSelection } from "./ai_utils";
 import { db } from "../../db";
@@ -49,7 +49,8 @@ export function PastQueryDetailView() {
         style={{
           padding: "20px",
           maxWidth: "1200px",
-          margin: "0 auto",
+          margin: "auto",
+          width: "100%",
         }}
       >
         <Button
@@ -60,7 +61,9 @@ export function PastQueryDetailView() {
         >
           ← Back Home
         </Button>
-        <Text size="3" color="gray">Query not found</Text>
+        <Text size="3" color="gray">
+          Query not found
+        </Text>
       </div>
     );
   }
@@ -69,8 +72,9 @@ export function PastQueryDetailView() {
     <div
       style={{
         padding: "20px",
-        maxWidth: "1200px",
-        margin: "0 auto",
+        maxWidth: "800px",
+        margin: "auto",
+        width: "100%",
       }}
     >
       <div
@@ -81,11 +85,7 @@ export function PastQueryDetailView() {
           marginBottom: "20px",
         }}
       >
-        <Button
-          onClick={() => navigate("/")}
-          variant="outline"
-          size="2"
-        >
+        <Button onClick={() => navigate("/")} variant="outline" size="2">
           ← Back Home
         </Button>
 
@@ -108,12 +108,10 @@ export function PastQueryDetailView() {
         </Button>
       </div>
 
-      <div
-        style={{
-          marginBottom: "20px",
-        }}
-      >
-        <Heading size="5" mb="3">Query</Heading>
+      <div style={{ marginBottom: "20px" }}>
+        <Heading size="5" mb="3">
+          Query
+        </Heading>
         <div
           style={{
             padding: "12px 16px",
@@ -126,11 +124,7 @@ export function PastQueryDetailView() {
         </div>
       </div>
 
-      <div
-        style={{
-          marginBottom: "20px",
-        }}
-      >
+      <div style={{ marginBottom: "20px" }}>
         <div
           style={{
             display: "flex",
@@ -140,20 +134,16 @@ export function PastQueryDetailView() {
           }}
         >
           <div style={{ display: "flex", flexDirection: "column" }}>
-            <Heading size="5" mb="0">Result</Heading>
+            <Heading size="5" mb="0">
+              Result
+            </Heading>
             {query.queriedHandle && (
               <Text size="1" color="gray" style={{ marginTop: 4 }}>
                 {query.queriedHandle}
               </Text>
             )}
           </div>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              gap: "10px",
-            }}
-          >
+          <div style={{ display: "flex", flexDirection: "row", gap: "10px" }}>
             <Button
               className="button-hover-green-3"
               style={{
@@ -177,39 +167,26 @@ export function PastQueryDetailView() {
             <CopyButton text={query.result} />
           </div>
         </div>
-        <div
-          style={{
-            fontFamily: "inherit",
-            borderRadius: "4px",
-            border: "1px solid var(--gray-7)",
-            padding: "10px 12px",
-            background: "var(--color-background)",
-            minHeight: "32px",
-          }}
-        >
+        <ResultsBox>
           <Markdown remarkPlugins={[remarkGfm]}>
             {stripThink(query.result)}
           </Markdown>
-        </div>
+        </ResultsBox>
       </div>
 
       <div
-          style={{
-            marginTop: "20px",
-            padding: "16px",
-            background: "var(--gray-2)",
-            border: "1px solid var(--gray-6)",
-            borderRadius: "6px",
-          }}
-        >
-        <Heading size="4" mb="3">Query Details</Heading>
-        <div
-          style={{
-            display: "flex",
-            gap: "20px",
-            flexWrap: "wrap",
-          }}
-        >
+        style={{
+          marginTop: "20px",
+          padding: "16px",
+          background: "var(--gray-2)",
+          border: "1px solid var(--gray-6)",
+          borderRadius: "6px",
+        }}
+      >
+        <Heading size="4" mb="3">
+          Query Details
+        </Heading>
+        <div style={{ display: "flex", gap: "2px 20px", flexWrap: "wrap" }}>
           <span>
             <span style={{ color: "var(--green-10)", fontWeight: 500 }}>
               Total Run Time:
@@ -217,23 +194,33 @@ export function PastQueryDetailView() {
             {(query.totalRunTime / 1000).toFixed(2)}s
           </span>
           <span>
-            <span style={{ color: "var(--yellow-10)", fontWeight: 500 }}>Range:</span>{" "}
+            <span style={{ color: "var(--red-10)", fontWeight: 500 }}>
+              Range:
+            </span>{" "}
             {formatRangeSelection(query.rangeSelection)}
           </span>
           <span>
-            <span style={{ color: "var(--sky-11)", fontWeight: 500 }}>Provider:</span>{" "}
+            <span style={{ color: "var(--sky-11)", fontWeight: 500 }}>
+              Provider:
+            </span>{" "}
             {query.provider}
           </span>
           <span>
-            <span style={{ color: "var(--red-10)", fontWeight: 500 }}>Model:</span>{" "}
+            <span style={{ color: "var(--red-10)", fontWeight: 500 }}>
+              Model:
+            </span>{" "}
             {query.model}
           </span>
           <span>
-            <span style={{ color: "var(--red-10)", fontWeight: 500 }}>Tokens:</span>{" "}
+            <span style={{ color: "var(--red-10)", fontWeight: 500 }}>
+              Tokens:
+            </span>{" "}
             {query.totalTokens}
           </span>
           <span>
-            <span style={{ color: "var(--gray-9)", fontWeight: 500 }}>Date:</span>{" "}
+            <span style={{ color: "var(--gray-9)", fontWeight: 500 }}>
+              Date:
+            </span>{" "}
             {formatDateTime(extractTimestampFromUUIDv7(query.id))}
           </span>
         </div>

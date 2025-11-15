@@ -104,7 +104,7 @@ export function ProgressBar({
 export function ResultsBox({ children }: { children: ReactNode }) {
   return (
     <Card>
-      <Box p="4">{children}</Box>
+      <Box px="3">{children}</Box>
     </Card>
   );
 }

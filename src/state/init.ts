@@ -41,6 +41,7 @@ export type InitSlice = {
   loadCommunityArchiveUserProgress: LoadCommunityArchiveUserProgress | null;
   removeLocalArchive: (accountId: string) => Promise<void>;
   removeArchive: (accountId: string) => Promise<void>;
+  lastLoadedAccountId: string | null;
 };
 
 export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
@@ -87,6 +88,7 @@ export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
     set({ ingestTwitterArchiveProgress: null });
     set(() => ({
       dbHasTweets: true,
+      lastLoadedAccountId: account.accountId,
     }));
   },
   loadCommunityArchiveUser: async (accountId) => {
@@ -189,11 +191,13 @@ export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
 
     set({
       loadCommunityArchiveUserProgress: null,
+      lastLoadedAccountId: accountId,
     });
 
     set({ dbHasTweets: true });
   },
   loadCommunityArchiveUserProgress: null,
+  lastLoadedAccountId: null,
   removeLocalArchive: async (accountId: string) => {
     // Remove all data for a locally ingested archive (by accountId)
     await Promise.all([

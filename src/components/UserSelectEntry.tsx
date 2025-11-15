@@ -1,4 +1,3 @@
-import { useState } from "react";
 import type { Account, Profile } from "../types";
 import { Box, Flex, Text, IconButton, Avatar } from "@radix-ui/themes";
 
@@ -19,24 +18,18 @@ export const UserSelectEntry = ({
   numTweets: number;
   numRetweets: number;
 }) => {
-  const [isHovered, setIsHovered] = useState(false);
-
   return (
     <Box
       key={acc.accountId}
       onClick={onClick}
-      p="3"
+      p="2"
       style={{
         cursor: isActive ? "default" : "pointer",
         flexGrow: "1",
         backgroundColor: isActive ? "var(--sky-3)" : undefined,
-        border: isActive
-          ? "1px solid var(--sky-7)"
-          : "1px solid var(--gray-6)",
-        borderRadius: "6px",
+        border: isActive ? "1px solid var(--sky-7)" : "1px solid var(--gray-6)",
+        borderRadius: "9px",
       }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
     >
       <Flex align="center" justify="between" gap="3">
         <Flex align="center" gap="3" style={{ minWidth: 0, flex: 1 }}>
@@ -59,22 +52,52 @@ export const UserSelectEntry = ({
                 .slice(0, 1)}
             />
           )}
-          <Flex align="baseline" gap="2" style={{ minWidth: 0, flex: 1 }}>
-            <Text weight="bold" color={isActive ? "blue" : "gray"} style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-              {acc.username || acc.accountDisplayName || acc.accountId}{" "}
+          <Flex
+            direction="column"
+            align="start"
+            style={{ minWidth: 0, flex: 1 }}
+          >
+            <Text
+              weight="bold"
+              style={{
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+                width: "100%",
+                textAlign: "left",
+              }}
+            >
+              {acc.username || acc.accountDisplayName || acc.accountId}
             </Text>
-            <Text size="2" color={isActive ? "blue" : "gray"} style={{ flexShrink: 0 }}>
-              {numTweets} tweets · {numRetweets} retweets {acc.fromArchive && "· My archive"}
+            <Text size="2" color="gray">
+              {numTweets} tweets · {numRetweets} retweets
+              {acc.fromArchive && " · My archive"}
             </Text>
           </Flex>
         </Flex>
-        <Flex align="center" gap="1" style={{ flexShrink: 0 }}>
+        <Flex align="center" gap="3" pr="1" style={{ flexShrink: 0 }}>
+          <IconButton
+            type="button"
+            title="Remove archive"
+            onClick={async (e) => {
+              e.stopPropagation();
+              onClickRemove();
+            }}
+            variant="ghost"
+            size="1"
+            style={{ flexShrink: 0 }}
+          >
+            &nbsp;×&nbsp;
+          </IconButton>
           <IconButton
             type="button"
             title="View tweets for this user"
             onClick={(e) => {
               e.stopPropagation();
-              window.open(`#/all-tweets/?account_id=${acc.accountId}`, "_blank");
+              window.open(
+                `#/all-tweets/?account_id=${acc.accountId}`,
+                "_blank",
+              );
             }}
             variant="solid"
             size="1"
@@ -99,21 +122,6 @@ export const UserSelectEntry = ({
               <polyline points="15 3 21 3 21 9" />
               <line x1="10" y1="14" x2="21" y2="3" />
             </svg>
-          </IconButton>
-          <IconButton
-            type="button"
-            title="Remove archive"
-            onClick={async (e) => {
-              e.stopPropagation();
-              onClickRemove();
-            }}
-            variant="ghost"
-            size="1"
-            style={{
-              flexShrink: 0,
-            }}
-          >
-            ×
           </IconButton>
         </Flex>
       </Flex>

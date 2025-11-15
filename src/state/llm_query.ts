@@ -20,11 +20,11 @@ import { QUERY_BATCH_SIZE, type LLMQueryConfig } from "../constants";
 export const AVAILABLE_LLM_CONFIGS: LLMQueryConfig[] = [
   ["gpt-oss-120b", "cerebras", null, true],
   ["llama-3.3-70b", "cerebras", null, true],
+  ["google/gemini-2.0-flash-001", "deepinfra", null, true],
   ["qwen-3-235b-a22b-instruct-2507", "cerebras", null, false],
   ["qwen-3-32b", "cerebras", null, false],
-  ["google/gemini-2.0-flash-001", "deepinfra", null, true],
   ["gpt-oss-120b", "fireworks", null, false],
-  ["gpt-oss-120b", "groq", null, true],
+  ["gpt-oss-120b", "groq", null, false],
   ["openai/gpt-oss-120b", "openrouter", "cerebras", false],
   ["openai/gpt-oss-120b", "openrouter", "baseten", false],
   ["openai/gpt-oss-120b", "openrouter", "groq", false],

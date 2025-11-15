@@ -5,12 +5,17 @@ import * as NavigationMenu from "@radix-ui/react-navigation-menu";
 import { useNavigate, useLocation } from "react-router";
 import { PastQueries } from "../views/query_view/SidebarQueries";
 import { Header } from "./Header";
+import { useTheme } from "./ThemeProvider";
 import "./ResponsiveSidebar.css";
 
 export function ResponsiveSidebar() {
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { appearance } = useTheme();
+
+  const boxShadowColor =
+    appearance === "dark" ? "rgba(255, 255, 255, 0.04)" : "rgba(0, 0, 0, 0.04)";
 
   // Close mobile sidebar when location changes
   useEffect(() => {
@@ -54,13 +59,13 @@ export function ResponsiveSidebar() {
           display: "flex",
           flexDirection: "column",
           flex: 1,
-          overflowY: "auto",
+          overflow: "visible",
           listStyle: "none",
           margin: 0,
           padding: 0,
         }}
       >
-        <Box style={{ flex: 1, overflowY: "auto" }}>
+        <Box style={{ flex: 1, overflow: "visible" }}>
           <PastQueries />
         </Box>
       </NavigationMenu.List>
@@ -80,7 +85,8 @@ export function ResponsiveSidebar() {
           height: "100vh",
           display: "flex",
           flexDirection: "column",
-          boxShadow: "2px 0 4px rgba(0, 0, 0, 0.1)",
+          overflow: "auto",
+          boxShadow: `2px 0 1px ${boxShadowColor}`,
         }}
       >
         {sidebarContent}

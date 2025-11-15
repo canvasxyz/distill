@@ -62,7 +62,7 @@ export function replaceAccountName(text: string, accountName: string) {
   if (accountName === "this user") {
     return text.replace(/\{account\}/g, accountName);
   }
-  return text.replace(/\{account\}/g, `@${accountName}`);
+  return text.replace(/\{account\}/g, `this user`);
 }
 export function makePromptMessages(
   tweetsSample: Tweet[],

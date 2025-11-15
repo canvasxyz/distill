@@ -222,10 +222,6 @@ function Chat() {
         display: "grid",
         gridTemplateRows: "auto 1fr auto",
         height: "100dvh",
-        color: "var(--gray-12)",
-        background: "var(--gray-2)",
-        fontFamily:
-          "ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji",
       }}
     >
       <Header
@@ -235,11 +231,6 @@ function Chat() {
             style={{
               padding: "6px 10px",
               borderRadius: 6,
-              border: "1px solid var(--gray-9)",
-              background: "var(--gray-11)",
-              color: "var(--gray-2)",
-              cursor: messages.length === 0 ? "not-allowed" : "pointer",
-              opacity: messages.length === 0 ? 0.5 : 1,
             }}
             onClick={() => setMessages([])}
             disabled={messages.length === 0}

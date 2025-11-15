@@ -20,8 +20,6 @@ export function Header({
         alignItems: "center",
         justifyContent,
         padding: "0 16px",
-        background: "var(--gray-12)",
-        color: "var(--gray-2)",
         width: "100%",
         height,
         boxSizing: "border-box",

@@ -9,7 +9,7 @@ import {
   itemContainerBase,
   itemTitleBase,
 } from "../../components/itemContainerBase";
-import { Text } from "@radix-ui/themes";
+import { Separator, Text } from "@radix-ui/themes";
 
 function formatDateTime(dateStr?: string) {
   if (!dateStr) return "";
@@ -44,6 +44,8 @@ function SidebarItemContainer({
   onMouseEnter?: (e: React.MouseEvent<HTMLDivElement>) => void;
   onMouseLeave?: (e: React.MouseEvent<HTMLDivElement>) => void;
 }) {
+  const [isHovered, setIsHovered] = useState(false);
+
   return (
     <div
       onClick={onClick}
@@ -51,9 +53,16 @@ function SidebarItemContainer({
       style={{
         ...itemContainerBase,
         position: "relative",
+        background: isHovered || isActive ? "var(--gray-3)" : undefined,
       }}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
+      onMouseEnter={(e) => {
+        setIsHovered(true);
+        onMouseEnter?.(e);
+      }}
+      onMouseLeave={(e) => {
+        setIsHovered(false);
+        onMouseLeave?.(e);
+      }}
     >
       {children}
     </div>
@@ -125,100 +134,102 @@ function PastQueryItem({ query }: { query: QueryResult }) {
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "4px",
-          width: "100%",
-          position: "relative",
-        }}
-      >
-        <span
-          style={{
-            ...itemTitleBase,
-            color: isActive ? "var(--sky-11)" : "var(--gray-12)",
-          }}
-        >
-          {query.query.length > 80
-            ? query.query.slice(0, 80) + "…"
-            : query.query}
-        </span>
-        <Text size="1" color="gray">{formatDateTime(query.id)}</Text>
         <div
           style={{
-            position: "absolute",
-            top: "0px",
-            right: "-5px",
+            display: "flex",
+            flexDirection: "column",
+            gap: "4px",
+            width: "100%",
+            position: "relative",
+            fontSize: "96%",
           }}
         >
-          <button
-            ref={buttonRef}
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowDropdown(!showDropdown);
-            }}
-            className="button-color-hover"
+          <span
             style={{
-              display: isHovered ? "flex" : "none",
-              alignItems: "center",
-              justifyContent: "center",
-              width: "24px",
-              height: "24px",
-              border: "1px solid var(--gray-5)",
-              background: "var(--color-background)",
-              cursor: "pointer",
-              borderRadius: "4px",
-              padding: "4px",
-              color: "var(--gray-10)",
-              fontSize: "14px",
-              lineHeight: 1,
+              ...itemTitleBase,
+              color: "var(--gray-12)",
             }}
-            aria-label="More options"
           >
-            ⋯
-          </button>
-          {showDropdown && (
-            <div
-              ref={dropdownRef}
-              style={{
-                position: "absolute",
-                top: "28px",
-                right: 0,
-                background: "var(--color-background)",
-                border: "1px solid var(--gray-6)",
-                borderRadius: "4px",
-                boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
-                zIndex: 1000,
-                minWidth: "120px",
-                overflow: "hidden",
+            {query.query.length > 80
+              ? query.query.slice(0, 80) + "…"
+              : query.query}
+          </span>
+          <Text size="1" color="gray">
+            {formatDateTime(query.id)}
+          </Text>
+          <div
+            style={{
+              position: "absolute",
+              top: "calc(50% - 14px)",
+              right: "-5px",
+            }}
+          >
+            <button
+              ref={buttonRef}
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowDropdown(!showDropdown);
               }}
-              onClick={(e) => e.stopPropagation()}
+              className="button-color-hover"
+              style={{
+                display: isHovered ? "flex" : "none",
+                alignItems: "center",
+                justifyContent: "center",
+                width: "24px",
+                height: "24px",
+                border: "1px solid var(--gray-5)",
+                background: "var(--color-background)",
+                cursor: "pointer",
+                borderRadius: "4px",
+                padding: "4px",
+                color: "var(--gray-10)",
+                fontSize: "14px",
+                lineHeight: 1,
+              }}
+              aria-label="More options"
             >
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDelete();
-                }}
-                className="dropdown-button-hover"
+              ⋯
+            </button>
+            {showDropdown && (
+              <div
+                ref={dropdownRef}
                 style={{
-                  width: "100%",
-                  padding: "8px 12px",
-                  border: "none",
-                  background: "transparent",
-                  textAlign: "left",
-                  cursor: "pointer",
-                  fontSize: "13px",
-                  color: "var(--red-11)",
-                  transition: "background 0.2s",
+                  position: "absolute",
+                  top: "28px",
+                  right: 0,
+                  background: "var(--color-background)",
+                  border: "1px solid var(--gray-6)",
+                  borderRadius: "4px",
+                  boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
+                  zIndex: 1000,
+                  minWidth: "120px",
+                  overflow: "hidden",
                 }}
+                onClick={(e) => e.stopPropagation()}
               >
-                Delete
-              </button>
-            </div>
-          )}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDelete();
+                  }}
+                  className="dropdown-button-hover"
+                  style={{
+                    width: "100%",
+                    padding: "8px 12px",
+                    border: "none",
+                    background: "transparent",
+                    textAlign: "left",
+                    cursor: "pointer",
+                    fontSize: "13px",
+                    color: "var(--red-11)",
+                  }}
+                >
+                  Delete
+                </button>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
       </SidebarItemContainer>
     </NavigationMenu.Item>
   );
@@ -240,13 +251,16 @@ function RunQueryItem() {
         <span
           style={{
             ...itemTitleBase,
-            color: isActive ? "var(--sky-11)" : "var(--gray-12)",
+            color: "var(--gray-12)",
+            fontSize: "96%",
           }}
         >
           Run Query
         </span>
         {/* empty second line to match PastQueryItem height */}
-        <Text size="1" style={{ visibility: "hidden" }}> </Text>
+        <Text size="1" style={{ visibility: "hidden" }}>
+          {" "}
+        </Text>
       </SidebarItemContainer>
     </NavigationMenu.Item>
   );
@@ -266,15 +280,13 @@ function ArchiveChatItem() {
         onMouseLeave={undefined}
       >
         <span
-          style={{
-            ...itemTitleBase,
-            color: isActive ? "var(--sky-11)" : "var(--gray-12)",
-          }}
+          style={{ ...itemTitleBase, color: "var(--gray-12)", fontSize: "96%" }}
         >
-          Archive Chat (experimental)
+          Archive Chat
         </span>
-        {/* empty second line to match PastQueryItem height */}
-        <Text size="1" style={{ visibility: "hidden" }}> </Text>
+        <Text size="1" style={{ visibility: "hidden" }}>
+          {" "}
+        </Text>
       </SidebarItemContainer>
     </NavigationMenu.Item>
   );
@@ -284,24 +296,27 @@ export function PastQueries() {
   const { queryResults } = useStore();
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
+    <div style={{ display: "flex", flexDirection: "column" }}>
       <RunQueryItem />
       <ArchiveChatItem />
-      {(!queryResults || queryResults.length === 0) && (
+      {!queryResults || queryResults.length === 0 ? (
         <div style={{ padding: "20px 18px" }}>
           <Text size="2" color="gray" style={{ fontStyle: "italic" }}>
             No past queries yet
           </Text>
         </div>
+      ) : (
+        <Separator
+          style={{ width: "100%", opacity: 0.4 }}
+          mt="1"
+          mb="2"
+          color="gray"
+        />
       )}
       {queryResults.map((query) => (
         <PastQueryItem key={query.id} query={query} />
       ))}
+      <br />
     </div>
   );
 }

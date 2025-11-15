@@ -19,7 +19,8 @@ export const FeaturedQueryCard = ({
       align="center"
       justify="between"
       gap="3"
-      style={{ textAlign: "center", height: "100%" }}
+      pb="2"
+      style={{ textAlign: "center", height: "100%", lineHeight: 1.32 }}
     >
       {children}
     </Flex>
