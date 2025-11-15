@@ -37,13 +37,17 @@ export function NotFound() {
         }}
       >
         <Box mt="6" mb="4" style={{ textAlign: "center" }}>
-          <Text size="9" weight="bold" style={{ display: "block", mb: "2" }}>
+          <Text size="9" weight="bold" style={{ display: "block" }}>
             404
           </Text>
-          <Text size="6" weight="bold" style={{ display: "block", mb: "4", lineHeight: 2 }}>
+          <Text
+            size="6"
+            weight="bold"
+            style={{ display: "block", lineHeight: 2 }}
+          >
             Page Not Found
           </Text>
-          <Text size="3" style={{ lineHeight: 1.6, display: "block", mb: "4" }}>
+          <Text size="3" style={{ lineHeight: 1.6, display: "block" }}>
             The page you're looking for doesn't exist or has been moved.
           </Text>
           <Button
@@ -59,4 +63,3 @@ export function NotFound() {
     </Box>
   );
 }
-
