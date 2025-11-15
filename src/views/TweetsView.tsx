@@ -9,7 +9,6 @@ export function TweetsView({
   searchParam,
   allTweets,
   tweetsToDisplay,
-  title,
   blurb,
   navigateNext,
   navigatePrevious,

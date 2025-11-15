@@ -1,4 +1,10 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  type ReactNode,
+} from "react";
 import { Theme } from "@radix-ui/themes";
 
 type ThemeAppearance = "light" | "dark";
@@ -25,7 +31,8 @@ function getInitialTheme(): ThemeAppearance {
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [appearance, setAppearance] = useState<ThemeAppearance>(getInitialTheme);
+  const [appearance, setAppearance] =
+    useState<ThemeAppearance>(getInitialTheme);
 
   useEffect(() => {
     try {
@@ -55,4 +62,3 @@ export function useTheme() {
   }
   return context;
 }
-

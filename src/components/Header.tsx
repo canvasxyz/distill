@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 
 interface HeaderProps {
   leftContent: ReactNode;
@@ -30,11 +30,17 @@ export function Header({
     >
       <div style={{ flexShrink: 0 }}>{leftContent}</div>
       {rightContent && (
-        <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            flexShrink: 0,
+          }}
+        >
           {rightContent}
         </div>
       )}
     </header>
   );
 }
-
