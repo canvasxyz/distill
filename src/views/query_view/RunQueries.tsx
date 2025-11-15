@@ -7,10 +7,10 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useStore } from "../../state/store";
 import { RunQueryButton } from "./RunQueryButton";
 import {
-  CopyButton,
   ProgressBar,
   ProgressLabel,
   ResultsBox,
+  QueryResultHeader,
 } from "./ResultsBox";
 import { ExampleQueriesModal } from "./ExampleQueriesModal";
 import {
@@ -36,7 +36,6 @@ import {
   Checkbox,
   RadioGroup,
   Text,
-  Heading,
   Grid,
   Button,
   Callout,
@@ -454,28 +453,14 @@ export function RunQueries() {
         {queryResult && (
           <>
             <ResultsBox>
-              <Flex direction="row" gap="3" py="2">
-                <Flex direction="column" gap="1" style={{ flex: 1 }}>
-                  <Heading size="4">{queryResult.query}</Heading>
-                  <Text size="1" style={{ fontStyle: "italic" }}>
-                    completed in {(queryResult.totalRunTime / 1000).toFixed(2)}{" "}
-                    seconds, {queryResult.totalTokens} tokens
-                  </Text>
-                </Flex>
-                <Flex gap="2" align="start">
-                  <Button
-                    size="1"
-                    variant="soft"
-                    color="green"
-                    onClick={() => {
-                      setShowBatchTweetsModal(true);
-                    }}
-                  >
-                    Evidence
-                  </Button>
-                  <CopyButton text={queryResult.result} />
-                </Flex>
-              </Flex>
+              <QueryResultHeader
+                query={queryResult.query}
+                subtitle={`completed in ${(queryResult.totalRunTime / 1000).toFixed(2)} seconds, ${queryResult.totalTokens} tokens`}
+                resultText={queryResult.result}
+                onShowEvidence={() => {
+                  setShowBatchTweetsModal(true);
+                }}
+              />
               <div className="query-result-markdown">
                 <Markdown remarkPlugins={[remarkGfm]}>
                   {stripThink(queryResult.result)}

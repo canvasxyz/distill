@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { Button, Flex, Text, Progress, Box, Card } from "@radix-ui/themes";
+import { Button, Flex, Text, Progress, Box, Card, Heading } from "@radix-ui/themes";
 
 export const CopyButton = ({ text }: { text: string }) => {
   const [copied, setCopied] = useState(false);
@@ -106,5 +106,41 @@ export function ResultsBox({ children }: { children: ReactNode }) {
     <Card>
       <Box px="3">{children}</Box>
     </Card>
+  );
+}
+
+export function QueryResultHeader({
+  query,
+  subtitle,
+  resultText,
+  onShowEvidence,
+}: {
+  query: string;
+  subtitle?: string;
+  resultText: string;
+  onShowEvidence: () => void;
+}) {
+  return (
+    <Flex direction="row" gap="3" py="2">
+      <Flex direction="column" gap="1" style={{ flex: 1 }}>
+        <Heading size="4">{query}</Heading>
+        {subtitle && (
+          <Text size="1" style={{ fontStyle: "italic" }}>
+            {subtitle}
+          </Text>
+        )}
+      </Flex>
+      <Flex gap="2" align="start">
+        <Button
+          size="1"
+          variant="soft"
+          color="green"
+          onClick={onShowEvidence}
+        >
+          Evidence
+        </Button>
+        <CopyButton text={resultText} />
+      </Flex>
+    </Flex>
   );
 }

@@ -4,7 +4,7 @@ import { useState } from "react";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { extractTimestampFromUUIDv7, stripThink } from "../../utils";
-import { CopyButton, ResultsBox } from "./ResultsBox";
+import { ResultsBox, QueryResultHeader } from "./ResultsBox";
 import { BatchTweetsModal } from "./BatchTweetsModal";
 import type { RangeSelection } from "./ai_utils";
 import { db } from "../../db";
@@ -125,52 +125,20 @@ export function PastQueryDetailView() {
       </div>
 
       <div style={{ marginBottom: "20px" }}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: "12px",
-          }}
-        >
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            <Heading size="5" mb="0">
-              Result
-            </Heading>
-            {query.queriedHandle && (
-              <Text size="1" color="gray" style={{ marginTop: 4 }}>
-                {query.queriedHandle}
-              </Text>
-            )}
-          </div>
-          <div style={{ display: "flex", flexDirection: "row", gap: "10px" }}>
-            <Button
-              className="button-hover-green-3"
-              style={{
-                border: "1px solid var(--green-6)",
-                borderRadius: "4px",
-                padding: "4px 8px",
-                background: "var(--color-background)",
-                color: "var(--green-11)",
-                fontSize: "12px",
-                fontWeight: "bold",
-                cursor: "pointer",
-                transition: "all 0.2s ease",
-              }}
-              onClick={() => {
-                setShowBatchTweetsModal(true);
-              }}
-              size="1"
-            >
-              Evidence
-            </Button>
-            <CopyButton text={query.result} />
-          </div>
-        </div>
         <ResultsBox>
-          <Markdown remarkPlugins={[remarkGfm]}>
-            {stripThink(query.result)}
-          </Markdown>
+          <QueryResultHeader
+            query={query.query}
+            subtitle={query.queriedHandle}
+            resultText={query.result}
+            onShowEvidence={() => {
+              setShowBatchTweetsModal(true);
+            }}
+          />
+          <div className="query-result-markdown">
+            <Markdown remarkPlugins={[remarkGfm]}>
+              {stripThink(query.result)}
+            </Markdown>
+          </div>
         </ResultsBox>
       </div>
 
@@ -231,6 +199,7 @@ export function PastQueryDetailView() {
         queryResult={query}
         onClose={() => setShowBatchTweetsModal(false)}
       />
+      <br />
     </div>
   );
 }

@@ -28,11 +28,12 @@ export function TweetsView({
 
   return (
     <div
-      style={{ height: "calc(100vh - 52px)", overflowY: "auto", scrollbarGutter: "stable" }}
+      style={{
+        scrollbarGutter: "stable",
+      }}
     >
       <div
         style={{
-          maxHeight: "100vh",
           display: "flex",
           flexDirection: "column",
           paddingLeft: "16px",
@@ -80,8 +81,7 @@ export function TweetsView({
             display: "flex",
             flexDirection: "row",
             paddingTop: "10px",
-            paddingBottom: "10px",
-            justifyContent: "end",
+            paddingBottom: "25px",
           }}
         >
           <Button
