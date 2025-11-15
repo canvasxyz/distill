@@ -198,7 +198,9 @@ export function SelectUser({
               overflowY: "auto",
               border: "none",
               boxShadow: "none",
-              padding: "0",
+              padding: "3px",
+              borderRadius: "10px",
+              background: "var(--gray-4)",
               marginTop: "-6px",
             }}
           >

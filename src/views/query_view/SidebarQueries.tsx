@@ -9,7 +9,7 @@ import {
   itemContainerBase,
   itemTitleBase,
 } from "../../components/itemContainerBase";
-import { Separator, Text } from "@radix-ui/themes";
+import { Separator, Text, IconButton, Button } from "@radix-ui/themes";
 
 function formatDateTime(dateStr?: string) {
   if (!dateStr) return "";
@@ -169,32 +169,22 @@ function PastQueryItem({ query }: { query: QueryResult }) {
               right: "-5px",
             }}
           >
-            <button
+            <IconButton
               ref={buttonRef}
               onClick={(e) => {
                 e.stopPropagation();
                 setShowDropdown(!showDropdown);
               }}
-              className="button-color-hover"
               style={{
                 display: isHovered ? "flex" : "none",
-                alignItems: "center",
-                justifyContent: "center",
-                width: "24px",
-                height: "24px",
-                border: "1px solid var(--gray-5)",
-                background: "var(--color-background)",
-                cursor: "pointer",
-                borderRadius: "4px",
-                padding: "4px",
-                color: "var(--gray-10)",
-                fontSize: "14px",
-                lineHeight: 1,
               }}
+              variant="solid"
+              color="gray"
+              size="1"
               aria-label="More options"
             >
               ⋯
-            </button>
+            </IconButton>
             {showDropdown && (
               <div
                 ref={dropdownRef}
@@ -212,25 +202,22 @@ function PastQueryItem({ query }: { query: QueryResult }) {
                 }}
                 onClick={(e) => e.stopPropagation()}
               >
-                <button
+                <Button
                   onClick={(e) => {
                     e.stopPropagation();
                     handleDelete();
                   }}
-                  className="dropdown-button-hover"
+                  variant="outline"
+                  color="red"
+                  size="2"
                   style={{
                     width: "100%",
-                    padding: "8px 12px",
-                    border: "none",
-                    background: "transparent",
                     textAlign: "left",
-                    cursor: "pointer",
-                    fontSize: "13px",
-                    color: "var(--red-11)",
+                    justifyContent: "flex-start",
                   }}
                 >
                   Delete
-                </button>
+                </Button>
               </div>
             )}
           </div>

@@ -11,6 +11,7 @@ import { supabase } from "../supabase";
 import { AVAILABLE_LLM_CONFIGS } from "../state/llm_query";
 import { serverUrl } from "./query_view/ai_utils";
 import { Header } from "../components/Header";
+import { Button } from "@radix-ui/themes";
 
 const callOpenRouterOnce = async (
   openAiMessages: ChatCompletionMessageParam[],
@@ -229,17 +230,15 @@ function Chat() {
           <div style={{ fontWeight: 600 }}>Archive Chat (Experimental)</div>
         }
         rightContent={
-          <button
-            style={{
-              padding: "6px 10px",
-              borderRadius: 6,
-            }}
+          <Button
             onClick={() => setMessages([])}
             disabled={messages.length === 0}
             title="Clear chat"
+            size="2"
+            variant="soft"
           >
             Clear
-          </button>
+          </Button>
         }
       />
 
@@ -393,21 +392,14 @@ function Chat() {
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
         />
-        <button
-          style={{
-            padding: "10px 14px",
-            borderRadius: 8,
-            border: "1px solid var(--sky-10)",
-            background: "var(--sky-9)",
-            color: "var(--sky-12)",
-            cursor: input.trim() ? "pointer" : "not-allowed",
-            opacity: input.trim() ? 1 : 0.5,
-          }}
+        <Button
           onClick={handleSend}
           disabled={!input.trim()}
+          color="sky"
+          size="2"
         >
           Send
-        </button>
+        </Button>
       </footer>
     </div>
   );

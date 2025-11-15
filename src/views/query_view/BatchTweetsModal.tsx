@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { type QueryResult } from "./ai_utils";
 import { useStore } from "../../state/store";
-import { Heading, IconButton } from "@radix-ui/themes";
+import { Heading, IconButton, Button } from "@radix-ui/themes";
 
 function formatDate(dateString: string) {
   if (!dateString) return "";
@@ -116,7 +116,9 @@ export function BatchTweetsModal({
             paddingBottom: 12,
           }}
         >
-          <Heading size="6" style={{ flex: 1, margin: 0 }}>Evidence</Heading>
+          <Heading size="6" style={{ flex: 1, margin: 0 }}>
+            Evidence
+          </Heading>
 
           <IconButton
             variant="ghost"
@@ -166,18 +168,17 @@ export function BatchTweetsModal({
                   overflow: "hidden",
                 }}
               >
-                <button
+                <Button
                   onClick={() => toggleBatch(batchId)}
+                  variant="ghost"
+                  size="3"
                   style={{
                     width: "100%",
-                    padding: "12px 16px",
-                    border: "none",
-                    background: "var(--gray-2)",
-                    cursor: "pointer",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "space-between",
                     textAlign: "left",
+                    background: "var(--gray-2)",
                   }}
                 >
                   <div style={{ flex: 1 }}>
@@ -216,9 +217,14 @@ export function BatchTweetsModal({
                   >
                     ▶
                   </span>
-                </button>
+                </Button>
                 {isExpanded && (
-                  <div style={{ padding: "16px", background: "var(--color-background)" }}>
+                  <div
+                    style={{
+                      padding: "16px",
+                      background: "var(--color-background)",
+                    }}
+                  >
                     {tweets.length > 0 && (
                       <div
                         style={{

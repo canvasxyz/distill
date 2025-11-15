@@ -20,10 +20,11 @@ export function ThemeSwitcher() {
         boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
         backgroundColor: "transparent",
       }}
-      title={appearance === "dark" ? "Switch to light theme" : "Switch to dark theme"}
+      title={
+        appearance === "dark" ? "Switch to light theme" : "Switch to dark theme"
+      }
     >
       {appearance === "dark" ? "☀️" : "🌙"}
     </IconButton>
   );
 }
-

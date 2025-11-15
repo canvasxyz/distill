@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Box, Link } from "@radix-ui/themes";
+import { Box, Link, IconButton } from "@radix-ui/themes";
 import * as Dialog from "@radix-ui/react-dialog";
 import * as NavigationMenu from "@radix-ui/react-navigation-menu";
 import { useNavigate, useLocation } from "react-router";
@@ -49,7 +49,7 @@ export function ResponsiveSidebar() {
               lineHeight: 1,
             }}
           >
-            💧
+            🔎
           </Link>
         }
         justifyContent="flex-start"
@@ -93,10 +93,20 @@ export function ResponsiveSidebar() {
       </Box>
 
       {/* Mobile Hamburger Button - fixed at bottom left */}
-      <button
+      <IconButton
         className="mobile-sidebar-toggle"
         onClick={() => setMobileOpen(true)}
         aria-label="Open sidebar"
+        variant="soft"
+        size="3"
+        style={{
+          position: "fixed",
+          bottom: "24px",
+          left: "24px",
+          width: "56px",
+          height: "56px",
+          borderRadius: "50%",
+        }}
       >
         <svg
           width="24"
@@ -112,7 +122,7 @@ export function ResponsiveSidebar() {
           <line x1="3" y1="12" x2="21" y2="12"></line>
           <line x1="3" y1="18" x2="21" y2="18"></line>
         </svg>
-      </button>
+      </IconButton>
 
       {/* Mobile Sidebar Overlay - using Radix Dialog */}
       <Dialog.Root open={mobileOpen} onOpenChange={setMobileOpen}>
