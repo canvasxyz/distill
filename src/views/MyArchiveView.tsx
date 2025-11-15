@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useStore } from "../state/store";
 import { ModelQuerySection } from "./query_view/ModelQueryView";
 import { LoadingView } from "./LoadingView";
-import { FeedbackButtons } from "../components/FeedbackButtons";
 import { ArchiveDropZone } from "../components/ArchiveDropZone";
 import { CommunityArchiveUserModal } from "../components/CommunityArchiveUserModal";
 import { getCommunityArchiveUserProgressLabel } from "../components/CommunityArchiveUserProgress";
@@ -60,7 +59,6 @@ export function MyArchiveView() {
           >
             <Box height="2" />
             <ModelQuerySection />
-            <FeedbackButtons />
           </Flex>
           <CommunityArchiveUserModal
             showModal={showModal}
