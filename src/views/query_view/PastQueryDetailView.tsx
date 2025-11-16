@@ -48,7 +48,7 @@ export function PastQueryDetailView() {
       <div
         style={{
           padding: "20px",
-          maxWidth: "1200px",
+          maxWidth: "800px",
           margin: "auto",
           width: "100%",
           boxSizing: "border-box",
@@ -61,7 +61,7 @@ export function PastQueryDetailView() {
           size="2"
           style={{ marginBottom: "20px" }}
         >
-          ← Back Home
+          ← Back
         </Button>
         <div
           style={{
@@ -98,7 +98,7 @@ export function PastQueryDetailView() {
         }}
       >
         <Button onClick={() => navigate("/")} variant="outline" size="2">
-          ← Back Home
+          ← Back
         </Button>
 
         <Button
