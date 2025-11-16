@@ -119,8 +119,7 @@ export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
       },
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let allTweets: any[] = [];
+    let allTweets: Array<Record<string, unknown> & { tweet_id: string }> = [];
     let page = 0;
     const pageSize = 1000;
     while (true) {
@@ -152,7 +151,7 @@ export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
       ...tweet,
       id: tweet.tweet_id,
       id_str: tweet.tweet_id,
-    })) as Tweet[];
+    })) as unknown as Tweet[];
 
     await db.tweets.bulkPut(tweets);
 

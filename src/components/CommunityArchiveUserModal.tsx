@@ -42,11 +42,11 @@ export const CommunityArchiveUserModal = ({
                     size="2"
                     radius="full"
                     fallback="?"
-                    onError={(e) =>
-                      // @ts-expect-error "..."
-                      (e.target.src =
-                        "https://www.community-archive.org/_next/image?url=%2Fplaceholder.jpg&w=3840&q=75")
-                    }
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src =
+                        "https://www.community-archive.org/_next/image?url=%2Fplaceholder.jpg&w=3840&q=75";
+                    }}
                   />
                 ) : (
                   <Avatar size="2" radius="full" fallback="?" />

@@ -89,7 +89,10 @@ export function makePromptMessages(
   ];
 }
 
-export const serverUrl = "https://tweet-analysis-worker.bob-wbb.workers.dev";
+const serverUrl =
+  import.meta.env.VITE_SERVER_URL ||
+  "https://tweet-analysis-worker.bob-wbb.workers.dev";
+export { serverUrl };
 
 export async function submitQuery(params: {
   tweetsSample: Tweet[];
