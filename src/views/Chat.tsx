@@ -4,6 +4,7 @@ import remarkGfm from "remark-gfm";
 import type {
   ChatCompletion,
   ChatCompletionMessageParam,
+  ChatCompletionTool,
 } from "openai/resources";
 import type { ToolCall } from "openai/resources/beta/threads/runs.mjs";
 
@@ -15,7 +16,7 @@ import { Button } from "@radix-ui/themes";
 
 const callOpenRouterOnce = async (
   openAiMessages: ChatCompletionMessageParam[],
-  toolSchemas: ToolSchema[],
+  toolSchemas: ChatCompletionTool[],
 ) => {
   const body = {
     messages: openAiMessages,
@@ -40,21 +41,11 @@ const callOpenRouterOnce = async (
   return json as ChatCompletion;
 };
 
-// TODO: replace these types with whatever the OpenAI library provides
-type ToolSchema = {
-  type: "function";
-  function: {
-    name: string;
-    description: string;
-    parameters: Record<string, unknown>;
-  };
-};
-
 export type ToolHandler = (
   args: ReturnType<typeof JSON.parse>,
 ) => Promise<ReturnType<typeof JSON.parse>>;
 
-const toolSchemas: ToolSchema[] = [
+const toolSchemas: ChatCompletionTool[] = [
   {
     type: "function",
     function: {
