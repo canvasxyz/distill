@@ -16,6 +16,7 @@ import { ExampleQueriesModal } from "./ExampleQueriesModal";
 import {
   EXAMPLE_QUERIES_SINGULAR,
   FEATURED_QUERIES_SINGULAR,
+  type FeaturedQuery,
 } from "./example_queries";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -475,14 +476,20 @@ export function RunQueries() {
           mt="2"
           style={{ alignItems: "stretch" }}
         >
-          {FEATURED_QUERIES_SINGULAR.map((baseQuery) => {
-            const query = replaceAccountName(
-              baseQuery,
+          {FEATURED_QUERIES_SINGULAR.map((featuredQuery: FeaturedQuery) => {
+            const title = replaceAccountName(
+              featuredQuery.title,
               account ? account.username : "this user",
             );
+            const textTemplate = featuredQuery.text ?? featuredQuery.title;
+            const query = replaceAccountName(
+              textTemplate,
+              account ? account.username : "this user",
+            );
+
             return (
-              <FeaturedQueryCard key={baseQuery} isProcessing={isProcessing}>
-                <Box py="1">{query}</Box>
+              <FeaturedQueryCard key={featuredQuery.title} isProcessing={isProcessing}>
+                <Box py="1">{title}</Box>
                 <Flex justify="center" width="100%" gap="2">
                   <RunQueryButton
                     variant="outline"

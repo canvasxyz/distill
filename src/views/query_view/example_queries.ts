@@ -92,15 +92,44 @@ export const EXAMPLE_QUERIES_PLURAL = [
   "Which corners of the internet would claim {accounts} as their own, and where would their communities overlap?",
 ];
 
-export const FEATURED_QUERIES_SINGULAR = [
-  "What kinds of topics does {account} post about?",
-  "Based on these tweets, what Enneagram and MBTI types are {account}?",
-  "What were the main eras or turning points in {account}'s life?",
-  "What are {account}'s two best tweets? And which one is {account}'s worst?",
+export type FeaturedQuery = {
+  title: string;
+  text: string | null;
+};
+
+export const FEATURED_QUERIES_SINGULAR: FeaturedQuery[] = [
+  {
+    title: "Tell me about this user",
+    text: "Tell me about this user. First summarize any identifying clues about who they are. Then cover: What kinds of topics does this user post about? What kinds of projects are they working on? And what are they looking for when they post online?",
+  },
+  {
+    title: "Based on these tweets, what Enneagram and MBTI types are {account}?",
+    text: null,
+  },
+  {
+    title: "What were the main eras or turning points in {account}'s life?",
+    text: null,
+  },
+  {
+    title:
+      "What are {account}'s two best tweets? And which one is {account}'s worst?",
+    text: null,
+  },
 ];
 
-export const FEATURED_QUERIES_PLURAL = [
-  "What kinds of topics do {accounts} post about, and how do their focuses compare?",
-  "Based on these tweets, what MBTI/Enneagram types might describe {accounts}? If uncertain, list possible ranges for each.",
-  "What were the main eras or turning points in {accounts}' lives?",
+export const FEATURED_QUERIES_PLURAL: FeaturedQuery[] = [
+  {
+    title:
+      "What kinds of topics do {accounts} post about, and how do their focuses compare?",
+    text: null,
+  },
+  {
+    title:
+      "Based on these tweets, what MBTI/Enneagram types might describe {accounts}? If uncertain, list possible ranges for each.",
+    text: null,
+  },
+  {
+    title: "What were the main eras or turning points in {accounts}' lives?",
+    text: null,
+  },
 ];
