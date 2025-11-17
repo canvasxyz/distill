@@ -53,7 +53,7 @@ export default {
 			return new Response('Origin not allowed', { status: 403 });
 		}
 
-		const corsHeaders =
+		const corsHeaders: HeadersInit | undefined =
 			origin && originAllowed
 				? {
 						'Access-Control-Allow-Origin': origin,
@@ -62,7 +62,7 @@ export default {
 						'Access-Control-Max-Age': '600',
 						Vary: 'Origin',
 				  }
-				: {};
+				: undefined;
 
 		// Handle preflight
 		if (request.method === 'OPTIONS') {
