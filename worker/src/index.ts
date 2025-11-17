@@ -44,12 +44,25 @@ const callClassifier = async (
 
 export default {
 	async fetch(request, env, ctx): Promise<Response> {
-		const corsHeaders = {
-			'Access-Control-Allow-Origin': '*',
-			'Access-Control-Allow-Methods': 'GET,HEAD,POST,OPTIONS',
-			'Access-Control-Allow-Headers': '*',
-			'Access-Control-Max-Age': '600',
-		};
+		const allowedOrigins = new Set(['https://distill.org', 'https://www.distill.org', 'http://localhost:5173']);
+		const origin = request.headers.get('Origin') || undefined;
+
+		const originAllowed = !origin || allowedOrigins.has(origin);
+
+		if (!originAllowed) {
+			return new Response('Origin not allowed', { status: 403 });
+		}
+
+		const corsHeaders =
+			origin && originAllowed
+				? {
+						'Access-Control-Allow-Origin': origin,
+						'Access-Control-Allow-Methods': 'GET,HEAD,POST,OPTIONS',
+						'Access-Control-Allow-Headers': '*',
+						'Access-Control-Max-Age': '600',
+						Vary: 'Origin',
+				  }
+				: {};
 
 		// Handle preflight
 		if (request.method === 'OPTIONS') {
