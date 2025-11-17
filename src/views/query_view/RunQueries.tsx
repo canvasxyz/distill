@@ -463,7 +463,16 @@ export function RunQueries() {
                 }}
               />
               <div className="query-result-markdown">
-                <Markdown remarkPlugins={[remarkGfm]}>
+                <Markdown
+                  remarkPlugins={[remarkGfm]}
+                  components={{
+                    a: (props: any) => (
+                      <a {...props} target="_blank" rel="noopener noreferrer">
+                        {props.children}
+                      </a>
+                    ),
+                  }}
+                >
                   {stripThink(queryResult.result)}
                 </Markdown>
               </div>

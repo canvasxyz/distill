@@ -99,21 +99,16 @@ export type FeaturedQuery = {
 
 export const FEATURED_QUERIES_SINGULAR: FeaturedQuery[] = [
   {
-    title: "Tell me about this user",
-    text: "Tell me about this user. First summarize any identifying clues about who they are. Then cover: What kinds of topics does this user post about? What kinds of projects are they working on? And what are they looking for when they post online?",
-  },
-  {
-    title: "Based on these tweets, what Enneagram and MBTI types are {account}?",
-    text: null,
+    title: "What kids of topics does this user post about?",
+    text: "Tell me about this user. First summarize any identifying clues about who they are. Then cover: What kinds of topics does this user post about? What kinds of projects or interests do they have?",
   },
   {
     title: "What were the main eras or turning points in {account}'s life?",
     text: null,
   },
   {
-    title:
-      "What are {account}'s two best tweets? And which one is {account}'s worst?",
-    text: null,
+    title: "What are {account}'s best, worst, and funniest tweets?",
+    text: "What are this account's best, worst, and funniest tweets? Provide the results as bullet points.",
   },
 ];
 
