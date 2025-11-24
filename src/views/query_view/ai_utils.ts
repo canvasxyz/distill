@@ -1,8 +1,13 @@
 import type { ChatCompletionMessageParam } from "openai/resources";
+import { zodResponseFormat } from "openai/helpers/zod";
+
 import type { Account, Tweet } from "../../types";
 import OpenAI from "openai";
 import type { LLMQueryProvider } from "../../constants";
 import { AVAILABLE_LLM_CONFIGS } from "../../state/llm_query";
+import { z } from "zod";
+
+const IdsResponse = z.array(z.string());
 
 export type Query = { prompt: string; systemPrompt?: string };
 
@@ -52,7 +57,7 @@ export type QueryResult = {
 };
 
 export const batchSystemPrompt =
-  "You are a researcher who is looking through an archive of a user's tweets ({account}) trying to answer a question (given in the user prompt). You are trying to collect together all of the tweets that might provide a way to answer that question. Give your reasoning in <Reasoning>...</Reasoning> tags and then return a list of the tweets that you used as evidence with each tweet id wrapped in a <TweetId>...</TweetId> tag. Use only the exact tweet ids provided. Return at most 20 tweets.";
+  "You are a researcher who is looking through an archive of a user's tweets ({account}) trying to answer a question (given in the user prompt). You are trying to collect together all of the tweets that might provide a way to answer that question. Only return the tweet ids. Return at most 20 tweets. Make sure that the response adheres to the provided schema (a list of strings).";
 
 export const finalSystemPrompt =
   "You will be given a prompt, followed by a list of tweets. Review the tweets and provide an answer to the prompt. Do not create tables in your response.";
@@ -98,6 +103,7 @@ export async function submitQuery(params: {
   model: string;
   provider: LLMQueryProvider;
   openrouterProvider?: string | null | undefined;
+  isBatchRequest?: boolean;
 }) {
   const { tweetsSample, query, account, model, provider, openrouterProvider } =
     params;
@@ -111,6 +117,10 @@ export async function submitQuery(params: {
     messages,
     provider: openrouterProvider ? { only: [openrouterProvider] } : undefined,
   };
+
+  if (params.isBatchRequest) {
+    aiParams.response_format = zodResponseFormat(IdsResponse, "ids");
+  }
 
   // put the selected model at the start of the llm configs list
   // i.e. if it's not available then fall back to the other models in the list
@@ -145,17 +155,6 @@ export async function submitQuery(params: {
     model: data.model,
   };
 }
-
-export const extractTweetIds = (queryResult: string) => {
-  const idMatches = queryResult.match(/<TweetId>([\s\S]*?)<\/TweetId>/g) || [];
-  const tweetIds = idMatches.map((m) =>
-    m
-      .replace(/^<TweetId>/, "")
-      .replace(/<\/TweetId>$/, "")
-      .trim(),
-  );
-  return tweetIds;
-};
 
 export const selectSubset = (
   tweets: Tweet[],

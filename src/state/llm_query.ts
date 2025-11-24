@@ -2,7 +2,6 @@ import type { StateCreator } from "zustand";
 import type { StoreSlices } from "./types";
 import {
   batchSystemPrompt,
-  extractTweetIds,
   finalSystemPrompt,
   selectSubset,
   submitQuery,
@@ -167,6 +166,7 @@ export const createLlmQuerySlice: StateCreator<
                 model,
                 provider,
                 openrouterProvider: openrouterProvider,
+                isBatchRequest: true,
               });
             } catch (e) {
               queryError = e;
@@ -180,7 +180,7 @@ export const createLlmQuerySlice: StateCreator<
             );
           }
 
-          const tweetIds = extractTweetIds(queryResult.result);
+          const tweetIds = JSON.parse(queryResult.result) as string[];
           const groundedTweets = getGenuineTweetIds(tweetIds, batch);
 
           const endTime = performance.now();
