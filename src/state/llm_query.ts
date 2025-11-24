@@ -180,7 +180,7 @@ export const createLlmQuerySlice: StateCreator<
             );
           }
 
-          const tweetIds = JSON.parse(queryResult.result) as string[];
+          const tweetIds = JSON.parse(queryResult.result).ids;
           const groundedTweets = getGenuineTweetIds(tweetIds, batch);
 
           const endTime = performance.now();

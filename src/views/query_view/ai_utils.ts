@@ -1,13 +1,9 @@
 import type { ChatCompletionMessageParam } from "openai/resources";
-import { zodResponseFormat } from "openai/helpers/zod";
 
 import type { Account, Tweet } from "../../types";
 import OpenAI from "openai";
 import type { LLMQueryProvider } from "../../constants";
 import { AVAILABLE_LLM_CONFIGS } from "../../state/llm_query";
-import { z } from "zod";
-
-const IdsResponse = z.array(z.string());
 
 export type Query = { prompt: string; systemPrompt?: string };
 
@@ -119,7 +115,26 @@ export async function submitQuery(params: {
   };
 
   if (params.isBatchRequest) {
-    aiParams.response_format = zodResponseFormat(IdsResponse, "ids");
+    aiParams.response_format = {
+      type: "json_schema",
+      json_schema: {
+        name: "tweet_ids",
+        strict: true,
+        schema: {
+          type: "object",
+          properties: {
+            ids: {
+              type: "array",
+              items: {
+                type: "string",
+              },
+            },
+          },
+          required: ["ids"],
+          additionalProperties: false,
+        },
+      },
+    };
   }
 
   // put the selected model at the start of the llm configs list
