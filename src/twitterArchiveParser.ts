@@ -3,6 +3,8 @@
  * @param content The raw file content as a string
  * @returns Parsed JSON data or null if parsing fails
  */
+import { archiveError, archiveWarn } from "./archiveUploadLogger";
+
 export function parseTwitterArchiveFile<T>(content: string): T | null {
   try {
     const lines = content.split("\n");
@@ -17,6 +19,7 @@ export function parseTwitterArchiveFile<T>(content: string): T | null {
     }
 
     if (startIndex === -1) {
+      archiveWarn("Archive parser could not find window.YTD assignment");
       return null;
     }
 
@@ -25,6 +28,7 @@ export function parseTwitterArchiveFile<T>(content: string): T | null {
     const jsonStart = firstLine.indexOf("[");
 
     if (jsonStart === -1) {
+      archiveWarn("Archive parser could not find JSON array start");
       return null;
     }
 
@@ -37,7 +41,7 @@ export function parseTwitterArchiveFile<T>(content: string): T | null {
     // Parse as JSON
     return JSON.parse(jsonContent);
   } catch (error) {
-    console.error("Error parsing Twitter archive file:", error);
+    archiveError("Error parsing Twitter archive file", error);
     return null;
   }
 }

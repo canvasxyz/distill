@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { Box } from "@radix-ui/themes";
 import { useStore } from "../state/store";
+import { archiveError, archiveLog, archiveWarn } from "../archiveUploadLogger";
 
 export function ArchiveDropZone() {
   const { ingestTwitterArchive, ingestTwitterArchiveProgress } = useStore();
@@ -12,7 +13,18 @@ export function ArchiveDropZone() {
   ) => {
     const file = event.target.files?.[0];
     if (file) {
-      await ingestTwitterArchive(file);
+      archiveLog("File selected for archive upload", {
+        name: file.name,
+        size: file.size,
+        type: file.type,
+      });
+      try {
+        await ingestTwitterArchive(file);
+        archiveLog("Archive upload completed", { name: file.name });
+      } catch (error) {
+        archiveError("Archive upload failed", error);
+        throw error;
+      }
     }
   };
 
@@ -41,7 +53,22 @@ export function ArchiveDropZone() {
 
     const file = e.dataTransfer.files[0];
     if (file && file.type === "application/zip") {
-      await ingestTwitterArchive(file);
+      archiveLog("File dropped for archive upload", {
+        name: file.name,
+        size: file.size,
+      });
+      try {
+        await ingestTwitterArchive(file);
+        archiveLog("Archive upload completed", { name: file.name });
+      } catch (error) {
+        archiveError("Archive upload failed", error);
+        throw error;
+      }
+    } else if (file) {
+      archiveWarn("Dropped file ignored (not a zip)", {
+        name: file.name,
+        type: file.type,
+      });
     }
   };
 

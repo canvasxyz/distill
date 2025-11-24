@@ -5,6 +5,7 @@ import { db } from "../db";
 import { supabase } from "../supabase";
 import { mapKeysDeep, snakeToCamelCase } from "../utils";
 import type { Account, ProfileWithId, Tweet } from "../types";
+import { archiveError, archiveLog } from "../archiveUploadLogger";
 
 type IngestTwitterArchiveProgress =
   | { status: "processingArchive" }
@@ -69,27 +70,55 @@ export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
   appIsReady: false,
   ingestTwitterArchiveProgress: null,
   ingestTwitterArchive: async (file: File) => {
+    archiveLog("Starting archive ingestion", {
+      name: file.name,
+      size: file.size,
+      type: file.type,
+    });
     set({ ingestTwitterArchiveProgress: { status: "processingArchive" } });
-    const { account, profile, tweets } = await processTwitterArchive(file);
+    try {
+      const { account, profile, tweets } = await processTwitterArchive(file);
+      archiveLog("Archive processed", {
+        accountId: account.accountId,
+        tweetCount: tweets.length,
+      });
 
-    set({ ingestTwitterArchiveProgress: { status: "addingAccount" } });
-    await db.accounts.put({ ...account, fromArchive: true });
+      set({ ingestTwitterArchiveProgress: { status: "addingAccount" } });
+      archiveLog("Adding account to local database", {
+        accountId: account.accountId,
+      });
+      await db.accounts.put({ ...account, fromArchive: true });
 
-    set({ ingestTwitterArchiveProgress: { status: "addingProfile" } });
-    await db.profiles.put(profile);
+      set({ ingestTwitterArchiveProgress: { status: "addingProfile" } });
+      archiveLog("Adding profile to local database", {
+        accountId: account.accountId,
+      });
+      await db.profiles.put(profile);
 
-    set({ ingestTwitterArchiveProgress: { status: "addingTweets" } });
-    await db.tweets.bulkPut(
-      tweets.map((tweet) => ({ ...tweet, account_id: account.accountId })),
-    );
+      set({ ingestTwitterArchiveProgress: { status: "addingTweets" } });
+      archiveLog("Adding tweets to local database", {
+        accountId: account.accountId,
+        tweetCount: tweets.length,
+      });
+      await db.tweets.bulkPut(
+        tweets.map((tweet) => ({ ...tweet, account_id: account.accountId })),
+      );
 
-    set({ ingestTwitterArchiveProgress: { status: "applyingFilters" } });
+      set({ ingestTwitterArchiveProgress: { status: "applyingFilters" } });
 
-    set({ ingestTwitterArchiveProgress: null });
-    set(() => ({
-      dbHasTweets: true,
-      lastLoadedAccountId: account.accountId,
-    }));
+      set({ ingestTwitterArchiveProgress: null });
+      set(() => ({
+        dbHasTweets: true,
+        lastLoadedAccountId: account.accountId,
+      }));
+      archiveLog("Archive ingestion completed", {
+        accountId: account.accountId,
+        tweetCount: tweets.length,
+      });
+    } catch (error) {
+      archiveError("Archive ingestion failed", error);
+      throw error;
+    }
   },
   loadCommunityArchiveUser: async (accountId) => {
     // Fetch all required data from Supabase
