@@ -73,13 +73,13 @@ export const useCommunityArchiveAccounts = () => {
 
 export const PINNED_USERNAMES = [
   "exgenesis",
+  "repligate",
+  "visakanv",
   "IvanVendrov",
   "DefenderOfBasic",
   "Ben_Reinhardt",
   "__drewface",
-  "crystalcultures",
-  "bvalosek",
-  "marksest",
   "erikbjareholt",
   "rhyslindmark",
+  "crystalcultures",
 ];
