@@ -13,6 +13,11 @@ import { AVAILABLE_LLM_CONFIGS } from "../state/llm_query";
 import { serverUrl } from "./query_view/ai_utils";
 import { Header } from "../components/Header";
 import { Button } from "@radix-ui/themes";
+import {
+  getSelectedProvider,
+  getProviderUrl,
+  getProviderApiKey,
+} from "../utils/provider";
 
 const callOpenRouterOnce = async (
   openAiMessages: ChatCompletionMessageParam[],
@@ -25,22 +30,48 @@ const callOpenRouterOnce = async (
     temperature: 0.2,
   };
 
-  const llmConfigs = AVAILABLE_LLM_CONFIGS;
+  // Check if user has selected a provider to use directly
+  const selectedProvider = getSelectedProvider();
+  let json: ChatCompletion;
 
-  const res = await fetch(serverUrl, {
-    method: "POST",
-    body: JSON.stringify({ params: body, llmConfigs }),
-    headers: { "Content-Type": "application/json" },
-  });
+  if (selectedProvider && getProviderApiKey(selectedProvider)) {
+    // Use direct provider API call
+    const providerUrl = getProviderUrl(selectedProvider);
+    const providerApiKey = getProviderApiKey(selectedProvider);
 
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`OpenRouter error ${res.status}: ${text}`);
+    const res = await fetch(`${providerUrl}/chat/completions`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${providerApiKey}`,
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`Provider error ${res.status}: ${text}`);
+    }
+    json = (await res.json()) as ChatCompletion;
+  } else {
+    // Use proxy server (default behavior)
+    const llmConfigs = AVAILABLE_LLM_CONFIGS;
+
+    const res = await fetch(serverUrl, {
+      method: "POST",
+      body: JSON.stringify({ params: body, llmConfigs }),
+      headers: { "Content-Type": "application/json" },
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`OpenRouter error ${res.status}: ${text}`);
+    }
+    json = (await res.json()) as ChatCompletion;
   }
-  const json = await res.json();
-  return json as ChatCompletion;
-};
 
+  return json;
+};
 
 export type ToolHandler = (
   args: ReturnType<typeof JSON.parse>,

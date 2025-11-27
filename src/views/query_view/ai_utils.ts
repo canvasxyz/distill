@@ -1,9 +1,15 @@
 import type { ChatCompletionMessageParam } from "openai/resources";
+import type { ChatCompletion } from "openai/resources";
 
 import type { Account, Tweet } from "../../types";
 import OpenAI from "openai";
 import type { LLMQueryProvider } from "../../constants";
 import { AVAILABLE_LLM_CONFIGS } from "../../state/llm_query";
+import {
+  getSelectedProvider,
+  getProviderUrl,
+  getProviderApiKey,
+} from "../../utils/provider";
 
 export type Query = { prompt: string; systemPrompt?: string };
 
@@ -137,25 +143,61 @@ export async function submitQuery(params: {
     };
   }
 
-  // put the selected model at the start of the llm configs list
-  // i.e. if it's not available then fall back to the other models in the list
-  const llmConfigs = [
-    [model, provider, openrouterProvider, false],
-    ...AVAILABLE_LLM_CONFIGS,
-  ];
+  // Check if user has selected a provider to use directly
+  const selectedProvider = getSelectedProvider();
+  let data: ChatCompletion & { provider?: string; model?: string };
 
-  const classificationResponse = await fetch(serverUrl, {
-    method: "POST",
-    body: JSON.stringify({ params: aiParams, provider, llmConfigs }),
-    headers: { "Content-Type": "application/json" },
-  });
+  if (selectedProvider && getProviderApiKey(selectedProvider)) {
+    // Use direct provider API call
+    const providerUrl = getProviderUrl(selectedProvider);
+    const providerApiKey = getProviderApiKey(selectedProvider);
 
-  if (classificationResponse.status !== 200) {
-    const errorText = await classificationResponse.text();
-    throw new Error(errorText);
+    // For direct calls, use the selected provider instead of the one from config
+    const directProvider = selectedProvider;
+    const directModel = model; // Use the model from config
+
+    const directResponse = await fetch(`${providerUrl}/chat/completions`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${providerApiKey}`,
+      },
+      body: JSON.stringify(aiParams),
+    });
+
+    if (directResponse.status !== 200) {
+      const errorText = await directResponse.text();
+      throw new Error(
+        `Provider error (${directResponse.status}): ${errorText}`,
+      );
+    }
+
+    data = await directResponse.json();
+    // Add provider and model info to match the expected response format
+    data.provider = directProvider;
+    data.model = directModel;
+  } else {
+    // Use proxy server (default behavior)
+    // put the selected model at the start of the llm configs list
+    // i.e. if it's not available then fall back to the other models in the list
+    const llmConfigs = [
+      [model, provider, openrouterProvider, false],
+      ...AVAILABLE_LLM_CONFIGS,
+    ];
+
+    const classificationResponse = await fetch(serverUrl, {
+      method: "POST",
+      body: JSON.stringify({ params: aiParams, provider, llmConfigs }),
+      headers: { "Content-Type": "application/json" },
+    });
+
+    if (classificationResponse.status !== 200) {
+      const errorText = await classificationResponse.text();
+      throw new Error(errorText);
+    }
+
+    data = await classificationResponse.json();
   }
-
-  const data = await classificationResponse.json();
 
   const endTime = performance.now();
   const runTime = endTime - startTime;
