@@ -56,7 +56,7 @@ export const batchSystemPrompt =
   "You are a researcher who is looking through an archive of a user's tweets ({account}) trying to answer a question (given in the user prompt). You are trying to collect together all of the tweets that might provide a way to answer that question. Only return the tweet ids. Return at most 20 tweets. Make sure that the response adheres to the provided schema (a list of strings).";
 
 export const finalSystemPrompt =
-  "You will be given a prompt, followed by a list of tweets. Review the tweets and provide an answer to the prompt. Do not create tables in your response.";
+  "You will be given a prompt, followed by a list of tweets. Review the tweets and provide an answer to the prompt. References to tweets should make use of Markdown links to the tweets themselves on x.com. Do not create tables in your response.";
 
 export function replaceAccountName(text: string, accountName: string) {
   // If accountName is "this user", don't add @ prefix
