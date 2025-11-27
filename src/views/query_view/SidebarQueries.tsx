@@ -284,6 +284,32 @@ function ArchiveChatItem() {
   );
 }
 
+function SettingsItem() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const isActive = location.pathname === "/settings";
+
+  return (
+    <NavigationMenu.Item value="settings">
+      <SidebarItemContainer
+        isActive={isActive}
+        onClick={() => navigate("/settings")}
+        onMouseEnter={undefined}
+        onMouseLeave={undefined}
+      >
+        <span
+          style={{ ...itemTitleBase, color: "var(--gray-12)", fontSize: "96%" }}
+        >
+          Settings
+        </span>
+        <Text size="1" style={{ visibility: "hidden" }}>
+          {" "}
+        </Text>
+      </SidebarItemContainer>
+    </NavigationMenu.Item>
+  );
+}
+
 export function PastQueries() {
   const { queryResults } = useStore();
 
@@ -293,6 +319,7 @@ export function PastQueries() {
     <div style={{ display: "flex", flexDirection: "column" }}>
       <RunQueryItem />
       <ArchiveChatItem />
+      <SettingsItem />
       {!queryResults || queryResults.length === 0 ? (
         <div style={{ padding: "20px 18px" }}>
           <Text size="2" color="gray" style={{ fontStyle: "italic" }}>
