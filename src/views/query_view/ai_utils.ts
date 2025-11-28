@@ -30,9 +30,8 @@ export type BatchStatus =
       outputText: string;
       usage: {
         completion_tokens: number;
-        estimated_cost: number;
+        estimated_cost?: number;
         prompt_tokens: number;
-        prompt_tokens_details: null; // only used with prompt caching
         total_tokens: number;
       };
       provider: string;
@@ -219,8 +218,8 @@ export async function submitQuery(params: {
     result: data.choices[0].message.content as string,
     messages,
     runTime,
-    usage: data.usage,
-    provider: data.provider,
+    usage: data.usage!,
+    provider: data.provider!,
     model: data.model,
   };
 }

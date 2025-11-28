@@ -60,10 +60,6 @@ const PROVIDER_INFO = [
   },
 ];
 
-const PROVIDER_KEY_TO_LABEL: Record<string, string> = Object.fromEntries(
-  PROVIDER_INFO.map((p) => [p.key, p.label]),
-);
-
 export function Settings() {
   const { appearance, toggleTheme } = useTheme();
 
@@ -132,7 +128,6 @@ export function Settings() {
       >
         <Card
           size="2"
-          radius="large"
           style={{
             overflow: "hidden",
             boxShadow: "0 2px 12px 0 rgba(30, 35, 74, 0.08)",
@@ -243,7 +238,9 @@ export function Settings() {
                         <Box>
                           <Flex gap="1" align="center">
                             <Text size="3">{prov.label}</Text>
-                            {hasProviderApiKey(prov.key) && (
+                            {hasProviderApiKey(
+                              prov.key as LLMQueryProvider,
+                            ) && (
                               <Tooltip content="API key set">
                                 <CheckCircledIcon
                                   color="var(--green-9)"

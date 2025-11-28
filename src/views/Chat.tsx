@@ -297,8 +297,8 @@ function Chat() {
                       {m.content as string}
                     </Markdown>
                     {(m.tool_calls || []).map((toolCall) => {
-                      const tool = getToolByName(toolCall.function!.name)!;
                       if (toolCall.type === "function") {
+                        const tool = getToolByName(toolCall.function!.name)!;
                         return (
                           <span key={toolCall.id}>
                             {tool.getLabel(

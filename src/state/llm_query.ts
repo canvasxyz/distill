@@ -258,12 +258,14 @@ export const createLlmQuerySlice: StateCreator<
           let totalTokens = 0;
           for (const batchStatus of Object.values(batchStatuses)) {
             if (batchStatus.status === "done") {
-              totalEstimatedCost += batchStatus.usage.estimated_cost;
+              totalEstimatedCost += batchStatus.usage.estimated_cost || 0;
               totalTokens += batchStatus.usage.total_tokens;
             }
           }
 
-          totalEstimatedCost += finalQueryResult.usage.estimated_cost;
+          totalEstimatedCost +=
+            (finalQueryResult.usage as { estimated_cost?: number })
+              .estimated_cost || 0;
           totalTokens += finalQueryResult.usage.total_tokens;
 
           const newQueryResult = {
