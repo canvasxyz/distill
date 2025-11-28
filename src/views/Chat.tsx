@@ -24,8 +24,8 @@ import {
   getProviderApiKey,
 } from "../utils/provider";
 import { QUERY_BATCH_SIZE, type LLMQueryConfig } from "../constants";
-import { getBatches, mapKeysDeep, snakeToCamelCase } from "../utils";
-import type { Account, Tweet } from "../types";
+import { mapKeysDeep, snakeToCamelCase } from "../utils";
+import type { Account } from "../types";
 
 const callOpenRouterOnce = async (
   openAiMessages: ChatCompletionMessageParam[],
@@ -103,8 +103,12 @@ const askQuestionSchema = {
           type: "string",
           description: "The question itself",
         },
+        includeRetweets: {
+          type: "boolean",
+          description: "Whether to include retweets",
+        },
       },
-      required: ["username", "question"],
+      required: ["username", "question", "includeRetweets"],
     },
   },
 };
@@ -112,8 +116,9 @@ const askQuestionSchema = {
 const getTweetsSchema = {
   type: "function" as const,
   function: {
-    name: "get_tweets",
-    description: "Get tweets matching the given fields",
+    name: "get_more_tweets",
+    description:
+      "Get additional tweets matching the given fields. Only use this if you really need more information.",
     parameters: {
       type: "object",
       properties: {
@@ -138,7 +143,11 @@ const getTweetsSchema = {
 };
 
 const toolHandlers: Record<string, ToolHandler> = {
-  ask_question: async (args: { username: string; question: string }) => {
+  ask_question: async (args: {
+    username: string;
+    question: string;
+    includeRetweets: boolean;
+  }) => {
     const { username, question } = args;
     const query = question;
 
@@ -164,7 +173,11 @@ const toolHandlers: Record<string, ToolHandler> = {
       const { data } = await supabase
         .schema("public")
         .from("tweets")
-        .select("tweet_id,full_text,created_at,favorite_count,retweet_count")
+        .select(
+          "tweet_id,account_id,full_text,created_at,favorite_count,retweet_count",
+        )
+        .eq("account_id", account.accountId)
+        .not("full_text", "like", "RT %")
         .order("created_at", { ascending: false })
         .range(QUERY_BATCH_SIZE * i, QUERY_BATCH_SIZE * (i + 1));
 
@@ -206,7 +219,7 @@ const toolHandlers: Record<string, ToolHandler> = {
     return finalQueryResult.result;
   },
 
-  get_tweets: async (args: {
+  get_more_tweets: async (args: {
     username?: string;
     textSearch?: string;
     offset?: number;
@@ -308,13 +321,13 @@ function Chat() {
                 content: JSON.stringify(result),
               },
             ];
+            setMessages(updatedMessages);
           }
         }
         setMessages(updatedMessages);
       }
 
-      const toolSchemas =
-        updatedMessages.length === 1 ? [askQuestionSchema] : [getTweetsSchema];
+      const toolSchemas = [askQuestionSchema, getTweetsSchema];
 
       const result = await callOpenRouterOnce(updatedMessages, toolSchemas);
 
@@ -322,6 +335,7 @@ function Chat() {
       const responseMsgWithId = { ...responseMessage, id: crypto.randomUUID() };
 
       updatedMessages = [...updatedMessages, responseMsgWithId];
+      setMessages(updatedMessages);
       lastMsg = updatedMessages[updatedMessages.length - 1];
     } while (
       lastMsg.role === "user" ||
