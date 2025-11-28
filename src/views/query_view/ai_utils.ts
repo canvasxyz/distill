@@ -72,7 +72,13 @@ export function replaceAccountName(text: string, accountName: string) {
   return text.replace(/\{account\}/g, `this user`);
 }
 export function makePromptMessages(
-  tweetsSample: Tweet[],
+  tweetsSample: {
+    id_str: string;
+    created_at: string;
+    favorite_count: string;
+    retweet_count: string;
+    full_text: string;
+  }[],
   query: Query,
   account: Account,
 ) {
@@ -99,7 +105,13 @@ export function makePromptMessages(
 export const serverUrl = "https://tweet-analysis-worker.bob-wbb.workers.dev";
 
 export async function submitQuery(params: {
-  tweetsSample: Tweet[];
+  tweetsSample: {
+    id_str: string;
+    created_at: string;
+    favorite_count: string;
+    retweet_count: string;
+    full_text: string;
+  }[];
   query: Query;
   account: Account;
   model: string;

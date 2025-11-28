@@ -9,8 +9,13 @@ import type {
 import type { ToolCall } from "openai/resources/beta/threads/runs.mjs";
 
 import { supabase } from "../supabase";
-import { AVAILABLE_LLM_CONFIGS } from "../state/llm_query";
-import { serverUrl } from "./query_view/ai_utils";
+import { AVAILABLE_LLM_CONFIGS, getGenuineTweetIds } from "../state/llm_query";
+import {
+  batchSystemPrompt,
+  finalSystemPrompt,
+  serverUrl,
+  submitQuery,
+} from "./query_view/ai_utils";
 import { Header } from "../components/Header";
 import { Button } from "@radix-ui/themes";
 import {
@@ -18,6 +23,9 @@ import {
   getProviderUrl,
   getProviderApiKey,
 } from "../utils/provider";
+import { QUERY_BATCH_SIZE, type LLMQueryConfig } from "../constants";
+import { getBatches, mapKeysDeep, snakeToCamelCase } from "../utils";
+import type { Account, Tweet } from "../types";
 
 const callOpenRouterOnce = async (
   openAiMessages: ChatCompletionMessageParam[],
@@ -77,37 +85,127 @@ export type ToolHandler = (
   args: ReturnType<typeof JSON.parse>,
 ) => Promise<ReturnType<typeof JSON.parse>>;
 
-const toolSchemas: ChatCompletionTool[] = [
-  {
-    type: "function",
-    function: {
-      name: "get_tweets",
-      description: "Get tweets matching the given fields",
-      parameters: {
-        type: "object",
-        properties: {
-          username: {
-            type: "string",
-            description:
-              "The username of the Twitter users whose tweets are being requested",
-          },
-          textSearch: {
-            type: "string",
-            description:
-              "A search term for the tweet text, this uses the Postgres FTS feature",
-          },
-          offset: {
-            type: "number",
-            description: "An offset which is used to paginate results.",
-          },
+const askQuestionSchema = {
+  type: "function" as const,
+  function: {
+    name: "ask_question",
+    description:
+      "Try to generate a report that answers a question about a user's tweets",
+    parameters: {
+      type: "object",
+      properties: {
+        username: {
+          type: "string",
+          description:
+            "The username of the Twitter user that we want to ask a question about",
         },
-        required: [],
+        question: {
+          type: "string",
+          description: "The question itself",
+        },
       },
+      required: ["username", "question"],
     },
   },
-];
+};
+
+const getTweetsSchema = {
+  type: "function" as const,
+  function: {
+    name: "get_tweets",
+    description: "Get tweets matching the given fields",
+    parameters: {
+      type: "object",
+      properties: {
+        username: {
+          type: "string",
+          description:
+            "The username of the Twitter users whose tweets are being requested",
+        },
+        textSearch: {
+          type: "string",
+          description:
+            "A search term for the tweet text, this uses the Postgres FTS feature",
+        },
+        offset: {
+          type: "number",
+          description: "An offset which is used to paginate results.",
+        },
+      },
+      required: [],
+    },
+  },
+};
 
 const toolHandlers: Record<string, ToolHandler> = {
+  ask_question: async (args: { username: string; question: string }) => {
+    const { username, question } = args;
+    const query = question;
+
+    const { data: accountData } = await supabase
+      .schema("public")
+      .from("account")
+      .select("*")
+      .eq("username", username)
+      .maybeSingle();
+
+    const account = mapKeysDeep(accountData, snakeToCamelCase) as Account;
+
+    // get the tweets to analyse
+    const config: LLMQueryConfig = AVAILABLE_LLM_CONFIGS[0];
+
+    const [model, provider, openrouterProvider] = config;
+
+    const numBatches = 3;
+
+    const collectedTweets = [];
+
+    for (let i = 0; i < numBatches; i++) {
+      const { data } = await supabase
+        .schema("public")
+        .from("tweets")
+        .select("tweet_id,full_text,created_at,favorite_count,retweet_count")
+        .order("created_at", { ascending: false })
+        .range(QUERY_BATCH_SIZE * i, QUERY_BATCH_SIZE * (i + 1));
+
+      if (!data) {
+        break;
+      }
+
+      const batch = data.map((tweet) => ({
+        ...tweet,
+        id: tweet.tweet_id,
+        id_str: tweet.tweet_id,
+      }));
+
+      const queryResult = await submitQuery({
+        tweetsSample: batch,
+        query: { systemPrompt: batchSystemPrompt, prompt: query },
+        account,
+        model,
+        provider,
+        openrouterProvider: openrouterProvider,
+        isBatchRequest: true,
+      });
+
+      const tweetIds = JSON.parse(queryResult.result).ids;
+      const groundedTweets = getGenuineTweetIds(tweetIds, batch);
+
+      collectedTweets.push(groundedTweets.genuine);
+    }
+
+    // submit query to create the final result based on the collected texts
+    const finalQueryResult = await submitQuery({
+      tweetsSample: collectedTweets.flat(),
+      query: { systemPrompt: finalSystemPrompt, prompt: query },
+      account,
+      model,
+      provider,
+      openrouterProvider: openrouterProvider,
+    });
+    return finalQueryResult.result;
+  },
+
   get_tweets: async (args: {
     username?: string;
     textSearch?: string;
@@ -214,6 +312,9 @@ function Chat() {
         }
         setMessages(updatedMessages);
       }
+
+      const toolSchemas =
+        updatedMessages.length === 1 ? [askQuestionSchema] : [getTweetsSchema];
 
       const result = await callOpenRouterOnce(updatedMessages, toolSchemas);
 

@@ -30,16 +30,16 @@ export const AVAILABLE_LLM_CONFIGS: LLMQueryConfig[] = [
   ["openai/gpt-oss-120b", "openrouter", "sambanova", false],
 ];
 
-const getGenuineTweetIds = (
+export const getGenuineTweetIds = <T extends { id_str: string; id: string }>(
   tweetIdsToCheck: string[],
-  originalTweets: Tweet[],
+  originalTweets: T[],
 ) => {
-  const tweetsById: Record<string, Tweet> = {};
+  const tweetsById: Record<string, T> = {};
   for (const tweet of originalTweets) {
     tweetsById[tweet.id_str || tweet.id] = tweet;
   }
 
-  const genuine: Tweet[] = [];
+  const genuine: T[] = [];
   const hallucinated: string[] = [];
 
   for (const id of tweetIdsToCheck) {
