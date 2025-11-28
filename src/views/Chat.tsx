@@ -8,14 +8,8 @@ import type {
 } from "openai/resources";
 import type { ToolCall } from "openai/resources/beta/threads/runs.mjs";
 
-import { supabase } from "../supabase";
-import { AVAILABLE_LLM_CONFIGS, getGenuineTweetIds } from "../state/llm_query";
-import {
-  batchSystemPrompt,
-  finalSystemPrompt,
-  serverUrl,
-  submitQuery,
-} from "./query_view/ai_utils";
+import { AVAILABLE_LLM_CONFIGS } from "../state/llm_query";
+import { serverUrl } from "./query_view/ai_utils";
 import { Header } from "../components/Header";
 import { Button } from "@radix-ui/themes";
 import {
@@ -23,9 +17,8 @@ import {
   getProviderUrl,
   getProviderApiKey,
 } from "../utils/provider";
-import { QUERY_BATCH_SIZE, type LLMQueryConfig } from "../constants";
-import { mapKeysDeep, snakeToCamelCase } from "../utils";
-import type { Account } from "../types";
+import { AskQuestion } from "./tools/AskQuestion";
+import { GetMoreTweets } from "./tools/GetMoreTweets";
 
 const callOpenRouterOnce = async (
   openAiMessages: ChatCompletionMessageParam[],
@@ -85,181 +78,10 @@ export type ToolHandler = (
   args: ReturnType<typeof JSON.parse>,
 ) => Promise<ReturnType<typeof JSON.parse>>;
 
-const askQuestionSchema = {
-  type: "function" as const,
-  function: {
-    name: "ask_question",
-    description:
-      "Try to generate a report that answers a question about a user's tweets",
-    parameters: {
-      type: "object",
-      properties: {
-        username: {
-          type: "string",
-          description:
-            "The username of the Twitter user that we want to ask a question about",
-        },
-        question: {
-          type: "string",
-          description: "The question itself",
-        },
-        includeRetweets: {
-          type: "boolean",
-          description: "Whether to include retweets",
-        },
-      },
-      required: ["username", "question", "includeRetweets"],
-    },
-  },
-};
-
-const getTweetsSchema = {
-  type: "function" as const,
-  function: {
-    name: "get_more_tweets",
-    description:
-      "Get additional tweets matching the given fields. Only use this if you really need more information.",
-    parameters: {
-      type: "object",
-      properties: {
-        username: {
-          type: "string",
-          description:
-            "The username of the Twitter users whose tweets are being requested",
-        },
-        textSearch: {
-          type: "string",
-          description:
-            "A search term for the tweet text, this uses the Postgres FTS feature",
-        },
-        offset: {
-          type: "number",
-          description: "An offset which is used to paginate results.",
-        },
-      },
-      required: [],
-    },
-  },
-};
-
-const toolHandlers: Record<string, ToolHandler> = {
-  ask_question: async (args: {
-    username: string;
-    question: string;
-    includeRetweets: boolean;
-  }) => {
-    const { username, question } = args;
-    const query = question;
-
-    const { data: accountData } = await supabase
-      .schema("public")
-      .from("account")
-      .select("*")
-      .eq("username", username)
-      .maybeSingle();
-
-    const account = mapKeysDeep(accountData, snakeToCamelCase) as Account;
-
-    // get the tweets to analyse
-    const config: LLMQueryConfig = AVAILABLE_LLM_CONFIGS[0];
-
-    const [model, provider, openrouterProvider] = config;
-
-    const numBatches = 3;
-
-    const collectedTweets = [];
-
-    for (let i = 0; i < numBatches; i++) {
-      const { data } = await supabase
-        .schema("public")
-        .from("tweets")
-        .select(
-          "tweet_id,account_id,full_text,created_at,favorite_count,retweet_count",
-        )
-        .eq("account_id", account.accountId)
-        .not("full_text", "like", "RT %")
-        .order("created_at", { ascending: false })
-        .range(QUERY_BATCH_SIZE * i, QUERY_BATCH_SIZE * (i + 1));
-
-      if (!data) {
-        break;
-      }
-
-      const batch = data.map((tweet) => ({
-        ...tweet,
-        id: tweet.tweet_id,
-        id_str: tweet.tweet_id,
-      }));
-
-      const queryResult = await submitQuery({
-        tweetsSample: batch,
-        query: { systemPrompt: batchSystemPrompt, prompt: query },
-        account,
-        model,
-        provider,
-        openrouterProvider: openrouterProvider,
-        isBatchRequest: true,
-      });
-
-      const tweetIds = JSON.parse(queryResult.result).ids;
-      const groundedTweets = getGenuineTweetIds(tweetIds, batch);
-
-      collectedTweets.push(groundedTweets.genuine);
-    }
-
-    // submit query to create the final result based on the collected texts
-    const finalQueryResult = await submitQuery({
-      tweetsSample: collectedTweets.flat(),
-      query: { systemPrompt: finalSystemPrompt, prompt: query },
-      account,
-      model,
-      provider,
-      openrouterProvider: openrouterProvider,
-    });
-    return finalQueryResult.result;
-  },
-
-  get_more_tweets: async (args: {
-    username?: string;
-    textSearch?: string;
-    offset?: number;
-  }) => {
-    const offset = args.offset || 0;
-    const limit = 100;
-
-    let queryObj = supabase
-      .schema("public")
-      .from("tweets")
-      .select("tweet_id,full_text,created_at,favorite_count,retweet_count")
-      .order("created_at", { ascending: false })
-      .range(offset, offset + limit);
-
-    if (args.username) {
-      const accountIdResponse = await supabase
-        .schema("public")
-        .from("account")
-        .select("account_id")
-        .eq("username", args.username)
-        .limit(1)
-        .maybeSingle();
-
-      const accountId = accountIdResponse.data?.account_id;
-
-      queryObj = queryObj.eq("account_id", accountId);
-    }
-
-    if (args.textSearch) {
-      queryObj = queryObj.textSearch(
-        "full_text",
-        args.textSearch.replaceAll(" ", "+"),
-      );
-    }
-
-    const response = await queryObj;
-
-    return response.data;
-  },
-};
+const tools = [AskQuestion, GetMoreTweets];
+function getToolByName(name: string) {
+  return tools.filter((tool) => tool.name === name)[0];
+}
 
 function Chat() {
   const [messages, setMessages] = useState<
@@ -306,8 +128,8 @@ function Chat() {
             [toolCall.id]: { ...toolCall },
           }));
           if (toolCall.type === "function") {
-            const toolFunction = toolHandlers[toolCall.function.name];
-            const result = await toolFunction(
+            const tool = getToolByName(toolCall.function.name);
+            const result = await tool.handler(
               JSON.parse(toolCall.function.arguments),
             );
 
@@ -327,9 +149,10 @@ function Chat() {
         setMessages(updatedMessages);
       }
 
-      const toolSchemas = [askQuestionSchema, getTweetsSchema];
-
-      const result = await callOpenRouterOnce(updatedMessages, toolSchemas);
+      const result = await callOpenRouterOnce(
+        updatedMessages,
+        tools.map((tool) => tool.schema),
+      );
 
       const responseMessage = result.choices[0].message;
       const responseMsgWithId = { ...responseMessage, id: crypto.randomUUID() };
@@ -406,7 +229,9 @@ function Chat() {
               let content;
               if (m.role === "tool") {
                 const toolCall = toolCalls[m.tool_call_id];
+
                 if (toolCall.type === "function") {
+                  const tool = getToolByName(toolCall.function.name)!;
                   content = (
                     <>
                       <div
@@ -416,8 +241,7 @@ function Chat() {
                           margin: "0 0 4px 4px",
                         }}
                       >
-                        tool: {toolCall.function.name}, args:{" "}
-                        {toolCall.function.arguments}
+                        {tool.getLabel(JSON.parse(toolCall.function.arguments))}
                       </div>
                       <div
                         style={{
@@ -473,11 +297,13 @@ function Chat() {
                       {m.content as string}
                     </Markdown>
                     {(m.tool_calls || []).map((toolCall) => {
+                      const tool = getToolByName(toolCall.function!.name)!;
                       if (toolCall.type === "function") {
                         return (
                           <span key={toolCall.id}>
-                            tool: {toolCall.function.name}, args:{" "}
-                            {toolCall.function.arguments}
+                            {tool.getLabel(
+                              JSON.parse(toolCall.function.arguments),
+                            )}
                           </span>
                         );
                       }
