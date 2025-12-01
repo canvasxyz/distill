@@ -7,7 +7,7 @@ import { RouterProvider } from "react-router/dom";
 import { MyArchiveView } from "./views/MyArchiveView.tsx";
 import { AllTweetsView } from "./views/AllTweetsView.tsx";
 import { PastQueryDetailView } from "./views/query_view/PastQueryDetailView.tsx";
-import Chat from "./views/Chat.tsx";
+import Chat from "./views/chat/Chat.tsx";
 import { NotFound } from "./views/NotFound.tsx";
 import { Settings } from "./views/Settings.tsx";
 import { ThemeProvider } from "./components/ThemeProvider";

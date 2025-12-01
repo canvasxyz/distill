@@ -1,4 +1,4 @@
-import { supabase } from "../../supabase";
+import { supabase } from "../../../supabase";
 import type { Tool } from "./type";
 
 const name = "get_more_tweets";

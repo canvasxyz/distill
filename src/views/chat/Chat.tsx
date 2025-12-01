@@ -8,15 +8,15 @@ import type {
 } from "openai/resources";
 import type { ToolCall } from "openai/resources/beta/threads/runs.mjs";
 
-import { AVAILABLE_LLM_CONFIGS } from "../state/llm_query";
-import { serverUrl } from "./query_view/ai_utils";
-import { Header } from "../components/Header";
+import { AVAILABLE_LLM_CONFIGS } from "../../state/llm_query";
+import { serverUrl } from "../query_view/ai_utils";
+import { Header } from "../../components/Header";
 import { Button } from "@radix-ui/themes";
 import {
   getSelectedProvider,
   getProviderUrl,
   getProviderApiKey,
-} from "../utils/provider";
+} from "../../utils/provider";
 import { AskQuestion } from "./tools/AskQuestion";
 import { GetMoreTweets } from "./tools/GetMoreTweets";
 

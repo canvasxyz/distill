@@ -1,17 +1,17 @@
-import { supabase } from "../../supabase";
+import { supabase } from "../../../supabase";
 import {
   AVAILABLE_LLM_CONFIGS,
   getGenuineTweetIds,
-} from "../../state/llm_query";
+} from "../../../state/llm_query";
 import {
   batchSystemPrompt,
   finalSystemPrompt,
   submitQuery,
-} from "../query_view/ai_utils";
+} from "../../query_view/ai_utils";
 
-import { QUERY_BATCH_SIZE, type LLMQueryConfig } from "../../constants";
-import { mapKeysDeep, snakeToCamelCase } from "../../utils";
-import type { Account } from "../../types";
+import { QUERY_BATCH_SIZE, type LLMQueryConfig } from "../../../constants";
+import { mapKeysDeep, snakeToCamelCase } from "../../../utils";
+import type { Account } from "../../../types";
 
 import type { Tool } from "./type";
 
