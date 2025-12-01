@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import Markdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+
 import type {
   ChatCompletion,
   ChatCompletionMessageParam,
@@ -19,6 +18,9 @@ import {
 } from "../../utils/provider";
 import { AskQuestion } from "./tools/AskQuestion";
 import { GetMoreTweets } from "./tools/GetMoreTweets";
+import { UserChatMessage } from "./UserChatMessage";
+import { ToolChatMessage } from "./ToolChatMessage";
+import { AssistantChatMessage } from "./AssistantChatMessage";
 
 const callOpenRouterOnce = async (
   openAiMessages: ChatCompletionMessageParam[],
@@ -79,9 +81,7 @@ export type ToolHandler = (
 ) => Promise<ReturnType<typeof JSON.parse>>;
 
 const tools = [AskQuestion, GetMoreTweets];
-function getToolByName(name: string) {
-  return tools.filter((tool) => tool.name === name)[0];
-}
+const toolsByName = Object.fromEntries(tools.map((tool) => [tool.name, tool]));
 
 function Chat() {
   const [messages, setMessages] = useState<
@@ -128,7 +128,7 @@ function Chat() {
             [toolCall.id]: { ...toolCall },
           }));
           if (toolCall.type === "function") {
-            const tool = getToolByName(toolCall.function.name);
+            const tool = toolsByName[toolCall.function.name];
             const result = await tool.handler(
               JSON.parse(toolCall.function.arguments),
             );
@@ -228,87 +228,20 @@ function Chat() {
             messages.map((m) => {
               let content;
               if (m.role === "tool") {
+                // tool response component
                 const toolCall = toolCalls[m.tool_call_id];
-
-                if (toolCall.type === "function") {
-                  const tool = getToolByName(toolCall.function.name)!;
-                  content = (
-                    <>
-                      <div
-                        style={{
-                          fontSize: 12,
-                          color: "var(--gray-10)",
-                          margin: "0 0 4px 4px",
-                        }}
-                      >
-                        {tool.getLabel(JSON.parse(toolCall.function.arguments))}
-                      </div>
-                      <div
-                        style={{
-                          display: "inline-block",
-                          padding: "10px 12px",
-                          borderRadius: 10,
-                          lineHeight: 1.35,
-                          background: "var(--color-background)",
-                          border: "1px solid var(--gray-6)",
-                          boxShadow: "0 1px 2px rgba(0,0,0,0.03)",
-                          color: "inherit",
-                        }}
-                      >
-                        {m.content.slice(0, 1000) as string}{" "}
-                        {m.content.length > 1000 && "..."}
-                      </div>
-                    </>
-                  );
-                }
-              } else if (m.role === "user") {
                 content = (
-                  <div
-                    style={{
-                      display: "inline-block",
-                      padding: "10px 12px",
-                      borderRadius: 10,
-                      lineHeight: 1.35,
-                      background: "var(--sky-9)",
-                      color: "var(--sky-12)",
-                      border: "1px solid var(--sky-10)",
-                    }}
-                  >
-                    <Markdown remarkPlugins={[remarkGfm]}>
-                      {m.content as string}
-                    </Markdown>
-                  </div>
+                  <ToolChatMessage
+                    message={m}
+                    toolCall={toolCall}
+                    toolsByName={toolsByName}
+                  />
                 );
+              } else if (m.role === "user") {
+                content = <UserChatMessage message={m} />;
               } else if (m.role === "assistant") {
                 content = (
-                  <div
-                    style={{
-                      display: "inline-block",
-                      padding: "10px 12px",
-                      borderRadius: 10,
-                      lineHeight: 1.35,
-                      background: "var(--color-background)",
-                      border: "1px solid var(--gray-6)",
-                      boxShadow: "0 1px 2px rgba(0,0,0,0.03)",
-                      color: "inherit",
-                    }}
-                  >
-                    <Markdown remarkPlugins={[remarkGfm]}>
-                      {m.content as string}
-                    </Markdown>
-                    {(m.tool_calls || []).map((toolCall) => {
-                      if (toolCall.type === "function") {
-                        const tool = getToolByName(toolCall.function!.name)!;
-                        return (
-                          <span key={toolCall.id}>
-                            {tool.getLabel(
-                              JSON.parse(toolCall.function.arguments),
-                            )}
-                          </span>
-                        );
-                      }
-                    })}
-                  </div>
+                  <AssistantChatMessage message={m} toolsByName={toolsByName} />
                 );
               }
               if (content) {
