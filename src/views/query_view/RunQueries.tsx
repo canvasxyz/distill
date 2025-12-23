@@ -23,7 +23,7 @@ import remarkGfm from "remark-gfm";
 import { useTweetCounts } from "./useTweetCounts";
 import { TweetFrequencyGraph } from "../../components/TweetFrequencyGraph";
 import { BatchTweetsModal } from "./BatchTweetsModal";
-import { MAX_ARCHIVE_SIZE, getBatchSizeForConfig } from "../../constants";
+import { MAX_ARCHIVE_SIZE, type PromptPlacement } from "../../constants";
 import { stripThink } from "../../utils";
 import { AVAILABLE_LLM_CONFIGS } from "../../state/llm_query";
 import { FeaturedQueryCard } from "../../components/FeaturedQueryCard";
@@ -41,6 +41,7 @@ import {
   Button,
   Callout,
   Separator,
+  Switch,
 } from "@radix-ui/themes";
 
 export function RunQueries() {
@@ -50,6 +51,8 @@ export function RunQueries() {
 
   const [includeReplies, setIncludeReplies] = useState(true);
   const [includeRetweets, setIncludeRetweets] = useState(true);
+  const [promptPlacement, setPromptPlacement] =
+    useState<PromptPlacement>("prompt-before");
 
   const {
     accounts,
@@ -65,16 +68,6 @@ export function RunQueries() {
     setSelectedConfigIndex,
     lastLoadedAccountId,
   } = useStore();
-
-  const selectedConfig = useMemo(
-    () =>
-      AVAILABLE_LLM_CONFIGS[selectedConfigIndex] || AVAILABLE_LLM_CONFIGS[0],
-    [selectedConfigIndex],
-  );
-  const queryBatchSize = useMemo(
-    () => getBatchSizeForConfig(selectedConfig),
-    [selectedConfig],
-  );
 
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(
     null,
@@ -157,7 +150,13 @@ export function RunQueries() {
   const handleRunQuery = (queryText: string) => {
     if (!account || queryText === "" || queryText.trim() === "") return;
 
-    submit(filteredTweetsToAnalyse, account, queryText, rangeSelection);
+    submit(
+      filteredTweetsToAnalyse,
+      account,
+      queryText,
+      rangeSelection,
+      promptPlacement,
+    );
   };
 
   const tweetsSelectedForQuery = useMemo(() => {
@@ -166,8 +165,8 @@ export function RunQueries() {
 
   const batchCount = useMemo(() => {
     if (tweetsSelectedForQuery.length === 0) return 0;
-    return Math.ceil(tweetsSelectedForQuery.length / queryBatchSize);
-  }, [tweetsSelectedForQuery, queryBatchSize]);
+    return 1;
+  }, [tweetsSelectedForQuery]);
 
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const prevUsernameRef = useRef<string | null>(null);
@@ -338,6 +337,19 @@ export function RunQueries() {
             }}
             showShortcut
           />
+
+          <Text size="2" as="label">
+            <Flex align="center" gap="2" style={{ textWrap: "nowrap" }}>
+              <Switch
+                disabled={isProcessing || !account}
+                checked={promptPlacement === "prompt-before"}
+                onCheckedChange={(checked) =>
+                  setPromptPlacement(checked ? "prompt-before" : "prompt-after")
+                }
+              />
+              Question before tweets
+            </Flex>
+          </Text>
 
           <Flex align="center" gap="4" ml="1">
             <RadioGroup.Root

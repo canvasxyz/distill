@@ -1,7 +1,6 @@
 import type { StateCreator } from "zustand";
 import type { StoreSlices } from "./types";
 import {
-  batchSystemPrompt,
   finalSystemPrompt,
   selectSubset,
   submitQuery,
@@ -11,13 +10,13 @@ import {
 } from "../views/query_view/ai_utils";
 import PQueue from "p-queue";
 import type { Account, Tweet } from "../types";
-import { getBatches } from "../utils";
 import { v7 as uuidv7 } from "uuid";
 import { db } from "../db";
 import {
   DEFAULT_QUERY_BATCH_SIZE,
   GEMINI_FLASH_QUERY_BATCH_SIZE,
   getBatchSizeForConfig,
+  type PromptPlacement,
   type LLMQueryConfig,
 } from "../constants";
 
@@ -117,6 +116,7 @@ export type LlmQuerySlice = {
     account: Account,
     query: string,
     rangeSelection: RangeSelection,
+    promptPlacement: PromptPlacement,
   ) => void;
   updateBatchStatus: (batchId: number, status: BatchStatus) => void;
   setQueryError: (msg: string | null) => void;
@@ -146,6 +146,7 @@ export const createLlmQuerySlice: StateCreator<
     account: Account,
     query: string,
     rangeSelection,
+    promptPlacement,
   ) => {
     const queryId = uuidv7();
 
@@ -160,10 +161,11 @@ export const createLlmQuerySlice: StateCreator<
 
     const [model, provider, openrouterProvider] = config;
 
-    const batches = getBatches(
-      filteredTweetsSubsetToAnalyse,
-      getBatchSizeForConfig(config),
+    const queryBatchSize = getBatchSizeForConfig(config);
+    const tweetsForQuery = filteredTweetsSubsetToAnalyse.slice(
+      Math.max(0, filteredTweetsSubsetToAnalyse.length - queryBatchSize),
     );
+    const batches = tweetsForQuery.length ? [tweetsForQuery] : [];
 
     const queuedTime = performance.now();
     set({
@@ -178,192 +180,134 @@ export const createLlmQuerySlice: StateCreator<
 
     const { llmQueryQueue, updateBatchStatus } = get();
 
-    // If there is no account, reset view state and exit early
-    if (!account) {
+    // If there is no account or no tweets, reset view state and exit early
+    if (!account || batches.length === 0) {
       set({
         isProcessing: false,
         startedProcessingTime: null,
         currentRunningQuery: null,
         batchStatuses: {},
-        // keep errorMessage as-is; account is handled higher up in UI
+        errorMessage: batches.length === 0 ? "No tweets available to query." : null,
+        // keep errorMessage as-is when account is missing; account is handled higher up in UI
       });
       return;
     }
 
-    for (let i = 0; i < batches.length; i++) {
-      const batchId = i;
-      const batch = batches[batchId];
+    const batchId = 0;
+    const batch = batches[batchId];
 
-      llmQueryQueue.add(async () => {
-        try {
-          const startTime = performance.now();
+    llmQueryQueue.add(async () => {
+      try {
+        const startTime = performance.now();
 
-          updateBatchStatus(i, {
-            status: "pending",
-            startTime,
-          });
+        updateBatchStatus(batchId, {
+          status: "pending",
+          startTime,
+        });
 
-          let attempts = 3;
-          let queryResult: Awaited<ReturnType<typeof submitQuery>> | null =
-            null;
-          let queryError: unknown;
+        let attempts = 3;
+        let queryResult: Awaited<ReturnType<typeof submitQuery>> | null = null;
+        let queryError: unknown;
 
-          while (attempts > 0 && queryResult === null) {
-            try {
-              queryResult = await submitQuery({
-                tweetsSample: batch,
-                query: { systemPrompt: batchSystemPrompt, prompt: query },
-                account,
-                model,
-                provider,
-                openrouterProvider: openrouterProvider,
-                isBatchRequest: true,
-              });
-            } catch (e) {
-              queryError = e;
-              attempts--;
-            }
-          }
-
-          if (!queryResult) {
-            throw new Error(
-              `Query failed after 3 attempts. Error from model provider (${provider}): "${queryError}"`,
-            );
-          }
-
-          const tweetIds = JSON.parse(queryResult.result).ids;
-          const groundedTweets = getGenuineTweetIds(tweetIds, batch);
-
-          const endTime = performance.now();
-          updateBatchStatus(i, {
-            status: "done",
-            groundedTweets,
-            outputText: queryResult.result,
-            startTime,
-            endTime,
-            runTime: endTime - startTime,
-            usage: queryResult.usage,
-            provider: queryResult.provider,
-            model: queryResult.model,
-          });
-
-          // if the job is done, then trigger the final query
-          const {
-            batchStatuses,
-            isProcessing: stillProcessing,
-            currentRunningQuery,
-          } = get();
-          // If processing has been cancelled/reset, do not proceed to final query
-          if (!stillProcessing || currentRunningQuery !== query) return;
-          for (const batchStatus of Object.values(batchStatuses)) {
-            if (batchStatus.status !== "done") return;
-          }
-
-          const collectedTweets: Tweet[] = [];
-          for (const batchStatus of Object.values(batchStatuses)) {
-            if (batchStatus.status === "done") {
-              for (const tweet of Object.values(
-                batchStatus.groundedTweets.genuine,
-              )) {
-                if (tweet) collectedTweets.push(tweet);
-              }
-            }
-          }
-
-          let finalQueryAttempts = 3;
-          let finalQueryResult: Awaited<ReturnType<typeof submitQuery>> | null =
-            null;
-          let finalQueryError: unknown;
-
-          while (finalQueryAttempts > 0 && finalQueryResult === null) {
-            try {
-              // submit query to create the final result based on the collected texts
-              finalQueryResult = await submitQuery({
-                tweetsSample: collectedTweets,
-                query: { systemPrompt: finalSystemPrompt, prompt: query },
-                account,
-                model,
-                provider,
-                openrouterProvider: openrouterProvider,
-              });
-            } catch (e) {
-              console.log(e);
-              console.log("retrying...");
-              finalQueryError = e;
-              finalQueryAttempts--;
-            }
-          }
-
-          if (!finalQueryResult) {
-            throw new Error(
-              `Query failed after 3 attempts. Error from model provider (${provider}): "${finalQueryError}"`,
-            );
-          }
-
-          const finalTime = performance.now();
-          const totalRunTime = finalTime - queuedTime!;
-
-          // collect the "usage" field from all of the batches
-
-          let totalEstimatedCost = 0;
-          let totalTokens = 0;
-          for (const batchStatus of Object.values(batchStatuses)) {
-            if (batchStatus.status === "done") {
-              totalEstimatedCost += batchStatus.usage.estimated_cost || 0;
-              totalTokens += batchStatus.usage.total_tokens;
-            }
-          }
-
-          totalEstimatedCost +=
-            (finalQueryResult.usage as { estimated_cost?: number })
-              .estimated_cost || 0;
-          totalTokens += finalQueryResult.usage.total_tokens;
-
-          const newQueryResult = {
-            ...finalQueryResult,
-            id: queryId,
-            totalRunTime,
-            rangeSelection,
-            batchStatuses,
-            totalEstimatedCost,
-            totalTokens,
-            model,
-            provider: openrouterProvider
-              ? `${provider}-${openrouterProvider}`
-              : provider,
-            queriedHandle: `@${account.username}`,
-          };
-
-          db.queryResults.add(newQueryResult);
-
-          set({
-            queryResult: newQueryResult,
-            isProcessing: false,
-            batchStatuses: {},
-            currentRunningQuery: null,
-            startedProcessingTime: null,
-            errorMessage: null,
-          });
-        } catch (error) {
-          console.error("LLM query failed:", error);
+        while (attempts > 0 && queryResult === null) {
           try {
-            // Clear any pending tasks in the queue to stop further processing
-            get().llmQueryQueue.clear();
-          } catch {
-            // ignore queue clear errors
+            queryResult = await submitQuery({
+              tweetsSample: batch,
+              query: {
+                systemPrompt: finalSystemPrompt,
+                prompt: query,
+                promptPlacement,
+              },
+              account,
+              model,
+              provider,
+              openrouterProvider: openrouterProvider,
+            });
+          } catch (e) {
+            queryError = e;
+            attempts--;
           }
-          // Reset UI-related state so the button and view recover
-          set({
-            isProcessing: false,
-            startedProcessingTime: null,
-            currentRunningQuery: null,
-            batchStatuses: {},
-            errorMessage:
-              (error as Error)?.message || "Query failed. Please try again.",
-          });
         }
-      });
-    }
+
+        if (!queryResult) {
+          throw new Error(
+            `Query failed after 3 attempts. Error from model provider (${provider}): "${queryError}"`,
+          );
+        }
+
+        const groundedTweets = { genuine: batch, hallucinated: [] as string[] };
+
+        const endTime = performance.now();
+        updateBatchStatus(batchId, {
+          status: "done",
+          groundedTweets,
+          outputText: queryResult.result,
+          startTime,
+          endTime,
+          runTime: endTime - startTime,
+          usage: queryResult.usage,
+          provider: queryResult.provider,
+          model: queryResult.model,
+        });
+
+        const {
+          batchStatuses,
+          isProcessing: stillProcessing,
+          currentRunningQuery,
+        } = get();
+        if (!stillProcessing || currentRunningQuery !== query) return;
+
+        const finalTime = performance.now();
+        const totalRunTime = finalTime - queuedTime!;
+
+        const totalEstimatedCost =
+          (queryResult.usage as { estimated_cost?: number }).estimated_cost || 0;
+        const totalTokens = queryResult.usage.total_tokens;
+
+        const newQueryResult = {
+          ...queryResult,
+          id: queryId,
+          totalRunTime,
+          rangeSelection,
+          batchStatuses,
+          totalEstimatedCost,
+          totalTokens,
+          model,
+          provider: openrouterProvider
+            ? `${provider}-${openrouterProvider}`
+            : provider,
+          queriedHandle: `@${account.username}`,
+        };
+
+        db.queryResults.add(newQueryResult);
+
+        set({
+          queryResult: newQueryResult,
+          isProcessing: false,
+          batchStatuses: {},
+          currentRunningQuery: null,
+          startedProcessingTime: null,
+          errorMessage: null,
+        });
+      } catch (error) {
+        console.error("LLM query failed:", error);
+        try {
+          // Clear any pending tasks in the queue to stop further processing
+          get().llmQueryQueue.clear();
+        } catch {
+          // ignore queue clear errors
+        }
+        // Reset UI-related state so the button and view recover
+        set({
+          isProcessing: false,
+          startedProcessingTime: null,
+          currentRunningQuery: null,
+          batchStatuses: {},
+          errorMessage:
+            (error as Error)?.message || "Query failed. Please try again.",
+        });
+      }
+    });
   },
 
   updateBatchStatus: (batchId: number, newBatchStatus: BatchStatus) => {

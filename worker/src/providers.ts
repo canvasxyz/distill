@@ -2,15 +2,16 @@ import * as st from 'simple-runtypes';
 
 export type LLMQueryProvider = 'cerebras' | 'deepinfra' | 'openrouter' | 'groq' | 'fireworks';
 export type LLMQueryConfig = [string, LLMQueryProvider, string | null, boolean, number];
+type LegacyLLMQueryConfig = [string, LLMQueryProvider, string | null, boolean];
 
+const llmConfigTuple = st.tuple(
+	st.string(),
+	st.union(st.literal('cerebras'), st.literal('deepinfra'), st.literal('openrouter'), st.literal('groq'), st.literal('fireworks')),
+	st.union(st.string(), st.null()),
+	st.boolean()
+);
 const llmConfigsRuntype = st.array(
-	st.tuple(
-		st.string(),
-		st.union(st.literal('cerebras'), st.literal('deepinfra'), st.literal('openrouter'), st.literal('groq'), st.literal('fireworks')),
-		st.union(st.string(), st.null()),
-		st.boolean(),
-		st.number()
-	)
+	st.union(llmConfigTuple, st.tuple(...llmConfigTuple.members, st.number()))
 );
 
 export function isLLMQueryConfig(value: unknown): value is LLMQueryConfig[] {

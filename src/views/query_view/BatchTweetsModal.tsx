@@ -131,11 +131,8 @@ export function BatchTweetsModal({
           </IconButton>
         </div>
         <p>
-          To generate the query result, Twitter Archive Explorer first extracts
-          the most relevant tweets from the user's archive using a large
-          language model. The retrieved tweets are then checked against the
-          archive itself for "hallucinations". Only tweets that are actually
-          present in the archive are used to generate the final result.
+          The tweets below were loaded directly into the model alongside your
+          question to produce the result shown.
         </p>
         <p>
           Model: {queryResult?.model} on {queryResult?.provider}

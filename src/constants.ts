@@ -16,5 +16,7 @@ export type LLMQueryConfig = [
   number,
 ];
 
+export type PromptPlacement = "prompt-before" | "prompt-after";
+
 export const getBatchSizeForConfig = (config?: LLMQueryConfig) =>
   config?.[4] ?? DEFAULT_QUERY_BATCH_SIZE;

@@ -1,13 +1,6 @@
 import { supabase } from "../../../supabase";
-import {
-  AVAILABLE_LLM_CONFIGS,
-  getGenuineTweetIds,
-} from "../../../state/llm_query";
-import {
-  batchSystemPrompt,
-  finalSystemPrompt,
-  submitQuery,
-} from "../../query_view/ai_utils";
+import { AVAILABLE_LLM_CONFIGS } from "../../../state/llm_query";
+import { finalSystemPrompt, submitQuery } from "../../query_view/ai_utils";
 
 import {
   getBatchSizeForConfig,
@@ -91,7 +84,7 @@ export const AskQuestion: Tool<
         .order("created_at", { ascending: false })
         .range(batchSize * i, batchSize * (i + 1));
 
-      if (!data) {
+      if (!data || data.length === 0) {
         break;
       }
 
@@ -101,26 +94,21 @@ export const AskQuestion: Tool<
         id_str: tweet.tweet_id,
       }));
 
-      const queryResult = await submitQuery({
-        tweetsSample: batch,
-        query: { systemPrompt: batchSystemPrompt, prompt: query },
-        account,
-        model,
-        provider,
-        openrouterProvider: openrouterProvider,
-        isBatchRequest: true,
-      });
+      collectedTweets.push(batch);
 
-      const tweetIds = JSON.parse(queryResult.result).ids;
-      const groundedTweets = getGenuineTweetIds(tweetIds, batch);
-
-      collectedTweets.push(groundedTweets.genuine);
+      if (data.length < batchSize) {
+        break;
+      }
     }
 
     // submit query to create the final result based on the collected texts
     const finalQueryResult = await submitQuery({
       tweetsSample: collectedTweets.flat(),
-      query: { systemPrompt: finalSystemPrompt, prompt: query },
+      query: {
+        systemPrompt: finalSystemPrompt,
+        prompt: query,
+        promptPlacement: "prompt-before",
+      },
       account,
       model,
       provider,

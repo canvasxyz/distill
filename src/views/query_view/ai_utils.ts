@@ -7,6 +7,7 @@ import {
   getBatchSizeForConfig,
   type LLMQueryConfig,
   type LLMQueryProvider,
+  type PromptPlacement,
 } from "../../constants";
 import { AVAILABLE_LLM_CONFIGS } from "../../state/llm_query";
 import {
@@ -15,7 +16,11 @@ import {
   getProviderApiKey,
 } from "../../utils/provider";
 
-export type Query = { prompt: string; systemPrompt?: string };
+export type Query = {
+  prompt: string;
+  systemPrompt?: string;
+  promptPlacement?: PromptPlacement;
+};
 
 export type RangeSelection =
   | { type: "last-tweets"; numTweets: number }
@@ -61,9 +66,6 @@ export type QueryResult = {
   queriedHandle?: string;
 };
 
-export const batchSystemPrompt =
-  "You are a researcher who is looking through an archive of a user's tweets ({account}) trying to answer a question (given in the user prompt). You are trying to collect together all of the tweets that might provide a way to answer that question. Only return the tweet ids. Return at most 20 tweets. Make sure that the response adheres to the provided schema (a list of strings).";
-
 export const finalSystemPrompt =
   "You will be given a prompt, followed by a list of tweets. Review the tweets and provide an answer to the prompt. References to tweets should make use of Markdown links to the tweets themselves on x.com. Do not create tables in your response.";
 
@@ -85,22 +87,32 @@ export function makePromptMessages(
   query: Query,
   account: Account,
 ) {
+  const promptPlacement = query.promptPlacement || "prompt-before";
+  const tweetsContent = tweetsSample
+    .map(
+      (tweet) =>
+        `<Post id="${tweet.id_str}" date="${tweet.created_at}" num_likes="${tweet.favorite_count}" num_retweets="${tweet.retweet_count}">${tweet.full_text}</Post>`,
+    )
+    .join("\n");
+
+  const promptText = replaceAccountName(query.prompt, account.username);
+  const combinedUserContent =
+    promptPlacement === "prompt-before"
+      ? `${promptText}\n\n${tweetsContent}`
+      : `${tweetsContent}\n\n${promptText}`;
+
   return [
     {
       role: "system" as const,
-      content: `${replaceAccountName(query.systemPrompt || finalSystemPrompt, account.username)}
-
-        ${replaceAccountName(query.prompt, account.username)}`,
+      content: replaceAccountName(
+        query.systemPrompt || finalSystemPrompt,
+        account.username,
+      ),
     },
 
     {
       role: "user" as const,
-      content: tweetsSample
-        .map(
-          (tweet) =>
-            `<Post id="${tweet.id_str}" date="${tweet.created_at}" num_likes="${tweet.favorite_count}" num_retweets="${tweet.retweet_count}">${tweet.full_text}</Post>`,
-        )
-        .join("\n"),
+      content: combinedUserContent,
     },
   ];
 }
@@ -202,15 +214,17 @@ export async function submitQuery(params: {
         configProvider === provider &&
         configOpenrouterProvider === resolvedOpenrouterProvider,
     );
-    const llmConfigs: LLMQueryConfig[] = [
-      [
-        model,
-        provider,
-        resolvedOpenrouterProvider,
-        false,
-        getBatchSizeForConfig(selectedConfig),
-      ],
-      ...AVAILABLE_LLM_CONFIGS,
+    type WorkerLLMConfig = [string, LLMQueryProvider, string | null, boolean];
+    const llmConfigs: WorkerLLMConfig[] = [
+      [model, provider, resolvedOpenrouterProvider, false],
+      ...AVAILABLE_LLM_CONFIGS.map(
+        ([configModel, configProvider, configOpenrouterProvider, recommended]) => [
+          configModel,
+          configProvider,
+          configOpenrouterProvider,
+          recommended,
+        ],
+      ),
     ];
 
     const classificationResponse = await fetch(serverUrl, {
