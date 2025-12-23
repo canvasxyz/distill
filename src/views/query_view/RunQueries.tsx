@@ -23,7 +23,7 @@ import remarkGfm from "remark-gfm";
 import { useTweetCounts } from "./useTweetCounts";
 import { TweetFrequencyGraph } from "../../components/TweetFrequencyGraph";
 import { BatchTweetsModal } from "./BatchTweetsModal";
-import { MAX_ARCHIVE_SIZE, type PromptPlacement } from "../../constants";
+import { getBatchSizeForConfig, type PromptPlacement } from "../../constants";
 import { stripThink } from "../../utils";
 import { AVAILABLE_LLM_CONFIGS } from "../../state/llm_query";
 import { FeaturedQueryCard } from "../../components/FeaturedQueryCard";
@@ -68,6 +68,17 @@ export function RunQueries() {
     setSelectedConfigIndex,
     lastLoadedAccountId,
   } = useStore();
+
+  const selectedConfig = useMemo(
+    () =>
+      AVAILABLE_LLM_CONFIGS[selectedConfigIndex] || AVAILABLE_LLM_CONFIGS[0],
+    [selectedConfigIndex],
+  );
+
+  const batchSize = useMemo(
+    () => getBatchSizeForConfig(selectedConfig),
+    [selectedConfig],
+  );
 
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(
     null,
@@ -133,8 +144,17 @@ export function RunQueries() {
 
   const [rangeSelection, setRangeSelection] = useState<RangeSelection>({
     type: "last-tweets",
-    numTweets: MAX_ARCHIVE_SIZE,
+    numTweets: batchSize,
   });
+
+  useEffect(() => {
+    if (
+      rangeSelection.type === "last-tweets" &&
+      rangeSelection.numTweets !== batchSize
+    ) {
+      setRangeSelection({ type: "last-tweets", numTweets: batchSize });
+    }
+  }, [batchSize, rangeSelection.numTweets, rangeSelection.type]);
 
   const [currentProgress, totalProgress] = useMemo(() => {
     if (batchStatuses === null) return [0, 1];
@@ -291,12 +311,12 @@ export function RunQueries() {
     }
   }, [lastLoadedAccountId, accounts, setSelectedAccountId]);
 
-  const totalPostsCount = (allTweets || []).length;
+  const totalPostsCount = filteredTweetsToAnalyse.length;
   const lastTweetsLabel =
-    totalPostsCount < MAX_ARCHIVE_SIZE ? (
+    totalPostsCount < batchSize ? (
       <>All posts</>
     ) : (
-      <>Most recent {formatCompact(MAX_ARCHIVE_SIZE)}</>
+      <>Most recent {formatCompact(batchSize)}</>
     );
 
   return (
@@ -358,7 +378,7 @@ export function RunQueries() {
                 if (value === "last-tweets") {
                   setRangeSelection({
                     type: "last-tweets",
-                    numTweets: MAX_ARCHIVE_SIZE,
+                    numTweets: batchSize,
                   });
                 } else if (value === "date-range") {
                   setRangeSelection({
