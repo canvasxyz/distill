@@ -13,67 +13,24 @@ import type { Account, Tweet } from "../types";
 import { v7 as uuidv7 } from "uuid";
 import { db } from "../db";
 import {
-  DEFAULT_QUERY_BATCH_SIZE,
-  GEMINI_FLASH_QUERY_BATCH_SIZE,
+  DEFAULT_QUERY_BATCH_SIZE as DEFAULT_BATCH,
+  GEMINI_FLASH_QUERY_BATCH_SIZE as GEMINI_BATCH,
   getBatchSizeForConfig,
   type PromptPlacement,
   type LLMQueryConfig,
 } from "../constants";
 
 export const AVAILABLE_LLM_CONFIGS: LLMQueryConfig[] = [
-  ["gpt-oss-120b", "cerebras", null, true, DEFAULT_QUERY_BATCH_SIZE],
-  ["llama-3.3-70b", "cerebras", null, true, DEFAULT_QUERY_BATCH_SIZE],
-  [
-    "google/gemini-2.0-flash-001",
-    "deepinfra",
-    null,
-    true,
-    DEFAULT_QUERY_BATCH_SIZE,
-  ],
-  [
-    "qwen-3-235b-a22b-instruct-2507",
-    "cerebras",
-    null,
-    false,
-    DEFAULT_QUERY_BATCH_SIZE,
-  ],
-  ["qwen-3-32b", "cerebras", null, false, DEFAULT_QUERY_BATCH_SIZE],
-  ["gpt-oss-120b", "fireworks", null, false, DEFAULT_QUERY_BATCH_SIZE],
-  ["gpt-oss-120b", "groq", null, false, DEFAULT_QUERY_BATCH_SIZE],
-  [
-    "openai/gpt-oss-120b",
-    "openrouter",
-    "cerebras",
-    false,
-    DEFAULT_QUERY_BATCH_SIZE,
-  ],
-  [
-    "openai/gpt-oss-120b",
-    "openrouter",
-    "baseten",
-    false,
-    DEFAULT_QUERY_BATCH_SIZE,
-  ],
-  [
-    "openai/gpt-oss-120b",
-    "openrouter",
-    "groq",
-    false,
-    DEFAULT_QUERY_BATCH_SIZE,
-  ],
-  [
-    "openai/gpt-oss-120b",
-    "openrouter",
-    "sambanova",
-    false,
-    DEFAULT_QUERY_BATCH_SIZE,
-  ],
+  ["gpt-oss-120b", "cerebras", null, true, DEFAULT_BATCH],
+  ["qwen-3-235b-a22b-instruct-2507", "cerebras", null, false, DEFAULT_BATCH],
+  ["google/gemini-2.0-flash-001", "deepinfra", null, true, DEFAULT_BATCH],
+  ["gpt-oss-120b", "groq", null, false, DEFAULT_BATCH],
   [
     "google/gemini-3-flash-preview",
     "openrouter",
     "google-vertex",
     false,
-    GEMINI_FLASH_QUERY_BATCH_SIZE,
+    GEMINI_BATCH,
   ],
 ];
 
@@ -187,7 +144,8 @@ export const createLlmQuerySlice: StateCreator<
         startedProcessingTime: null,
         currentRunningQuery: null,
         batchStatuses: {},
-        errorMessage: batches.length === 0 ? "No tweets available to query." : null,
+        errorMessage:
+          batches.length === 0 ? "No tweets available to query." : null,
         // keep errorMessage as-is when account is missing; account is handled higher up in UI
       });
       return;
@@ -261,7 +219,8 @@ export const createLlmQuerySlice: StateCreator<
         const totalRunTime = finalTime - queuedTime!;
 
         const totalEstimatedCost =
-          (queryResult.usage as { estimated_cost?: number }).estimated_cost || 0;
+          (queryResult.usage as { estimated_cost?: number }).estimated_cost ||
+          0;
         const totalTokens = queryResult.usage.total_tokens;
 
         const newQueryResult = {
