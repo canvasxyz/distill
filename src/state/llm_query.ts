@@ -28,6 +28,7 @@ export const AVAILABLE_LLM_CONFIGS: LLMQueryConfig[] = [
   ["openai/gpt-oss-120b", "openrouter", "baseten", false],
   ["openai/gpt-oss-120b", "openrouter", "groq", false],
   ["openai/gpt-oss-120b", "openrouter", "sambanova", false],
+  ["google/gemini-3-flash-preview", "openrouter", "google-vertex", false],
 ];
 
 export const getGenuineTweetIds = <T extends { id_str: string; id: string }>(
