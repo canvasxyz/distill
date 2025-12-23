@@ -1,14 +1,15 @@
 import * as st from 'simple-runtypes';
 
 export type LLMQueryProvider = 'cerebras' | 'deepinfra' | 'openrouter' | 'groq' | 'fireworks';
-export type LLMQueryConfig = [string, LLMQueryProvider, string | null, boolean];
+export type LLMQueryConfig = [string, LLMQueryProvider, string | null, boolean, number];
 
 const llmConfigsRuntype = st.array(
 	st.tuple(
 		st.string(),
 		st.union(st.literal('cerebras'), st.literal('deepinfra'), st.literal('openrouter'), st.literal('groq'), st.literal('fireworks')),
 		st.union(st.string(), st.null()),
-		st.boolean()
+		st.boolean(),
+		st.number()
 	)
 );
 

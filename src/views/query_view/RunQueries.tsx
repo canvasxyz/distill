@@ -23,7 +23,7 @@ import remarkGfm from "remark-gfm";
 import { useTweetCounts } from "./useTweetCounts";
 import { TweetFrequencyGraph } from "../../components/TweetFrequencyGraph";
 import { BatchTweetsModal } from "./BatchTweetsModal";
-import { MAX_ARCHIVE_SIZE, QUERY_BATCH_SIZE } from "../../constants";
+import { MAX_ARCHIVE_SIZE, getBatchSizeForConfig } from "../../constants";
 import { stripThink } from "../../utils";
 import { AVAILABLE_LLM_CONFIGS } from "../../state/llm_query";
 import { FeaturedQueryCard } from "../../components/FeaturedQueryCard";
@@ -65,6 +65,16 @@ export function RunQueries() {
     setSelectedConfigIndex,
     lastLoadedAccountId,
   } = useStore();
+
+  const selectedConfig = useMemo(
+    () =>
+      AVAILABLE_LLM_CONFIGS[selectedConfigIndex] || AVAILABLE_LLM_CONFIGS[0],
+    [selectedConfigIndex],
+  );
+  const queryBatchSize = useMemo(
+    () => getBatchSizeForConfig(selectedConfig),
+    [selectedConfig],
+  );
 
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(
     null,
@@ -156,8 +166,8 @@ export function RunQueries() {
 
   const batchCount = useMemo(() => {
     if (tweetsSelectedForQuery.length === 0) return 0;
-    return Math.ceil(tweetsSelectedForQuery.length / QUERY_BATCH_SIZE);
-  }, [tweetsSelectedForQuery]);
+    return Math.ceil(tweetsSelectedForQuery.length / queryBatchSize);
+  }, [tweetsSelectedForQuery, queryBatchSize]);
 
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const prevUsernameRef = useRef<string | null>(null);

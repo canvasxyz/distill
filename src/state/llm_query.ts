@@ -14,21 +14,68 @@ import type { Account, Tweet } from "../types";
 import { getBatches } from "../utils";
 import { v7 as uuidv7 } from "uuid";
 import { db } from "../db";
-import { QUERY_BATCH_SIZE, type LLMQueryConfig } from "../constants";
+import {
+  DEFAULT_QUERY_BATCH_SIZE,
+  GEMINI_FLASH_QUERY_BATCH_SIZE,
+  getBatchSizeForConfig,
+  type LLMQueryConfig,
+} from "../constants";
 
 export const AVAILABLE_LLM_CONFIGS: LLMQueryConfig[] = [
-  ["gpt-oss-120b", "cerebras", null, true],
-  ["llama-3.3-70b", "cerebras", null, true],
-  ["google/gemini-2.0-flash-001", "deepinfra", null, true],
-  ["qwen-3-235b-a22b-instruct-2507", "cerebras", null, false],
-  ["qwen-3-32b", "cerebras", null, false],
-  ["gpt-oss-120b", "fireworks", null, false],
-  ["gpt-oss-120b", "groq", null, false],
-  ["openai/gpt-oss-120b", "openrouter", "cerebras", false],
-  ["openai/gpt-oss-120b", "openrouter", "baseten", false],
-  ["openai/gpt-oss-120b", "openrouter", "groq", false],
-  ["openai/gpt-oss-120b", "openrouter", "sambanova", false],
-  ["google/gemini-3-flash-preview", "openrouter", "google-vertex", false],
+  ["gpt-oss-120b", "cerebras", null, true, DEFAULT_QUERY_BATCH_SIZE],
+  ["llama-3.3-70b", "cerebras", null, true, DEFAULT_QUERY_BATCH_SIZE],
+  [
+    "google/gemini-2.0-flash-001",
+    "deepinfra",
+    null,
+    true,
+    DEFAULT_QUERY_BATCH_SIZE,
+  ],
+  [
+    "qwen-3-235b-a22b-instruct-2507",
+    "cerebras",
+    null,
+    false,
+    DEFAULT_QUERY_BATCH_SIZE,
+  ],
+  ["qwen-3-32b", "cerebras", null, false, DEFAULT_QUERY_BATCH_SIZE],
+  ["gpt-oss-120b", "fireworks", null, false, DEFAULT_QUERY_BATCH_SIZE],
+  ["gpt-oss-120b", "groq", null, false, DEFAULT_QUERY_BATCH_SIZE],
+  [
+    "openai/gpt-oss-120b",
+    "openrouter",
+    "cerebras",
+    false,
+    DEFAULT_QUERY_BATCH_SIZE,
+  ],
+  [
+    "openai/gpt-oss-120b",
+    "openrouter",
+    "baseten",
+    false,
+    DEFAULT_QUERY_BATCH_SIZE,
+  ],
+  [
+    "openai/gpt-oss-120b",
+    "openrouter",
+    "groq",
+    false,
+    DEFAULT_QUERY_BATCH_SIZE,
+  ],
+  [
+    "openai/gpt-oss-120b",
+    "openrouter",
+    "sambanova",
+    false,
+    DEFAULT_QUERY_BATCH_SIZE,
+  ],
+  [
+    "google/gemini-3-flash-preview",
+    "openrouter",
+    "google-vertex",
+    false,
+    GEMINI_FLASH_QUERY_BATCH_SIZE,
+  ],
 ];
 
 export const getGenuineTweetIds = <T extends { id_str: string; id: string }>(
@@ -113,7 +160,10 @@ export const createLlmQuerySlice: StateCreator<
 
     const [model, provider, openrouterProvider] = config;
 
-    const batches = getBatches(filteredTweetsSubsetToAnalyse, QUERY_BATCH_SIZE);
+    const batches = getBatches(
+      filteredTweetsSubsetToAnalyse,
+      getBatchSizeForConfig(config),
+    );
 
     const queuedTime = performance.now();
     set({

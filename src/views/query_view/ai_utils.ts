@@ -3,7 +3,11 @@ import type { ChatCompletion } from "openai/resources";
 
 import type { Account, Tweet } from "../../types";
 import OpenAI from "openai";
-import type { LLMQueryProvider } from "../../constants";
+import {
+  getBatchSizeForConfig,
+  type LLMQueryConfig,
+  type LLMQueryProvider,
+} from "../../constants";
 import { AVAILABLE_LLM_CONFIGS } from "../../state/llm_query";
 import {
   getSelectedProvider,
@@ -191,8 +195,21 @@ export async function submitQuery(params: {
     // Use proxy server (default behavior)
     // put the selected model at the start of the llm configs list
     // i.e. if it's not available then fall back to the other models in the list
-    const llmConfigs = [
-      [model, provider, openrouterProvider, false],
+    const resolvedOpenrouterProvider = openrouterProvider ?? null;
+    const selectedConfig = AVAILABLE_LLM_CONFIGS.find(
+      ([configModel, configProvider, configOpenrouterProvider]) =>
+        configModel === model &&
+        configProvider === provider &&
+        configOpenrouterProvider === resolvedOpenrouterProvider,
+    );
+    const llmConfigs: LLMQueryConfig[] = [
+      [
+        model,
+        provider,
+        resolvedOpenrouterProvider,
+        false,
+        getBatchSizeForConfig(selectedConfig),
+      ],
       ...AVAILABLE_LLM_CONFIGS,
     ];
 

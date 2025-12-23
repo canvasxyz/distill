@@ -9,7 +9,10 @@ import {
   submitQuery,
 } from "../../query_view/ai_utils";
 
-import { QUERY_BATCH_SIZE, type LLMQueryConfig } from "../../../constants";
+import {
+  getBatchSizeForConfig,
+  type LLMQueryConfig,
+} from "../../../constants";
 import { mapKeysDeep, snakeToCamelCase } from "../../../utils";
 import type { Account } from "../../../types";
 
@@ -70,6 +73,7 @@ export const AskQuestion: Tool<
     const config: LLMQueryConfig = AVAILABLE_LLM_CONFIGS[0];
 
     const [model, provider, openrouterProvider] = config;
+    const batchSize = getBatchSizeForConfig(config);
 
     const numBatches = 3;
 
@@ -85,7 +89,7 @@ export const AskQuestion: Tool<
         .eq("account_id", account.accountId)
         .not("full_text", "like", "RT %")
         .order("created_at", { ascending: false })
-        .range(QUERY_BATCH_SIZE * i, QUERY_BATCH_SIZE * (i + 1));
+        .range(batchSize * i, batchSize * (i + 1));
 
       if (!data) {
         break;
