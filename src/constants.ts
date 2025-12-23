@@ -1,6 +1,5 @@
-export const DEFAULT_QUERY_BATCH_SIZE = 2500;
-export const GEMINI_FLASH_QUERY_BATCH_SIZE = 20000;
-export const MAX_ARCHIVE_SIZE = 10000;
+export const DEFAULT_QUERY_BATCH_SIZE = 2000;
+export const GEMINI_FLASH_QUERY_BATCH_SIZE = 15000;
 
 export type LLMQueryProvider =
   | "cerebras"
