@@ -112,12 +112,49 @@ export const formatTweetCitations = (text: string) => {
     return citationOrder.get(tweetId)!;
   };
 
+  const createTweetLink = (tweetId: string) =>
+    `[${tweetId}](${DEFAULT_TWEET_STATUS_URL}${tweetId})`;
+
+  const postIdQuoteChars = `"'\u2018\u2019\u201c\u201d`;
+  const postIdValuePattern = `[${postIdQuoteChars}]?\\d{5,}[${postIdQuoteChars}]?`;
+  const postIdValueCapturePattern = `[${postIdQuoteChars}]?(\\d{5,})[${postIdQuoteChars}]?`;
+  const postIdAttributePattern = `Post\\s+id\\s*=\\s*${postIdValuePattern}`;
+  const postIdAttributeCapturePattern = `Post\\s+id\\s*=\\s*${postIdValueCapturePattern}`;
+
+  const extractPostIds = (input: string) => {
+    const ids: string[] = [];
+    const postIdRegex = new RegExp(postIdAttributeCapturePattern, "gi");
+    let match: RegExpExecArray | null;
+    while ((match = postIdRegex.exec(input)) !== null) {
+      ids.push(match[1]);
+    }
+    return ids;
+  };
+
+  const postIdGroupRegex = new RegExp(
+    `\\[\\s*(?:${postIdAttributePattern}\\s*(?:,\\s*)?)+\\s*\\]`,
+    "gi",
+  );
+
+  let formattedText = text.replace(postIdGroupRegex, (match) => {
+    const ids = extractPostIds(match);
+    if (ids.length === 0) return match;
+    return ids.map((tweetId) => createTweetLink(tweetId)).join(", ");
+  });
+
+  const standalonePostIdRegex = new RegExp(postIdAttributeCapturePattern, "gi");
+
+  formattedText = formattedText.replace(
+    standalonePostIdRegex,
+    (_match, tweetId: string) => createTweetLink(tweetId),
+  );
+
   const linkGroupRegex =
     /\(\s*(\[[0-9]{5,}\]\(https?:\/\/(?:x|twitter)\.com\/[^)]+\)\s*(?:,\s*\[[0-9]{5,}\]\(https?:\/\/(?:x|twitter)\.com\/[^)]+\)\s*)*)\s*\)/gi;
   const markdownLinkRegex =
     /\[([0-9]{5,})\]\((https?:\/\/(?:x|twitter)\.com\/[^)]+)\)/gi;
 
-  let formattedText = text.replace(linkGroupRegex, (match) => {
+  formattedText = formattedText.replace(linkGroupRegex, (match) => {
     markdownLinkRegex.lastIndex = 0;
     const citations: CitationMatch[] = [];
     let innerMatch: RegExpExecArray | null;
