@@ -458,6 +458,7 @@ export function RunQueries() {
             showShortcut
           />
 
+          {/*
           <Text size="2" as="label">
             <Flex align="center" gap="2" style={{ textWrap: "nowrap" }}>
               <Switch
@@ -470,6 +471,7 @@ export function RunQueries() {
               Question before tweets
             </Flex>
           </Text>
+            */}
 
           <Flex align="center" gap="4" ml="1">
             <RadioGroup.Root
