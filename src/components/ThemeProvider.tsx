@@ -1,20 +1,7 @@
-import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  type ReactNode,
-} from "react";
+import { useState, useEffect, type ReactNode } from "react";
 import { Theme } from "@radix-ui/themes";
 
-type ThemeAppearance = "light" | "dark";
-
-interface ThemeContextType {
-  appearance: ThemeAppearance;
-  toggleTheme: () => void;
-}
-
-const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+import { ThemeContext, type ThemeAppearance } from "./ThemeContext";
 
 const THEME_STORAGE_KEY = "app-theme";
 
@@ -53,12 +40,4 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       </Theme>
     </ThemeContext.Provider>
   );
-}
-
-export function useTheme() {
-  const context = useContext(ThemeContext);
-  if (context === undefined) {
-    throw new Error("useTheme must be used within a ThemeProvider");
-  }
-  return context;
 }

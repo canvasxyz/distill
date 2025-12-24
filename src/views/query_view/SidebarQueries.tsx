@@ -258,32 +258,6 @@ function RunQueryItem() {
   );
 }
 
-function ArchiveChatItem() {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const isActive = location.pathname === "/chat";
-
-  return (
-    <NavigationMenu.Item value="archive-chat">
-      <SidebarItemContainer
-        isActive={isActive}
-        onClick={() => navigate("/chat")}
-        onMouseEnter={undefined}
-        onMouseLeave={undefined}
-      >
-        <span
-          style={{ ...itemTitleBase, color: "var(--gray-12)", fontSize: "96%" }}
-        >
-          Archive Chat
-        </span>
-        <Text size="1" style={{ visibility: "hidden" }}>
-          {" "}
-        </Text>
-      </SidebarItemContainer>
-    </NavigationMenu.Item>
-  );
-}
-
 function SettingsItem() {
   const navigate = useNavigate();
   const location = useLocation();

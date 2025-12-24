@@ -16,7 +16,7 @@ import {
   CheckCircledIcon,
 } from "@radix-ui/react-icons";
 import { Header } from "../components/Header";
-import { useTheme } from "../components/ThemeProvider";
+import { useTheme } from "../components/ThemeContext";
 import { useState, useEffect } from "react";
 import type { LLMQueryProvider } from "../constants";
 import {

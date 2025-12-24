@@ -1,5 +1,5 @@
 import { IconButton } from "@radix-ui/themes";
-import { useTheme } from "./ThemeProvider";
+import { useTheme } from "./ThemeContext";
 
 export function ThemeSwitcher() {
   const { appearance, toggleTheme } = useTheme();

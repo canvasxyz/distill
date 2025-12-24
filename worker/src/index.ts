@@ -21,11 +21,15 @@ import {
 	recordAutoFailure,
 } from './providers';
 
+type ChatCompletionResponse = OpenAI.Chat.Completions.ChatCompletion & {
+	provider?: string;
+};
+
 const callClassifier = async (
 	body: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming,
 	baseUrl: string,
 	providerKey: string
-) => {
+): Promise<ChatCompletionResponse> => {
 	const response = await fetch(`${baseUrl}/chat/completions`, {
 		method: 'POST',
 		headers: {
@@ -34,7 +38,7 @@ const callClassifier = async (
 		},
 		body: JSON.stringify(body),
 	});
-	const json = (await response.json()) as any;
+	const json = (await response.json()) as ChatCompletionResponse;
 
 	if (!response.ok) {
 		throw new Error(`Upstream error (${response.status}): ${JSON.stringify(json)}`);
@@ -43,7 +47,7 @@ const callClassifier = async (
 };
 
 export default {
-	async fetch(request, env, ctx): Promise<Response> {
+	async fetch(request, env): Promise<Response> {
 		const allowedOrigins = new Set(['https://distill.org', 'https://www.distill.org', 'http://localhost:5173']);
 		const origin = request.headers.get('Origin') || undefined;
 
@@ -96,10 +100,14 @@ export default {
 			return new Response('Request content-type must be application/json', { status: 400, headers: corsHeaders });
 		}
 
-		let body: Record<string, unknown>;
+		let body: {
+			params?: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming;
+			llmConfigs?: unknown;
+			cooloffSeconds?: number;
+		};
 		try {
-			body = (await request.json()) as Record<string, unknown>;
-		} catch (e) {
+			body = (await request.json()) as typeof body;
+		} catch {
 			return new Response('Invalid JSON body', { status: 400, headers: corsHeaders });
 		}
 
@@ -107,18 +115,19 @@ export default {
 			return new Response('Missing `params` field', { status: 400, headers: corsHeaders });
 		}
 
-		if (!body.llmConfigs) {
+		const llmConfigs = body.llmConfigs;
+		if (!llmConfigs) {
 			return new Response('Missing `llmConfigs` field', { status: 400, headers: corsHeaders });
 		}
 
-		if (!isLLMQueryConfig(body.llmConfigs)) {
+		if (!isLLMQueryConfig(llmConfigs)) {
 			return new Response('Invalid `llmConfigs` field', { status: 400, headers: corsHeaders });
 		}
 
 		const nowMs = Date.now();
-		const override = typeof (body as any).cooloffSeconds === 'number' ? (body as any).cooloffSeconds : undefined;
+		const override = typeof body.cooloffSeconds === 'number' ? body.cooloffSeconds : undefined;
 		const cooloffSeconds = override && override > 0 ? override : getCooloffSecondsFromEnv(env);
-		const candidates = await getViableAutoConfigs(env, nowMs, cooloffSeconds, body.llmConfigs);
+		const candidates = await getViableAutoConfigs(env, nowMs, cooloffSeconds, llmConfigs);
 		if (!candidates.length) {
 			return new Response('No available providers/models (all in cooldown or not configured)', { status: 503, headers: corsHeaders });
 		}
@@ -132,7 +141,10 @@ export default {
 				await recordAutoFailure(env, provider, model, nowMs);
 				continue;
 			}
-			const paramsWithModel = { ...(body.params as any), model };
+			const paramsWithModel: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming = {
+				...body.params,
+				model,
+			};
 			try {
 				const responseFromUpstream = await callClassifier(paramsWithModel, providerArgs.baseUrl, providerArgs.providerKey);
 

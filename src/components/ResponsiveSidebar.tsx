@@ -5,7 +5,7 @@ import * as NavigationMenu from "@radix-ui/react-navigation-menu";
 import { useNavigate, useLocation } from "react-router";
 import { PastQueries } from "../views/query_view/SidebarQueries";
 import { Header } from "./Header";
-import { useTheme } from "./ThemeProvider";
+import { useTheme } from "./ThemeContext";
 import "./ResponsiveSidebar.css";
 
 export function ResponsiveSidebar() {

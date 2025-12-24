@@ -2,7 +2,6 @@ import * as st from 'simple-runtypes';
 
 export type LLMQueryProvider = 'cerebras' | 'deepinfra' | 'openrouter' | 'groq' | 'fireworks';
 export type LLMQueryConfig = [string, LLMQueryProvider, string | null, boolean, number];
-type LegacyLLMQueryConfig = [string, LLMQueryProvider, string | null, boolean];
 
 const llmConfigTuple = st.tuple(
 	st.string(),
@@ -18,27 +17,37 @@ export function isLLMQueryConfig(value: unknown): value is LLMQueryConfig[] {
 	return st.use(llmConfigsRuntype, value).ok;
 }
 
-export const getArgsForProvider = (env: Env, provider: string) => {
-	const mapping: Record<string, { baseUrl: string; providerKey: string }> = {
+type ProviderSecretEnv = Env & {
+	DEEPINFRA_KEY: string;
+	CEREBRAS_KEY: string;
+	OPENROUTER_KEY: string;
+	GROQ_KEY: string;
+	FIREWORKS_KEY: string;
+	AUTO_COOL_OFF_SECONDS?: string;
+};
+
+export const getArgsForProvider = (env: Env, provider: LLMQueryProvider) => {
+	const secretEnv = env as ProviderSecretEnv;
+	const mapping: Record<LLMQueryProvider, { baseUrl: string; providerKey: string }> = {
 		deepinfra: {
 			baseUrl: env.DEEPINFRA_URL,
-			providerKey: (env as any).DEEPINFRA_KEY,
+			providerKey: secretEnv.DEEPINFRA_KEY,
 		},
 		cerebras: {
 			baseUrl: env.CEREBRAS_URL,
-			providerKey: (env as any).CEREBRAS_KEY,
+			providerKey: secretEnv.CEREBRAS_KEY,
 		},
 		openrouter: {
 			baseUrl: env.OPENROUTER_URL,
-			providerKey: (env as any).OPENROUTER_KEY,
+			providerKey: secretEnv.OPENROUTER_KEY,
 		},
 		groq: {
 			baseUrl: env.GROQ_URL,
-			providerKey: (env as any).GROQ_KEY,
+			providerKey: secretEnv.GROQ_KEY,
 		},
 		fireworks: {
 			baseUrl: env.FIREWORKS_URL,
-			providerKey: (env as any).FIREWORKS_KEY,
+			providerKey: secretEnv.FIREWORKS_KEY,
 		},
 	};
 	const result = mapping[provider];
@@ -90,7 +99,7 @@ export const getViableAutoConfigs = async (
 };
 
 export const getCooloffSecondsFromEnv = (env: Env): number => {
-	const raw = (env as any).AUTO_COOL_OFF_SECONDS as string | undefined;
+	const raw = (env as ProviderSecretEnv).AUTO_COOL_OFF_SECONDS;
 	const parsed = raw ? Number(raw) : NaN;
 	return Number.isFinite(parsed) && parsed > 0 ? parsed : 120;
 };

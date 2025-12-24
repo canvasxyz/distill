@@ -3,7 +3,14 @@ import {
   replaceAccountName,
   selectSubset,
 } from "./ai_utils";
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ComponentPropsWithoutRef,
+  type ReactNode,
+} from "react";
 import { useStore } from "../../state/store";
 import { RunQueryButton } from "./RunQueryButton";
 import {
@@ -19,6 +26,7 @@ import {
   type FeaturedQuery,
 } from "./example_queries";
 import Markdown from "react-markdown";
+import type { ExtraProps } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useTweetCounts } from "./useTweetCounts";
 import { TweetFrequencyGraph } from "../../components/TweetFrequencyGraph";
@@ -45,10 +53,11 @@ import {
   Button,
   Callout,
   Separator,
-  Switch,
   HoverCard,
 } from "@radix-ui/themes";
 import type { Tweet } from "../../types";
+
+type MarkdownLinkProps = ComponentPropsWithoutRef<"a"> & ExtraProps;
 
 const formatCompactNumber = (n: number) => {
   try {
@@ -151,8 +160,7 @@ export function RunQueries() {
 
   const [includeReplies, setIncludeReplies] = useState(true);
   const [includeRetweets, setIncludeRetweets] = useState(true);
-  const [promptPlacement, setPromptPlacement] =
-    useState<PromptPlacement>("prompt-before");
+  const promptPlacement: PromptPlacement = "prompt-before";
 
   const {
     accounts,
@@ -189,6 +197,7 @@ export function RunQueries() {
 
     [accounts, selectedAccountId],
   );
+  const accountUsername = account?.username ?? null;
 
   const accountIdToUsername = useMemo(() => {
     return new Map<string, string>(
@@ -217,10 +226,10 @@ export function RunQueries() {
   // Keep UI state intuitive: if none exist, ensure toggles are off
   useEffect(() => {
     if (!hasReplies && includeReplies) setIncludeReplies(false);
-  }, [hasReplies]);
+  }, [hasReplies, includeReplies]);
   useEffect(() => {
     if (!hasRetweets && includeRetweets) setIncludeRetweets(false);
-  }, [hasRetweets]);
+  }, [hasRetweets, includeRetweets]);
 
   const filteredTweetsToAnalyse = useMemo(
     () =>
@@ -306,7 +315,7 @@ export function RunQueries() {
   // Only replace exact handle matches (case-insensitive) when followed by
   // whitespace to avoid matching larger substrings.
   useEffect(() => {
-    const newUsername = account?.username ?? null;
+    const newUsername = accountUsername;
     const prevUsername = prevUsernameRef.current;
     if (
       newUsername &&
@@ -321,7 +330,7 @@ export function RunQueries() {
       if (replaced !== selectedQuery) setSelectedQuery(replaced);
     }
     prevUsernameRef.current = newUsername;
-  }, [account?.username]);
+  }, [accountUsername, selectedQuery]);
 
   // Utility: only persist queries that don't reference a different @handle
   const shouldPersistQuery = (text: string, currentHandle: string) => {
@@ -457,22 +466,6 @@ export function RunQueries() {
             }}
             showShortcut
           />
-
-          {/*
-          <Text size="2" as="label">
-            <Flex align="center" gap="2" style={{ textWrap: "nowrap" }}>
-              <Switch
-                disabled={isProcessing || !account}
-                checked={promptPlacement === "prompt-before"}
-                onCheckedChange={(checked) =>
-                  setPromptPlacement(checked ? "prompt-before" : "prompt-after")
-                }
-              />
-              Question before tweets
-            </Flex>
-          </Text>
-            */}
-
           <Flex align="center" gap="4" ml="1">
             <RadioGroup.Root
               value={rangeSelection.type}
@@ -609,7 +602,10 @@ export function RunQueries() {
                 <Markdown
                   remarkPlugins={[remarkGfm]}
                   components={{
-                    a: ({ node, children, href, className, ...rest }: any) => {
+                    a: (props: MarkdownLinkProps) => {
+                      const { children, href, className, node, ...rest } = props;
+                      void node;
+                      const anchorProps = rest as ComponentPropsWithoutRef<"a">;
                       const childText = getChildText(children);
                       if (childText && isTweetCitationLink(childText, href)) {
                         const tweetId = href ? extractTweetIdFromUrl(href) : null;
@@ -628,18 +624,18 @@ export function RunQueries() {
                           .join(" ");
 
                         return (
-                          <HoverCard.Root openDelay={150} closeDelay={75}>
-                            <HoverCard.Trigger asChild>
-                              <a
-                                {...rest}
-                                href={href}
-                                className={citationClassNames}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                              >
-                                {children}
-                              </a>
-                            </HoverCard.Trigger>
+                            <HoverCard.Root openDelay={150} closeDelay={75}>
+                              <HoverCard.Trigger asChild>
+                                <a
+                                  {...anchorProps}
+                                  href={href}
+                                  className={citationClassNames}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                >
+                                  {children}
+                                </a>
+                              </HoverCard.Trigger>
                             <HoverCard.Content
                               className="tweet-citation-hovercard"
                               sideOffset={10}
@@ -655,7 +651,7 @@ export function RunQueries() {
                       }
                       return (
                         <a
-                          {...rest}
+                          {...anchorProps}
                           href={href}
                           className={className}
                           target="_blank"

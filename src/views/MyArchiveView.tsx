@@ -7,7 +7,7 @@ import { CommunityArchiveUserModal } from "../components/CommunityArchiveUserMod
 import { getCommunityArchiveUserProgressLabel } from "../components/CommunityArchiveUserProgress";
 import { Header } from "../components/Header";
 import { Box, Flex, IconButton, Button } from "@radix-ui/themes";
-import { useTheme } from "../components/ThemeProvider";
+import { useTheme } from "../components/ThemeContext";
 
 export function MyArchiveView() {
   const { appIsReady, loadCommunityArchiveUserProgress } = useStore();

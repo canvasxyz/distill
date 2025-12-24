@@ -1,7 +1,7 @@
 import { Box, Text, Button, IconButton } from "@radix-ui/themes";
 import { useNavigate } from "react-router";
 import { Header } from "../components/Header";
-import { useTheme } from "../components/ThemeProvider";
+import { useTheme } from "../components/ThemeContext";
 
 export function NotFound() {
   const navigate = useNavigate();
