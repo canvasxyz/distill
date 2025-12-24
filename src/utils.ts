@@ -51,6 +51,90 @@ export const mapKeysDeep = (obj: Json, fn: (key: string) => string): Json =>
 export const stripThink = (text: string) =>
   text.replace(/<think>[\s\S]*?<\/think>/gi, "");
 
+export const TWEET_STATUS_URL_REGEX =
+  /^https?:\/\/(?:x|twitter)\.com\/[^/\s]+\/status\/\d+(?:\?[^\s)]+)?$/i;
+const DEFAULT_TWEET_STATUS_URL = "https://x.com/i/web/status/";
+
+const normalizeTweetUrl = (url: string, tweetId: string) => {
+  if (TWEET_STATUS_URL_REGEX.test(url)) {
+    return url;
+  }
+  return `${DEFAULT_TWEET_STATUS_URL}${tweetId}`;
+};
+
+type CitationMatch = {
+  tweetId: string;
+  url: string;
+};
+
+const buildCitationMarkdown = (
+  citations: CitationMatch[],
+  getCitationIndex: (tweetId: string) => number,
+) => {
+  if (citations.length === 0) return "";
+  return citations
+    .map(({ tweetId, url }) => {
+      const index = getCitationIndex(tweetId);
+      return `[${index}](${normalizeTweetUrl(url, tweetId)})`;
+    })
+    .join(" ");
+};
+
+/**
+ * Detects parenthetical tweet citations like `(1234567890123456789)`
+ * or `([123](https://x.com/user/status/123))` and replaces them with
+ * numbered Markdown links (e.g. `[1](https://x.com/...) [2](...)`).
+ * These numbers are later rendered as superscript references.
+ */
+export const formatTweetCitations = (text: string) => {
+  const citationOrder = new Map<string, number>();
+  const getCitationIndex = (tweetId: string) => {
+    if (!citationOrder.has(tweetId)) {
+      citationOrder.set(tweetId, citationOrder.size + 1);
+    }
+    return citationOrder.get(tweetId)!;
+  };
+
+  const linkGroupRegex =
+    /\(\s*(\[[0-9]{5,}\]\(https?:\/\/(?:x|twitter)\.com\/[^)]+\)\s*(?:,\s*\[[0-9]{5,}\]\(https?:\/\/(?:x|twitter)\.com\/[^)]+\)\s*)*)\s*\)/gi;
+  const markdownLinkRegex =
+    /\[([0-9]{5,})\]\((https?:\/\/(?:x|twitter)\.com\/[^)]+)\)/gi;
+
+  let formattedText = text.replace(linkGroupRegex, (match) => {
+    markdownLinkRegex.lastIndex = 0;
+    const citations: CitationMatch[] = [];
+    let innerMatch: RegExpExecArray | null;
+    while ((innerMatch = markdownLinkRegex.exec(match)) !== null) {
+      const [, tweetId, url] = innerMatch;
+      if (!TWEET_STATUS_URL_REGEX.test(url)) continue;
+      citations.push({
+        tweetId,
+        url,
+      });
+    }
+    if (citations.length === 0) return match;
+    return buildCitationMarkdown(citations, getCitationIndex);
+  });
+
+  const plainIdGroupRegex =
+    /\(\s*(\d{5,}(?:\s*,\s*\d{5,})*)\s*\)/g;
+
+  formattedText = formattedText.replace(plainIdGroupRegex, (match, inner) => {
+    const ids = inner
+      .split(",")
+      .map((id: string) => id.trim())
+      .filter((id: string) => /^\d{5,}$/.test(id));
+    if (ids.length === 0) return match;
+    const citations = ids.map((tweetId) => ({
+      tweetId,
+      url: `${DEFAULT_TWEET_STATUS_URL}${tweetId}`,
+    }));
+    return buildCitationMarkdown(citations, getCitationIndex);
+  });
+
+  return formattedText;
+};
+
 // extract Unix timestamp from a UUID v7 value without an external library
 export function extractTimestampFromUUIDv7(uuid: string): Date {
   // split the UUID into its components

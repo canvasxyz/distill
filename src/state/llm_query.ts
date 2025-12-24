@@ -12,6 +12,7 @@ import PQueue from "p-queue";
 import type { Account, Tweet } from "../types";
 import { v7 as uuidv7 } from "uuid";
 import { db } from "../db";
+import { formatTweetCitations } from "../utils";
 import {
   DEFAULT_QUERY_BATCH_SIZE as DEFAULT_BATCH,
   GEMINI_FLASH_QUERY_BATCH_SIZE as GEMINI_BATCH,
@@ -21,17 +22,17 @@ import {
 } from "../constants";
 
 export const AVAILABLE_LLM_CONFIGS: LLMQueryConfig[] = [
-  ["gpt-oss-120b", "cerebras", null, true, DEFAULT_BATCH],
-  ["qwen-3-235b-a22b-instruct-2507", "cerebras", null, false, DEFAULT_BATCH],
-  ["google/gemini-2.0-flash-001", "deepinfra", null, true, DEFAULT_BATCH],
-  ["gpt-oss-120b", "groq", null, false, DEFAULT_BATCH],
   [
     "google/gemini-3-flash-preview",
     "openrouter",
     "google-vertex",
-    false,
+    true,
     GEMINI_BATCH,
   ],
+  ["gpt-oss-120b", "groq", null, false, DEFAULT_BATCH],
+  ["gpt-oss-120b", "cerebras", null, false, DEFAULT_BATCH],
+  ["qwen-3-235b-a22b-instruct-2507", "cerebras", null, false, DEFAULT_BATCH],
+  ["google/gemini-2.0-flash-001", "deepinfra", null, false, DEFAULT_BATCH],
 ];
 
 export const getGenuineTweetIds = <T extends { id_str: string; id: string }>(
@@ -196,10 +197,12 @@ export const createLlmQuerySlice: StateCreator<
         const groundedTweets = { genuine: batch, hallucinated: [] as string[] };
 
         const endTime = performance.now();
+        const formattedResult = formatTweetCitations(queryResult.result);
+
         updateBatchStatus(batchId, {
           status: "done",
           groundedTweets,
-          outputText: queryResult.result,
+          outputText: formattedResult,
           startTime,
           endTime,
           runTime: endTime - startTime,
@@ -225,6 +228,7 @@ export const createLlmQuerySlice: StateCreator<
 
         const newQueryResult = {
           ...queryResult,
+          result: formattedResult,
           id: queryId,
           totalRunTime,
           rangeSelection,

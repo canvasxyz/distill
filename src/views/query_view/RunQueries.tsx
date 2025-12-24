@@ -3,7 +3,7 @@ import {
   replaceAccountName,
   selectSubset,
 } from "./ai_utils";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useStore } from "../../state/store";
 import { RunQueryButton } from "./RunQueryButton";
 import {
@@ -24,7 +24,7 @@ import { useTweetCounts } from "./useTweetCounts";
 import { TweetFrequencyGraph } from "../../components/TweetFrequencyGraph";
 import { BatchTweetsModal } from "./BatchTweetsModal";
 import { getBatchSizeForConfig, type PromptPlacement } from "../../constants";
-import { stripThink } from "../../utils";
+import { stripThink, TWEET_STATUS_URL_REGEX } from "../../utils";
 import { AVAILABLE_LLM_CONFIGS } from "../../state/llm_query";
 import { FeaturedQueryCard } from "../../components/FeaturedQueryCard";
 import { BrowseMoreButton } from "../../components/BrowseMoreButton";
@@ -43,6 +43,28 @@ import {
   Separator,
   Switch,
 } from "@radix-ui/themes";
+
+const getChildText = (children: ReactNode): string => {
+  if (
+    children === null ||
+    children === undefined ||
+    typeof children === "boolean"
+  ) {
+    return "";
+  }
+  if (typeof children === "string" || typeof children === "number") {
+    return String(children);
+  }
+  if (Array.isArray(children)) {
+    return children.map((child) => getChildText(child)).join("");
+  }
+  return "";
+};
+
+const isTweetCitationLink = (text: string, href?: string) => {
+  if (!href) return false;
+  return /^\d+$/.test(text.trim()) && TWEET_STATUS_URL_REGEX.test(href);
+};
 
 export function RunQueries() {
   const [exampleQueriesModalIsOpen, setExampleQueriesModalIsOpen] =
@@ -448,7 +470,6 @@ export function RunQueries() {
                     value={String(idx)}
                   >
                     {recommended && "️⭐️ "}
-                    {openrouterProvider && "🔀 "}
                     {model} - {openrouterProvider ?? provider}{" "}
                   </Select.Item>
                 ),
@@ -508,11 +529,35 @@ export function RunQueries() {
                 <Markdown
                   remarkPlugins={[remarkGfm]}
                   components={{
-                    a: (props: any) => (
-                      <a {...props} target="_blank" rel="noopener noreferrer">
-                        {props.children}
-                      </a>
-                    ),
+                    a: ({ node, children, href, className, ...rest }: any) => {
+                      const childText = getChildText(children);
+                      if (childText && isTweetCitationLink(childText, href)) {
+                        return (
+                          <a
+                            {...rest}
+                            href={href}
+                            className={["tweet-citation", className]
+                              .filter(Boolean)
+                              .join(" ")}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            {children}
+                          </a>
+                        );
+                      }
+                      return (
+                        <a
+                          {...rest}
+                          href={href}
+                          className={className}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {children}
+                        </a>
+                      );
+                    },
                   }}
                 >
                   {stripThink(queryResult.result)}
