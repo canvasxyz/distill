@@ -1,14 +1,14 @@
 import { useNavigate, useParams } from "react-router";
 import { useStore } from "../../state/store";
-import { useState } from "react";
-import Markdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import { useMemo, useState } from "react";
 import { extractTimestampFromUUIDv7, stripThink } from "../../utils";
 import { ResultsBox, QueryResultHeader } from "./ResultsBox";
 import { BatchTweetsModal } from "./BatchTweetsModal";
 import type { RangeSelection } from "./ai_utils";
 import { db } from "../../db";
 import { Button, Text, Heading } from "@radix-ui/themes";
+import { QueryResultMarkdown } from "./QueryResultMarkdown";
+import type { Tweet } from "../../types";
 
 function formatDateTime(d: Date) {
   if (isNaN(d.getTime())) return "";
@@ -37,11 +37,23 @@ function formatRangeSelection(rangeSelection?: RangeSelection) {
 
 export function PastQueryDetailView() {
   const { queryId } = useParams<{ queryId: string }>();
-  const { queryResults } = useStore();
+  const { queryResults, accounts, allTweets } = useStore();
   const navigate = useNavigate();
   const [showBatchTweetsModal, setShowBatchTweetsModal] = useState(false);
 
   const query = queryResults?.find((q) => q.id === queryId);
+  const accountIdToUsername = useMemo(
+    () => new Map((accounts || []).map((a) => [a.accountId, a.username])),
+    [accounts],
+  );
+  const tweetsById = useMemo(() => {
+    const map = new Map<string, Tweet>();
+    (allTweets || []).forEach((tweet) => {
+      if (tweet.id) map.set(tweet.id, tweet);
+      if (tweet.id_str) map.set(tweet.id_str, tweet);
+    });
+    return map;
+  }, [allTweets]);
 
   if (!query) {
     return (
@@ -140,17 +152,23 @@ export function PastQueryDetailView() {
         <ResultsBox>
           <QueryResultHeader
             query={query.query}
-            subtitle={query.queriedHandle}
+            subtitle={[
+              query.queriedHandle,
+              query.model,
+              `${query.totalTokens} tokens`,
+            ]
+              .filter(Boolean)
+              .join(" — ")}
             resultText={query.result}
             onShowEvidence={() => {
               setShowBatchTweetsModal(true);
             }}
           />
-          <div className="query-result-markdown">
-            <Markdown remarkPlugins={[remarkGfm]}>
-              {stripThink(query.result)}
-            </Markdown>
-          </div>
+          <QueryResultMarkdown
+            content={stripThink(query.result)}
+            tweetsById={tweetsById}
+            accountIdToUsername={accountIdToUsername}
+          />
         </ResultsBox>
       </div>
 
