@@ -29,6 +29,13 @@ export const AVAILABLE_LLM_CONFIGS: LLMQueryConfig[] = [
     true,
     GEMINI_BATCH,
   ],
+  [
+    "google/gemini-3-flash-preview",
+    "openrouter",
+    "google-ai-studio",
+    true,
+    GEMINI_BATCH,
+  ],
   ["gpt-oss-120b", "groq", null, false, DEFAULT_BATCH],
   ["gpt-oss-120b", "cerebras", null, false, DEFAULT_BATCH],
   ["qwen-3-235b-a22b-instruct-2507", "cerebras", null, false, DEFAULT_BATCH],
