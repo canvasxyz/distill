@@ -318,7 +318,7 @@ export function PastQueries() {
   return (
     <div style={{ display: "flex", flexDirection: "column" }}>
       <RunQueryItem />
-      <ArchiveChatItem />
+      {/* <ArchiveChatItem /> */}
       <SettingsItem />
       {!queryResults || queryResults.length === 0 ? (
         <div style={{ padding: "20px 18px" }}>
