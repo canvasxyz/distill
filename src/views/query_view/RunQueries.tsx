@@ -97,7 +97,7 @@ const TweetPreviewCard = ({
           Tweet unavailable
         </Text>
         <Text size="1" color="gray">
-          This citation points to a tweet that was not included in your archive.
+          <br/>This citation points to a tweet that was not included in your archive.
         </Text>
       </div>
     );
