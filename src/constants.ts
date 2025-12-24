@@ -1,5 +1,5 @@
 export const DEFAULT_QUERY_BATCH_SIZE = 2000;
-export const GEMINI_FLASH_QUERY_BATCH_SIZE = 15000;
+export const GEMINI_FLASH_QUERY_BATCH_SIZE = 10000;
 
 export type LLMQueryProvider =
   | "cerebras"
