@@ -52,18 +52,15 @@ export const stripThink = (text: string) =>
   text.replace(/<think>[\s\S]*?<\/think>/gi, "");
 
 export const TWEET_STATUS_URL_REGEX =
-  /^https?:\/\/(?:x|twitter)\.com\/[^/\s]+\/status\/\d+(?:\?[^\s)]+)?$/i;
-const DEFAULT_TWEET_STATUS_URL = "https://x.com/i/web/status/";
+  /^https?:\/\/(?:x|twitter)\.com\/(?:(?:[^/\s]+|i(?:\/web)?)\/status)\/\d+(?:\?[^\s)]+)?$/i;
+const DEFAULT_TWEET_STATUS_URL = "https://x.com/i/status/";
 
 export const extractTweetIdFromUrl = (url: string) => {
   const match = url.match(/status\/(\d+)/i);
   return match ? match[1] : null;
 };
 
-const normalizeTweetUrl = (url: string, tweetId: string) => {
-  if (TWEET_STATUS_URL_REGEX.test(url)) {
-    return url;
-  }
+const normalizeTweetUrl = (_url: string, tweetId: string) => {
   return `${DEFAULT_TWEET_STATUS_URL}${tweetId}`;
 };
 
@@ -89,7 +86,8 @@ const buildCitationMarkdown = (
  * Detects parenthetical tweet citations like `(1234567890123456789)`
  * or `([123](https://x.com/user/status/123))` and replaces them with
  * numbered Markdown links (e.g. `[1](https://x.com/...) [2](...)`).
- * These numbers are later rendered as superscript references.
+ * It also renumbers inline tweet links so their text becomes the
+ * citation number. These numbers are later rendered as superscripts.
  */
 export const formatTweetCitations = (text: string) => {
   const citationOrder = new Map<string, number>();
@@ -136,6 +134,20 @@ export const formatTweetCitations = (text: string) => {
     }));
     return buildCitationMarkdown(citations, getCitationIndex);
   });
+
+  const standaloneTweetLinkRegex =
+    /\[[^\]]+\]\((https?:\/\/(?:x|twitter)\.com\/[^)]+)\)/gi;
+
+  formattedText = formattedText.replace(
+    standaloneTweetLinkRegex,
+    (match, url: string) => {
+      if (!TWEET_STATUS_URL_REGEX.test(url)) return match;
+      const tweetId = extractTweetIdFromUrl(url);
+      if (!tweetId) return match;
+      const index = getCitationIndex(tweetId);
+      return `[${index}](${normalizeTweetUrl(url, tweetId)})`;
+    },
+  );
 
   return formattedText;
 };
