@@ -171,35 +171,18 @@ export const createLlmQuerySlice: StateCreator<
           startTime,
         });
 
-        let attempts = 3;
-        let queryResult: Awaited<ReturnType<typeof submitQuery>> | null = null;
-        let queryError: unknown;
-
-        while (attempts > 0 && queryResult === null) {
-          try {
-            queryResult = await submitQuery({
-              tweetsSample: batch,
-              query: {
-                systemPrompt: finalSystemPrompt,
-                prompt: query,
-                promptPlacement,
-              },
-              account,
-              model,
-              provider,
-              openrouterProvider: openrouterProvider,
-            });
-          } catch (e) {
-            queryError = e;
-            attempts--;
-          }
-        }
-
-        if (!queryResult) {
-          throw new Error(
-            `Query failed after 3 attempts. Error from model provider (${provider}): "${queryError}"`,
-          );
-        }
+        const queryResult = await submitQuery({
+          tweetsSample: batch,
+          query: {
+            systemPrompt: finalSystemPrompt,
+            prompt: query,
+            promptPlacement,
+          },
+          account,
+          model,
+          provider,
+          openrouterProvider: openrouterProvider,
+        });
 
         const groundedTweets = { genuine: batch, hallucinated: [] as string[] };
 
