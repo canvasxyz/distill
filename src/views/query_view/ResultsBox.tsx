@@ -41,7 +41,7 @@ export const ProgressLabel = ({
       <Text size="2" color="gray">
         {allBatchesComplete
           ? "Summarizing results..."
-          : "Processing batches..."}
+          : "Processing query..."}
       </Text>
       <Text size="2" color="gray">
         {currentProgress} / {totalProgress}
