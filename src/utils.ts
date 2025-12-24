@@ -55,6 +55,11 @@ export const TWEET_STATUS_URL_REGEX =
   /^https?:\/\/(?:x|twitter)\.com\/[^/\s]+\/status\/\d+(?:\?[^\s)]+)?$/i;
 const DEFAULT_TWEET_STATUS_URL = "https://x.com/i/web/status/";
 
+export const extractTweetIdFromUrl = (url: string) => {
+  const match = url.match(/status\/(\d+)/i);
+  return match ? match[1] : null;
+};
+
 const normalizeTweetUrl = (url: string, tweetId: string) => {
   if (TWEET_STATUS_URL_REGEX.test(url)) {
     return url;

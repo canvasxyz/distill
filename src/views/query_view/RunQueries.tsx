@@ -24,7 +24,11 @@ import { useTweetCounts } from "./useTweetCounts";
 import { TweetFrequencyGraph } from "../../components/TweetFrequencyGraph";
 import { BatchTweetsModal } from "./BatchTweetsModal";
 import { getBatchSizeForConfig, type PromptPlacement } from "../../constants";
-import { stripThink, TWEET_STATUS_URL_REGEX } from "../../utils";
+import {
+  stripThink,
+  TWEET_STATUS_URL_REGEX,
+  extractTweetIdFromUrl,
+} from "../../utils";
 import { AVAILABLE_LLM_CONFIGS } from "../../state/llm_query";
 import { FeaturedQueryCard } from "../../components/FeaturedQueryCard";
 import { BrowseMoreButton } from "../../components/BrowseMoreButton";
@@ -42,7 +46,81 @@ import {
   Callout,
   Separator,
   Switch,
+  HoverCard,
 } from "@radix-ui/themes";
+import type { Tweet } from "../../types";
+
+const formatCompactNumber = (n: number) => {
+  try {
+    const s = new Intl.NumberFormat("en", {
+      notation: "compact",
+      maximumFractionDigits: 1,
+    }).format(n);
+    return s.replace("K", "k").replace("M", "m").replace("G", "g");
+  } catch {
+    if (n >= 1_000_000) return `${Math.round(n / 1_000_000)}m`;
+    if (n >= 1_000) return `${Math.round(n / 1_000)}k`;
+    return String(n);
+  }
+};
+
+const formatTweetTimestamp = (dateString?: string) => {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  if (Number.isNaN(date.getTime())) return dateString;
+  return date.toLocaleString(undefined, {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+};
+
+const TweetPreviewCard = ({
+  tweet,
+  username,
+}: {
+  tweet: Tweet | null;
+  username?: string | null;
+}) => {
+  if (!tweet) {
+    return (
+      <div className="tweet-citation-card">
+        <Text size="2" weight="medium">
+          Tweet unavailable
+        </Text>
+        <Text size="1" color="gray">
+          This citation points to a tweet that was not included in your archive.
+        </Text>
+      </div>
+    );
+  }
+
+  const likes = Number(tweet.favorite_count || 0);
+  const retweets = Number(tweet.retweet_count || 0);
+
+  return (
+    <div className="tweet-citation-card">
+      <Flex direction="column" gap="1">
+        <Text size="2" weight="bold">
+          {username ? `@${username}` : "Tweet"}
+        </Text>
+        <Text size="1" color="gray">
+          {formatTweetTimestamp(tweet.created_at)}
+        </Text>
+        <Text as="p" size="2" className="tweet-citation-card__text">
+          {tweet.full_text}
+        </Text>
+        <Flex gap="3" className="tweet-citation-card__stats">
+          <Text size="1" color="gray">
+            ❤️ {formatCompactNumber(likes)}
+          </Text>
+          <Text size="1" color="gray">
+            🔁 {formatCompactNumber(retweets)}
+          </Text>
+        </Flex>
+      </Flex>
+    </div>
+  );
+};
 
 const getChildText = (children: ReactNode): string => {
   if (
@@ -112,6 +190,21 @@ export function RunQueries() {
     [accounts, selectedAccountId],
   );
 
+  const accountIdToUsername = useMemo(() => {
+    return new Map<string, string>(
+      (accounts || []).map((a) => [a.accountId, a.username]),
+    );
+  }, [accounts]);
+
+  const tweetsById = useMemo(() => {
+    const map = new Map<string, Tweet>();
+    (allTweets || []).forEach((tweet) => {
+      if (tweet.id) map.set(tweet.id, tweet);
+      if (tweet.id_str) map.set(tweet.id_str, tweet);
+    });
+    return map;
+  }, [allTweets]);
+
   const hasReplies = useMemo(
     () => (allTweets || []).some((t) => Boolean(t.in_reply_to_user_id)),
     [allTweets],
@@ -148,21 +241,6 @@ export function RunQueries() {
   );
 
   const tweetCounts = useTweetCounts(filteredTweetsToAnalyse);
-
-  const formatCompact = (n: number) => {
-    try {
-      const s = new Intl.NumberFormat("en", {
-        notation: "compact",
-        maximumFractionDigits: 1,
-      }).format(n);
-      // Use lowercase suffix to match "10k" style
-      return s.replace("K", "k").replace("M", "m").replace("G", "g");
-    } catch {
-      if (n >= 1_000_000) return `${Math.round(n / 1_000_000)}m`;
-      if (n >= 1_000) return `${Math.round(n / 1_000)}k`;
-      return String(n);
-    }
-  };
 
   const [rangeSelection, setRangeSelection] = useState<RangeSelection>({
     type: "last-tweets",
@@ -338,7 +416,7 @@ export function RunQueries() {
     totalPostsCount < batchSize ? (
       <>All posts</>
     ) : (
-      <>Most recent {formatCompact(batchSize)}</>
+      <>Most recent {formatCompactNumber(batchSize)}</>
     );
 
   return (
@@ -532,18 +610,45 @@ export function RunQueries() {
                     a: ({ node, children, href, className, ...rest }: any) => {
                       const childText = getChildText(children);
                       if (childText && isTweetCitationLink(childText, href)) {
+                        const tweetId = href ? extractTweetIdFromUrl(href) : null;
+                        const citationTweet =
+                          (tweetId && tweetsById.get(tweetId)) || null;
+                        const username = citationTweet
+                          ? accountIdToUsername.get(citationTweet.account_id) ||
+                            null
+                          : null;
+                        const citationClassNames = [
+                          "tweet-citation",
+                          !citationTweet && "tweet-citation--invalid",
+                          className,
+                        ]
+                          .filter(Boolean)
+                          .join(" ");
+
                         return (
-                          <a
-                            {...rest}
-                            href={href}
-                            className={["tweet-citation", className]
-                              .filter(Boolean)
-                              .join(" ")}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            {children}
-                          </a>
+                          <HoverCard.Root openDelay={150} closeDelay={75}>
+                            <HoverCard.Trigger asChild>
+                              <a
+                                {...rest}
+                                href={href}
+                                className={citationClassNames}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                {children}
+                              </a>
+                            </HoverCard.Trigger>
+                            <HoverCard.Content
+                              className="tweet-citation-hovercard"
+                              sideOffset={10}
+                              collisionPadding={16}
+                            >
+                              <TweetPreviewCard
+                                tweet={citationTweet}
+                                username={username}
+                              />
+                            </HoverCard.Content>
+                          </HoverCard.Root>
                         );
                       }
                       return (

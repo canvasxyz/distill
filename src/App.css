@@ -58,3 +58,34 @@ body {
 .query-result-markdown a.tweet-citation:hover {
   background: var(--color-background-strong-hover);
 }
+
+.query-result-markdown a.tweet-citation.tweet-citation--invalid {
+  text-decoration: line-through;
+  opacity: 0.75;
+}
+
+.tweet-citation-card {
+  max-width: 320px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--gray-5);
+  background: var(--color-background);
+  box-shadow: 0 12px 30px rgba(15, 15, 15, 0.18);
+}
+
+.tweet-citation-hovercard {
+  padding: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+.tweet-citation-card__text {
+  margin: 6px 0 10px;
+  white-space: pre-wrap;
+}
+
+.tweet-citation-card__stats {
+  display: flex;
+  gap: 16px;
+}
