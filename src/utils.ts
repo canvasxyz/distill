@@ -119,14 +119,29 @@ export const formatTweetCitations = (text: string) => {
     return buildCitationMarkdown(citations, getCitationIndex);
   });
 
-  const plainIdGroupRegex =
-    /\(\s*(\d{5,}(?:\s*,\s*\d{5,})*)\s*\)/g;
+  const plainIdGroupRegex = /\(\s*(\d{5,}(?:\s*,\s*\d{5,})*)\s*\)/g;
 
   formattedText = formattedText.replace(plainIdGroupRegex, (match, inner) => {
     const ids = inner
       .split(",")
       .map((id: string) => id.trim())
       .filter((id: string) => /^\d{5,}$/.test(id));
+    if (ids.length === 0) return match;
+    const citations = ids.map((tweetId) => ({
+      tweetId,
+      url: `${DEFAULT_TWEET_STATUS_URL}${tweetId}`,
+    }));
+    return buildCitationMarkdown(citations, getCitationIndex);
+  });
+
+  const bracketIdGroupRegex =
+    /\[\s*(\d{12,}(?:\s*,\s*\d{12,})*)\s*\](?!\()/g;
+
+  formattedText = formattedText.replace(bracketIdGroupRegex, (match, inner) => {
+    const ids = inner
+      .split(",")
+      .map((id: string) => id.trim())
+      .filter((id: string) => /^\d{12,}$/.test(id));
     if (ids.length === 0) return match;
     const citations = ids.map((tweetId) => ({
       tweetId,
