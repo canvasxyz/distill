@@ -7,23 +7,10 @@ import type { Tweet } from "../../types";
 import {
   extractTweetIdFromUrl,
   TWEET_STATUS_URL_REGEX,
+  formatCompactNumber,
 } from "../../utils";
 
 type MarkdownLinkProps = ComponentPropsWithoutRef<"a"> & ExtraProps;
-
-const formatCompactNumber = (n: number) => {
-  try {
-    const s = new Intl.NumberFormat("en", {
-      notation: "compact",
-      maximumFractionDigits: 1,
-    }).format(n);
-    return s.replace("K", "k").replace("M", "m").replace("G", "g");
-  } catch {
-    if (n >= 1_000_000) return `${Math.round(n / 1_000_000)}m`;
-    if (n >= 1_000) return `${Math.round(n / 1_000)}k`;
-    return String(n);
-  }
-};
 
 const formatTweetTimestamp = (dateString?: string) => {
   if (!dateString) return "";

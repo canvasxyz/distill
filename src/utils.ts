@@ -51,6 +51,20 @@ export const mapKeysDeep = (obj: Json, fn: (key: string) => string): Json =>
 export const stripThink = (text: string) =>
   text.replace(/<think>[\s\S]*?<\/think>/gi, "");
 
+export const formatCompactNumber = (n: number) => {
+  try {
+    const s = new Intl.NumberFormat("en", {
+      notation: "compact",
+      maximumFractionDigits: 1,
+    }).format(n);
+    return s.replace("K", "k").replace("M", "m").replace("G", "g");
+  } catch {
+    if (n >= 1_000_000) return `${Math.round(n / 1_000_000)}m`;
+    if (n >= 1_000) return `${Math.round(n / 1_000)}k`;
+    return String(n);
+  }
+};
+
 export const TWEET_STATUS_URL_REGEX =
   /^https?:\/\/(?:x|twitter)\.com\/(?:(?:[^/\s]+|i(?:\/web)?)\/status)\/\d+(?:\?[^\s)]+)?$/i;
 const DEFAULT_TWEET_STATUS_URL = "https://x.com/i/status/";

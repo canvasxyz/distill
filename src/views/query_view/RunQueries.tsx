@@ -22,7 +22,7 @@ import { useTweetCounts } from "./useTweetCounts";
 import { TweetFrequencyGraph } from "../../components/TweetFrequencyGraph";
 import { BatchTweetsModal } from "./BatchTweetsModal";
 import { getBatchSizeForConfig, type PromptPlacement } from "../../constants";
-import { stripThink } from "../../utils";
+import { formatCompactNumber, stripThink } from "../../utils";
 import { AVAILABLE_LLM_CONFIGS } from "../../state/llm_query";
 import { FeaturedQueryCard } from "../../components/FeaturedQueryCard";
 import { BrowseMoreButton } from "../../components/BrowseMoreButton";
