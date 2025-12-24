@@ -209,8 +209,13 @@ export async function submitQuery(params: {
     type WorkerLLMConfig = [string, LLMQueryProvider, string | null, boolean];
     const llmConfigs: WorkerLLMConfig[] = [
       [model, provider, resolvedOpenrouterProvider, false],
-      ...AVAILABLE_LLM_CONFIGS.map(
-        ([configModel, configProvider, configOpenrouterProvider, recommended]) => [
+      ...AVAILABLE_LLM_CONFIGS.map<WorkerLLMConfig>(
+        ([
+          configModel,
+          configProvider,
+          configOpenrouterProvider,
+          recommended,
+        ]) => [
           configModel,
           configProvider,
           configOpenrouterProvider,

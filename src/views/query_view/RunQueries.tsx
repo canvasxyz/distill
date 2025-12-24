@@ -256,14 +256,17 @@ export function RunQueries() {
     numTweets: batchSize,
   });
 
+  const lastTweetsCount =
+    rangeSelection.type === "last-tweets" ? rangeSelection.numTweets : null;
+
   useEffect(() => {
     if (
       rangeSelection.type === "last-tweets" &&
-      rangeSelection.numTweets !== batchSize
+      lastTweetsCount !== batchSize
     ) {
       setRangeSelection({ type: "last-tweets", numTweets: batchSize });
     }
-  }, [batchSize, rangeSelection.numTweets, rangeSelection.type]);
+  }, [batchSize, lastTweetsCount, rangeSelection.type]);
 
   const [currentProgress, totalProgress] = useMemo(() => {
     if (batchStatuses === null) return [0, 1];
@@ -625,7 +628,7 @@ export function RunQueries() {
 
                         return (
                             <HoverCard.Root openDelay={150} closeDelay={75}>
-                              <HoverCard.Trigger asChild>
+                              <HoverCard.Trigger>
                                 <a
                                   {...anchorProps}
                                   href={href}
@@ -636,17 +639,17 @@ export function RunQueries() {
                                   {children}
                                 </a>
                               </HoverCard.Trigger>
-                            <HoverCard.Content
-                              className="tweet-citation-hovercard"
-                              sideOffset={10}
-                              collisionPadding={16}
-                            >
-                              <TweetPreviewCard
-                                tweet={citationTweet}
-                                username={username}
-                              />
-                            </HoverCard.Content>
-                          </HoverCard.Root>
+                              <HoverCard.Content
+                                className="tweet-citation-hovercard"
+                                sideOffset={10}
+                                collisionPadding={16}
+                              >
+                                <TweetPreviewCard
+                                  tweet={citationTweet}
+                                  username={username}
+                                />
+                              </HoverCard.Content>
+                            </HoverCard.Root>
                         );
                       }
                       return (

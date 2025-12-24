@@ -127,7 +127,7 @@ export const formatTweetCitations = (text: string) => {
       .map((id: string) => id.trim())
       .filter((id: string) => /^\d{5,}$/.test(id));
     if (ids.length === 0) return match;
-    const citations = ids.map((tweetId) => ({
+    const citations = ids.map((tweetId: string) => ({
       tweetId,
       url: `${DEFAULT_TWEET_STATUS_URL}${tweetId}`,
     }));
@@ -143,7 +143,7 @@ export const formatTweetCitations = (text: string) => {
       .map((id: string) => id.trim())
       .filter((id: string) => /^\d{12,}$/.test(id));
     if (ids.length === 0) return match;
-    const citations = ids.map((tweetId) => ({
+    const citations = ids.map((tweetId: string) => ({
       tweetId,
       url: `${DEFAULT_TWEET_STATUS_URL}${tweetId}`,
     }));
