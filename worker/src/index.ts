@@ -21,12 +21,27 @@ import {
 	recordAutoFailure,
 } from './providers';
 
-type ChatCompletionResponse = OpenAI.Chat.Completions.ChatCompletion & {
+// Extended types to support OpenRouter's reasoning parameter
+type ReasoningConfig = {
+	effort?: 'minimal' | 'low' | 'medium' | 'high';
+	max_tokens?: number;
+};
+
+type ExtendedChatCompletionParams = OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming & {
+	reasoning?: ReasoningConfig;
+};
+
+type ExtendedMessage = OpenAI.Chat.Completions.ChatCompletion['choices'][0]['message'] & {
+	reasoning?: string;
+};
+
+type ChatCompletionResponse = Omit<OpenAI.Chat.Completions.ChatCompletion, 'choices'> & {
+	choices: Array<Omit<OpenAI.Chat.Completions.ChatCompletion['choices'][0], 'message'> & { message: ExtendedMessage }>;
 	provider?: string;
 };
 
 const callClassifier = async (
-	body: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming,
+	body: ExtendedChatCompletionParams,
 	baseUrl: string,
 	providerKey: string
 ): Promise<ChatCompletionResponse> => {
@@ -101,7 +116,7 @@ export default {
 		}
 
 		let body: {
-			params?: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming;
+			params?: ExtendedChatCompletionParams;
 			llmConfigs?: unknown;
 			cooloffSeconds?: number;
 		};
@@ -141,7 +156,7 @@ export default {
 				await recordAutoFailure(env, provider, model, nowMs);
 				continue;
 			}
-			const paramsWithModel: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming = {
+			const paramsWithModel: ExtendedChatCompletionParams = {
 				...body.params,
 				model,
 			};
