@@ -26,6 +26,66 @@ const formatTweetTimestamp = (dateString?: string) => {
   });
 };
 
+const linkifyText = (text: string): ReactNode => {
+  // Regex patterns for URLs and @mentions
+  const urlPattern = /(https?:\/\/[^\s]+)/g;
+  const mentionPattern = /(@\w+)/g;
+
+  // Combine patterns to match both URLs and mentions
+  const combinedPattern = /(https?:\/\/[^\s]+)|(@\w+)/g;
+
+  const parts: ReactNode[] = [];
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = combinedPattern.exec(text)) !== null) {
+    // Add text before the match
+    if (match.index > lastIndex) {
+      parts.push(text.slice(lastIndex, match.index));
+    }
+
+    const matchedText = match[0];
+
+    if (matchedText.startsWith('http')) {
+      // It's a URL
+      parts.push(
+        <a
+          key={match.index}
+          href={matchedText}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {matchedText}
+        </a>
+      );
+    } else if (matchedText.startsWith('@')) {
+      // It's a mention
+      const username = matchedText.slice(1); // Remove the @
+      parts.push(
+        <a
+          key={match.index}
+          href={`https://x.com/${username}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {matchedText}
+        </a>
+      );
+    }
+
+    lastIndex = combinedPattern.lastIndex;
+  }
+
+  // Add remaining text
+  if (lastIndex < text.length) {
+    parts.push(text.slice(lastIndex));
+  }
+
+  return parts.length > 0 ? parts : text;
+};
+
 const TweetPreviewCard = ({
   tweet,
   username,
@@ -60,7 +120,7 @@ const TweetPreviewCard = ({
           {formatTweetTimestamp(tweet.created_at)}
         </Text>
         <Text as="p" size="2" className="tweet-citation-card__text">
-          {tweet.full_text}
+          {linkifyText(tweet.full_text)}
         </Text>
         <Flex gap="3" className="tweet-citation-card__stats">
           <Text size="1" color="gray">
