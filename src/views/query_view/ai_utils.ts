@@ -76,7 +76,11 @@ export type QueryResult = {
 export const finalSystemPrompt =
     "You will be given a list of tweets, and a prompt. Review the tweets and provide an answer to the prompt. Provide citations for claims that you make when they are grounded in specific tweets that have been provided. Citations should be provided inline, as Markdown links to the tweets themselves on x.com. Always use the tweet_id for the Markdown link's text, and https://x.com/i/status/{tweet_id} for the link (example: https://x.com/i/status/1111). Do not create tables in your response.";
 
-const REASONING_ENABLED_MODELS = new Set(["google/gemini-3-flash-preview"]);
+const REASONING_ENABLED_MODELS = new Set([
+  "google/gemini-3-flash-preview",
+  "google/gemini-2.0-flash-001",
+  "gpt-oss-120b",
+]);
 const DEFAULT_REASONING_EFFORT: ReasoningConfig["effort"] = "medium";
 
 const getReasoningConfigForModel = (model: string): ReasoningConfig | null =>
