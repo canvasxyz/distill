@@ -26,9 +26,9 @@ export function RunQueryButton({
       size="2"
       variant={variant}
     >
-      Run Query
+      Query
       {showShortcut && isMacPlatform && (
-        <Text size="1" style={{ marginLeft: 8, opacity: 0.8 }}>
+        <Text size="1" style={{ opacity: 0.8 }}>
           ⌘⏎
         </Text>
       )}
