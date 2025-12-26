@@ -12,6 +12,10 @@ import {
 
 type MarkdownLinkProps = ComponentPropsWithoutRef<"a"> & ExtraProps;
 
+type ContentSegment =
+  | { type: "content"; text: string }
+  | { type: "think"; text: string };
+
 const formatTweetTimestamp = (dateString?: string) => {
   if (!dateString) return "";
   const date = new Date(dateString);
@@ -93,6 +97,40 @@ const isTweetCitationLink = (text: string, href?: string) => {
   return /^\d+$/.test(text.trim()) && TWEET_STATUS_URL_REGEX.test(href);
 };
 
+const splitThinkingSegments = (input: string): ContentSegment[] => {
+  const segments: ContentSegment[] = [];
+  const regex = /<think>([\s\S]*?)<\/think>/gi;
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = regex.exec(input)) !== null) {
+    if (match.index > lastIndex) {
+      const preceding = input.slice(lastIndex, match.index);
+      if (preceding.trim().length > 0) {
+        segments.push({ type: "content", text: preceding });
+      }
+    }
+    const thinkText = match[1];
+    if (thinkText && thinkText.trim().length > 0) {
+      segments.push({ type: "think", text: thinkText });
+    }
+    lastIndex = regex.lastIndex;
+  }
+
+  if (lastIndex < input.length) {
+    const remaining = input.slice(lastIndex);
+    if (remaining.trim().length > 0) {
+      segments.push({ type: "content", text: remaining });
+    }
+  }
+
+  if (segments.length === 0 && input.trim().length > 0) {
+    return [{ type: "content", text: input }];
+  }
+
+  return segments;
+};
+
 type Props = {
   content: string;
   tweetsById: Map<string, Tweet>;
@@ -104,6 +142,7 @@ export function QueryResultMarkdown({
   tweetsById,
   accountIdToUsername,
 }: Props) {
+  const segments = useMemo(() => splitThinkingSegments(content), [content]);
   const markdownComponents = useMemo(
     () => ({
       a: (props: MarkdownLinkProps) => {
@@ -166,9 +205,23 @@ export function QueryResultMarkdown({
 
   return (
     <div className="query-result-markdown">
-      <Markdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
-        {content}
-      </Markdown>
+      {segments.map((segment, idx) =>
+        segment.type === "think" ? (
+          <div className="thinking-trace" key={`think-${idx}`}>
+            <Markdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+              {segment.text}
+            </Markdown>
+          </div>
+        ) : (
+          <Markdown
+            key={`content-${idx}`}
+            remarkPlugins={[remarkGfm]}
+            components={markdownComponents}
+          >
+            {segment.text}
+          </Markdown>
+        ),
+      )}
     </div>
   );
 }

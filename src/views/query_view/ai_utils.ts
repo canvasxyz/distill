@@ -20,6 +20,15 @@ export type Query = {
   promptPlacement?: PromptPlacement;
 };
 
+type ReasoningConfig = {
+  effort: "minimal" | "low" | "medium" | "high";
+};
+
+type ChatCompletionParams = OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming & {
+  provider?: { only: string[] };
+  reasoning?: ReasoningConfig;
+};
+
 export type RangeSelection =
   | { type: "last-tweets"; numTweets: number }
   | { type: "date-range"; startDate: string; endDate: string };
@@ -66,6 +75,14 @@ export type QueryResult = {
 
 export const finalSystemPrompt =
     "You will be given a list of tweets, and a prompt. Review the tweets and provide an answer to the prompt. Provide citations for claims that you make when they are grounded in specific tweets that have been provided. Citations should be provided inline, as Markdown links to the tweets themselves on x.com. Always use the tweet_id for the Markdown link's text, and https://x.com/i/status/{tweet_id} for the link (example: https://x.com/i/status/1111). Do not create tables in your response.";
+
+const REASONING_ENABLED_MODELS = new Set(["google/gemini-3-flash-preview"]);
+const DEFAULT_REASONING_EFFORT: ReasoningConfig["effort"] = "medium";
+
+const getReasoningConfigForModel = (model: string): ReasoningConfig | null =>
+  REASONING_ENABLED_MODELS.has(model)
+    ? { effort: DEFAULT_REASONING_EFFORT }
+    : null;
 
 export function replaceAccountName(text: string, accountName: string) {
   // If accountName is "this user", don't add @ prefix
@@ -137,13 +154,15 @@ export async function submitQuery(params: {
   const startTime = performance.now();
 
   const messages = makePromptMessages(tweetsSample, query, account);
-  const aiParams: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming & {
-    provider?: { only: string[] };
-  } = {
+  const aiParams: ChatCompletionParams = {
     model,
     messages,
     provider: openrouterProvider ? { only: [openrouterProvider] } : undefined,
   };
+  const reasoningConfig = getReasoningConfigForModel(model);
+  if (reasoningConfig) {
+    aiParams.reasoning = reasoningConfig;
+  }
 
   if (params.isBatchRequest) {
     aiParams.response_format = {
@@ -170,7 +189,16 @@ export async function submitQuery(params: {
 
   // Check if user has selected a provider to use directly
   const selectedProvider = getSelectedProvider();
-  let data: ChatCompletion & { provider?: string; model?: string };
+  // Extended type to include OpenRouter's reasoning field in responses
+  type ExtendedMessage = ChatCompletion["choices"][0]["message"] & {
+    reasoning?: string;
+  };
+  type ExtendedChatCompletion = Omit<ChatCompletion, "choices"> & {
+    choices: Array<Omit<ChatCompletion["choices"][0], "message"> & { message: ExtendedMessage }>;
+    provider?: string;
+    model?: string;
+  };
+  let data: ExtendedChatCompletion;
 
   if (selectedProvider && getProviderApiKey(selectedProvider)) {
     // Use direct provider API call
@@ -241,9 +269,19 @@ export async function submitQuery(params: {
   const endTime = performance.now();
   const runTime = endTime - startTime;
 
+  // Extract content and reasoning from response
+  const message = data.choices[0].message;
+  const content = message.content as string;
+  const reasoning = message.reasoning;
+
+  // If reasoning is present, wrap it in <think> tags and prepend to content
+  const result = reasoning
+    ? `<think>${reasoning}</think>\n\n${content}`
+    : content;
+
   return {
     query: query.prompt,
-    result: data.choices[0].message.content as string,
+    result,
     messages,
     runTime,
     usage: data.usage!,

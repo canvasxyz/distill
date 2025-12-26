@@ -1,7 +1,7 @@
 import { useNavigate, useParams } from "react-router";
 import { useStore } from "../../state/store";
 import { useMemo, useState } from "react";
-import { extractTimestampFromUUIDv7, stripThink } from "../../utils";
+import { extractTimestampFromUUIDv7 } from "../../utils";
 import { ResultsBox, QueryResultHeader } from "./ResultsBox";
 import { BatchTweetsModal } from "./BatchTweetsModal";
 import type { RangeSelection } from "./ai_utils";
@@ -165,7 +165,7 @@ export function PastQueryDetailView() {
             }}
           />
           <QueryResultMarkdown
-            content={stripThink(query.result)}
+            content={query.result}
             tweetsById={tweetsById}
             accountIdToUsername={accountIdToUsername}
           />

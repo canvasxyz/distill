@@ -64,6 +64,12 @@ body {
   opacity: 0.75;
 }
 
+.query-result-markdown .thinking-trace {
+  opacity: 0.6;
+  font-size: 0.84em;
+  margin: 0.6em 0;
+}
+
 .tweet-citation-card {
   max-width: 320px;
   padding: 14px 16px;
