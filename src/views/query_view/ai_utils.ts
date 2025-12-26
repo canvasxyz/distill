@@ -234,20 +234,22 @@ export async function submitQuery(params: {
     // put the selected model at the start of the llm configs list
     // i.e. if it's not available then fall back to the other models in the list
     const resolvedOpenrouterProvider = openrouterProvider ?? null;
-    type WorkerLLMConfig = [string, LLMQueryProvider, string | null, boolean];
+    type WorkerLLMConfig = [string, LLMQueryProvider, string | null, boolean, number];
     const llmConfigs: WorkerLLMConfig[] = [
-      [model, provider, resolvedOpenrouterProvider, false],
+      [model, provider, resolvedOpenrouterProvider, false, 1500], // Use default batch size
       ...AVAILABLE_LLM_CONFIGS.map<WorkerLLMConfig>(
         ([
           configModel,
           configProvider,
           configOpenrouterProvider,
           recommended,
+          batchSize,
         ]) => [
           configModel,
           configProvider,
           configOpenrouterProvider,
           recommended,
+          batchSize,
         ],
       ),
     ];
