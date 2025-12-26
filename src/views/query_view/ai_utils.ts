@@ -115,7 +115,7 @@ export function makePromptMessages(
   ];
 }
 
-export const serverUrl = "https://tweet-analysis-worker.bob-wbb.workers.dev";
+export const serverUrl = "https://tweet-analysis-worker.raymond-a96.workers.dev";
 
 export async function submitQuery(params: {
   tweetsSample: {
