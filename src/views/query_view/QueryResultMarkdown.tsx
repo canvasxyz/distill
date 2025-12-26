@@ -27,10 +27,6 @@ const formatTweetTimestamp = (dateString?: string) => {
 };
 
 const linkifyText = (text: string): ReactNode => {
-  // Regex patterns for URLs and @mentions
-  const urlPattern = /(https?:\/\/[^\s]+)/g;
-  const mentionPattern = /(@\w+)/g;
-
   // Combine patterns to match both URLs and mentions
   const combinedPattern = /(https?:\/\/[^\s]+)|(@\w+)/g;
 
