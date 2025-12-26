@@ -37,7 +37,7 @@ export type InitSlice = {
   appIsReady: boolean;
   ingestTwitterArchive: (file: File) => Promise<void>;
   ingestTwitterArchiveProgress: IngestTwitterArchiveProgress | null;
-  loadCommunityArchiveUser: (accountId: string) => Promise<void>;
+  loadCommunityArchiveUser: (accountId: string, maxTweets?: number) => Promise<void>;
   loadCommunityArchiveUserProgress: LoadCommunityArchiveUserProgress | null;
   removeLocalArchive: (accountId: string) => Promise<void>;
   removeArchive: (accountId: string) => Promise<void>;
@@ -91,7 +91,7 @@ export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
       lastLoadedAccountId: account.accountId,
     }));
   },
-  loadCommunityArchiveUser: async (accountId) => {
+  loadCommunityArchiveUser: async (accountId, maxTweets) => {
     // Fetch all required data from Supabase
     // Page through all tweets for this account
 
@@ -110,11 +110,12 @@ export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
     if (tweetCountError) throw tweetCountError;
 
     const totalNumTweets = tweetCountData || 0;
+    const tweetsToLoad = maxTweets ? Math.min(maxTweets, totalNumTweets) : totalNumTweets;
 
     set({
       loadCommunityArchiveUserProgress: {
         status: "loadingTweets",
-        totalNumTweets,
+        totalNumTweets: tweetsToLoad,
         tweetsLoaded: 0,
       },
     });
@@ -124,23 +125,28 @@ export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
     let page = 0;
     const pageSize = 1000;
     while (true) {
+      const remainingTweets = maxTweets ? maxTweets - allTweets.length : Infinity;
+      if (remainingTweets <= 0) break;
+
+      const currentPageSize = Math.min(pageSize, remainingTweets);
       const { data: pageTweets, error } = await supabase
         .schema("public")
         .from("tweets")
         .select("*, tweet_media(*)")
         .eq("account_id", accountId)
-        .range(page * pageSize, (page + 1) * pageSize - 1);
+        .order("created_at", { ascending: false })
+        .range(page * pageSize, page * pageSize + currentPageSize - 1);
 
       if (error) throw error;
       if (pageTweets && pageTweets.length > 0) {
         allTweets = allTweets.concat(pageTweets);
-        if (pageTweets.length < pageSize) break;
+        if (pageTweets.length < currentPageSize) break;
         page += 1;
 
         set({
           loadCommunityArchiveUserProgress: {
             status: "loadingTweets",
-            totalNumTweets,
+            totalNumTweets: tweetsToLoad,
             tweetsLoaded: allTweets.length,
           },
         });

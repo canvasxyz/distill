@@ -5,7 +5,7 @@ import {
 } from "../hooks/useUsers";
 import { useStore } from "../state/store";
 import { Modal } from "./Modal";
-import { Grid, Flex, Avatar, Text, Button } from "@radix-ui/themes";
+import { Grid, Flex, Avatar, Text, Button, DropdownMenu } from "@radix-ui/themes";
 
 export const CommunityArchiveUserModal = ({
   showModal,
@@ -72,16 +72,66 @@ export const CommunityArchiveUserModal = ({
                     ★
                   </Text>
                 )}
-                <Button
-                  size="2"
-                  color="blue"
-                  onClick={() => {
-                    loadCommunityArchiveUser(account.accountId);
-                    setShowModal(false);
-                  }}
-                >
-                  Select
-                </Button>
+                <Flex gap="0" style={{ position: "relative" }}>
+                  <Button
+                    size="2"
+                    color="blue"
+                    onClick={() => {
+                      loadCommunityArchiveUser(account.accountId, 10000);
+                      setShowModal(false);
+                    }}
+                    style={{
+                      borderTopRightRadius: 0,
+                      borderBottomRightRadius: 0,
+                      borderRight: "1px solid var(--blue-8)",
+                      height: 31,
+                    }}
+                  >
+                    Select
+                  </Button>
+                  <DropdownMenu.Root>
+                    <DropdownMenu.Trigger>
+                      <Button
+                        size="2"
+                        color="blue"
+                        style={{
+                          borderTopLeftRadius: 0,
+                          borderBottomLeftRadius: 0,
+                          paddingLeft: "8px",
+                          paddingRight: "8px",
+                          minWidth: "28px",
+                          height: 31,
+                        }}
+                      >
+                        <svg
+                          width="12"
+                          height="12"
+                          viewBox="0 0 12 12"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M3 4.5L6 7.5L9 4.5"
+                            stroke="currentColor"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </Button>
+                    </DropdownMenu.Trigger>
+                    <DropdownMenu.Content>
+                      <DropdownMenu.Item
+                        onClick={() => {
+                          loadCommunityArchiveUser(account.accountId);
+                          setShowModal(false);
+                        }}
+                      >
+                        Select full history
+                      </DropdownMenu.Item>
+                    </DropdownMenu.Content>
+                  </DropdownMenu.Root>
+                </Flex>
               </Flex>
             </>
           );
