@@ -1,4 +1,4 @@
-import { useMemo, type ComponentPropsWithoutRef, type ReactNode } from "react";
+import { useMemo, useState, type ComponentPropsWithoutRef, type ReactNode } from "react";
 import Markdown from "react-markdown";
 import type { ExtraProps } from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -143,6 +143,29 @@ export function QueryResultMarkdown({
   accountIdToUsername,
 }: Props) {
   const segments = useMemo(() => splitThinkingSegments(content), [content]);
+  const [collapsedThinking, setCollapsedThinking] = useState<Set<number>>(() => {
+    // Start with all thinking traces collapsed
+    const thinkingIndices = new Set<number>();
+    segments.forEach((segment, idx) => {
+      if (segment.type === "think") {
+        thinkingIndices.add(idx);
+      }
+    });
+    return thinkingIndices;
+  });
+
+  const toggleThinking = (idx: number) => {
+    setCollapsedThinking((prev) => {
+      const next = new Set(prev);
+      if (next.has(idx)) {
+        next.delete(idx);
+      } else {
+        next.add(idx);
+      }
+      return next;
+    });
+  };
+
   const markdownComponents = useMemo(
     () => ({
       a: (props: MarkdownLinkProps) => {
@@ -207,10 +230,24 @@ export function QueryResultMarkdown({
     <div className="query-result-markdown">
       {segments.map((segment, idx) =>
         segment.type === "think" ? (
-          <div className="thinking-trace" key={`think-${idx}`}>
-            <Markdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
-              {segment.text}
-            </Markdown>
+          <div
+            className={`thinking-trace ${collapsedThinking.has(idx) ? "collapsed" : ""}`}
+            key={`think-${idx}`}
+            onClick={() => toggleThinking(idx)}
+          >
+            <div className="thinking-trace-header">
+              <span className="thinking-trace-toggle">
+                {collapsedThinking.has(idx) ? "▶" : "▼"}
+              </span>
+              <span className="thinking-trace-label">Thinking</span>
+            </div>
+            {!collapsedThinking.has(idx) && (
+              <div className="thinking-trace-content">
+                <Markdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                  {segment.text}
+                </Markdown>
+              </div>
+            )}
           </div>
         ) : (
           <Markdown
