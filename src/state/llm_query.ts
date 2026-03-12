@@ -22,6 +22,22 @@ import {
 } from "../constants";
 
 export const AVAILABLE_LLM_CONFIGS: LLMQueryConfig[] = [
+  ["arcee-ai/trinity-mini:free", "openrouter", null, true, DEFAULT_BATCH],
+  [
+    "nvidia/nemotron-3-nano-30b-a3b:free",
+    "openrouter",
+    null,
+    true,
+    DEFAULT_BATCH,
+  ],
+  [
+    "nvidia/nemotron-3-super-120b-a12b:free",
+    "openrouter",
+    null,
+    true,
+    DEFAULT_BATCH,
+  ],
+  ["openrouter/free", "openrouter", null, true, DEFAULT_BATCH],
   [
     "google/gemini-3-flash-preview",
     "openrouter",
@@ -41,6 +57,16 @@ export const AVAILABLE_LLM_CONFIGS: LLMQueryConfig[] = [
   ["qwen-3-235b-a22b-instruct-2507", "cerebras", null, false, DEFAULT_BATCH],
   ["google/gemini-2.0-flash-001", "deepinfra", null, false, DEFAULT_BATCH],
 ];
+
+const MODEL_LABELS: Record<string, string> = {
+  "arcee-ai/trinity-mini:free": "Arcee AI Trinity Mini",
+  "nvidia/nemotron-3-nano-30b-a3b:free": "NVIDIA Nemotron Nano 30B A3B",
+  "nvidia/nemotron-3-super-120b-a12b:free": "NVIDIA Nemotron Super",
+  "openrouter/free": "OpenRouter Free",
+};
+
+export const getLlmConfigLabel = ([model, provider, openrouterProvider]: LLMQueryConfig) =>
+  `${MODEL_LABELS[model] ?? model} - ${openrouterProvider ?? provider}`;
 
 export const getGenuineTweetIds = <T extends { id_str: string; id: string }>(
   tweetIdsToCheck: string[],

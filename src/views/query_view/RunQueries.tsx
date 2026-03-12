@@ -23,7 +23,7 @@ import { TweetFrequencyGraph } from "../../components/TweetFrequencyGraph";
 import { BatchTweetsModal } from "./BatchTweetsModal";
 import { getBatchSizeForConfig, type PromptPlacement } from "../../constants";
 import { formatCompactNumber } from "../../utils";
-import { AVAILABLE_LLM_CONFIGS } from "../../state/llm_query";
+import { AVAILABLE_LLM_CONFIGS, getLlmConfigLabel } from "../../state/llm_query";
 import { FeaturedQueryCard } from "../../components/FeaturedQueryCard";
 import { BrowseMoreButton } from "../../components/BrowseMoreButton";
 import { SelectUser } from "../SelectUser";
@@ -430,13 +430,13 @@ export function RunQueries() {
             <Select.Trigger style={{ maxWidth: 280 }} />
             <Select.Content>
               {AVAILABLE_LLM_CONFIGS.map(
-                ([model, provider, openrouterProvider, recommended], idx) => (
+                (config, idx) => (
                   <Select.Item
-                    key={`${model}-${provider}-${openrouterProvider || ""}`}
+                    key={`${config[0]}-${config[1]}-${config[2] || ""}`}
                     value={String(idx)}
                   >
-                    {recommended && "️⭐️ "}
-                    {model} - {openrouterProvider ?? provider}{" "}
+                    {config[3] && "️⭐️ "}
+                    {getLlmConfigLabel(config)}
                   </Select.Item>
                 ),
               )}
