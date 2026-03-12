@@ -22,14 +22,6 @@ import {
 } from "../constants";
 
 export const AVAILABLE_LLM_CONFIGS: LLMQueryConfig[] = [
-  ["arcee-ai/trinity-mini:free", "openrouter", null, true, DEFAULT_BATCH],
-  [
-    "nvidia/nemotron-3-nano-30b-a3b:free",
-    "openrouter",
-    null,
-    true,
-    DEFAULT_BATCH,
-  ],
   [
     "nvidia/nemotron-3-super-120b-a12b:free",
     "openrouter",
@@ -37,7 +29,6 @@ export const AVAILABLE_LLM_CONFIGS: LLMQueryConfig[] = [
     true,
     DEFAULT_BATCH,
   ],
-  ["openrouter/free", "openrouter", null, true, DEFAULT_BATCH],
   [
     "google/gemini-3-flash-preview",
     "openrouter",
@@ -59,10 +50,7 @@ export const AVAILABLE_LLM_CONFIGS: LLMQueryConfig[] = [
 ];
 
 const MODEL_LABELS: Record<string, string> = {
-  "arcee-ai/trinity-mini:free": "Arcee AI Trinity Mini",
-  "nvidia/nemotron-3-nano-30b-a3b:free": "NVIDIA Nemotron Nano 30B A3B",
   "nvidia/nemotron-3-super-120b-a12b:free": "NVIDIA Nemotron Super",
-  "openrouter/free": "OpenRouter Free",
 };
 
 export const getLlmConfigLabel = ([model, provider, openrouterProvider]: LLMQueryConfig) =>
