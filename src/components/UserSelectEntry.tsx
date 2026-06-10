@@ -1,5 +1,6 @@
 import type { Account, Profile } from "../types";
 import { Box, Flex, Text, IconButton, Avatar } from "@radix-ui/themes";
+import { UpdateIcon } from "@radix-ui/react-icons";
 
 export const UserSelectEntry = ({
   acc,
@@ -7,6 +8,9 @@ export const UserSelectEntry = ({
   isActive,
   onClick,
   onClickRemove,
+  onClickRefresh,
+  isRefreshing,
+  isRefreshDisabled,
   numTweets,
   numRetweets,
 }: {
@@ -15,6 +19,9 @@ export const UserSelectEntry = ({
   isActive: boolean;
   onClick: () => void;
   onClickRemove: () => void;
+  onClickRefresh?: () => void | Promise<void>;
+  isRefreshing: boolean;
+  isRefreshDisabled: boolean;
   numTweets: number;
   numRetweets: number;
 }) => {
@@ -89,6 +96,35 @@ export const UserSelectEntry = ({
           >
             &nbsp;×&nbsp;
           </IconButton>
+          {onClickRefresh && (
+            <IconButton
+              type="button"
+              title={
+                isRefreshing
+                  ? "Refreshing archive from Community Archive"
+                  : isRefreshDisabled
+                    ? "Another archive is refreshing from Community Archive"
+                    : "Refresh archive from Community Archive"
+              }
+              aria-label="Refresh archive from Community Archive"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (isRefreshDisabled) return;
+                void onClickRefresh();
+              }}
+              disabled={isRefreshDisabled}
+              variant="ghost"
+              size="1"
+              style={{
+                width: "24px",
+                height: "24px",
+                padding: 0,
+                flexShrink: 0,
+              }}
+            >
+              <UpdateIcon />
+            </IconButton>
+          )}
           <IconButton
             type="button"
             title="View tweets for this user"

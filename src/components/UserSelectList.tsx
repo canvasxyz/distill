@@ -8,6 +8,9 @@ export function UserSelectList({
   selectedAccountId,
   setSelectedAccountId,
   removeArchive,
+  refreshCommunityArchive,
+  isCommunityArchiveRefreshInProgress,
+  refreshingAccountId,
   countsByAccount,
   onSelect,
 }: {
@@ -16,6 +19,9 @@ export function UserSelectList({
   selectedAccountId: string | null;
   setSelectedAccountId: (accountId: string | null) => void;
   removeArchive: (accountId: string) => Promise<void>;
+  refreshCommunityArchive: (accountId: string) => Promise<void>;
+  isCommunityArchiveRefreshInProgress: boolean;
+  refreshingAccountId: string | null;
   countsByAccount: Map<string, { tweets: number; retweets: number }>;
   onSelect?: () => void;
 }) {
@@ -54,9 +60,16 @@ export function UserSelectList({
               setSelectedAccountId(next.accountId);
             }
           }}
+          onClickRefresh={
+            acc.fromArchive
+              ? undefined
+              : () => refreshCommunityArchive(acc.accountId)
+          }
           isActive={
             selectedAccountId ? acc.accountId === selectedAccountId : false
           }
+          isRefreshing={refreshingAccountId === acc.accountId}
+          isRefreshDisabled={isCommunityArchiveRefreshInProgress}
           numTweets={
             (countsByAccount.get(acc.accountId) || { tweets: 0 }).tweets
           }

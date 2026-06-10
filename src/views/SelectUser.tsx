@@ -13,8 +13,14 @@ export function SelectUser({
   selectedAccountId: string | null;
   setSelectedAccountId: (accountId: string | null) => void;
 }) {
-  const { accounts, allTweets, removeArchive, lastLoadedAccountId } =
-    useStore();
+  const {
+    accounts,
+    allTweets,
+    removeArchive,
+    loadCommunityArchiveUser,
+    loadCommunityArchiveUserProgress,
+    lastLoadedAccountId,
+  } = useStore();
 
   const [profilesById, setProfilesById] = useState<
     Record<string, ProfileWithId>
@@ -68,9 +74,24 @@ export function SelectUser({
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [showCommunityArchiveModal, setShowCommunityArchiveModal] =
     useState(false);
+  const [refreshingAccountId, setRefreshingAccountId] = useState<string | null>(
+    null,
+  );
   const lastAutoSelectedAccountIdRef = useRef<string | null>(null);
 
   const hasAccounts = accounts.length > 0;
+
+  const refreshCommunityArchive = async (accountId: string) => {
+    setRefreshingAccountId(accountId);
+    try {
+      await loadCommunityArchiveUser(accountId);
+    } catch (error) {
+      console.error("Failed to refresh community archive", error);
+      window.alert("Failed to refresh this archive from Community Archive.");
+    } finally {
+      setRefreshingAccountId(null);
+    }
+  };
 
   // Auto-select account after loading from community archive
   useEffect(() => {
@@ -210,6 +231,13 @@ export function SelectUser({
               selectedAccountId={selectedAccountId}
               setSelectedAccountId={setSelectedAccountId}
               removeArchive={removeArchive}
+              refreshCommunityArchive={refreshCommunityArchive}
+              isCommunityArchiveRefreshInProgress={
+                loadCommunityArchiveUserProgress !== null
+              }
+              refreshingAccountId={
+                loadCommunityArchiveUserProgress ? refreshingAccountId : null
+              }
               countsByAccount={countsByAccount}
               onSelect={() => setDropdownOpen(false)}
             />

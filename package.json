@@ -10,6 +10,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "deploy": "vercel --prod",
     "lint": "eslint .",
     "preview": "vite preview",
     "worker:deploy": "wrangler deploy --config worker/wrangler.jsonc",
