@@ -6,6 +6,12 @@ import { useFilterBySearchParam } from "../hooks/useFilterBySearchParam";
 import { useSearchParams } from "react-router";
 import { Header } from "../components/Header";
 import { Box } from "@radix-ui/themes";
+import { useMemo } from "react";
+
+const getTweetTimestamp = (createdAt: string) => {
+  const timestamp = new Date(createdAt).getTime();
+  return Number.isNaN(timestamp) ? 0 : timestamp;
+};
 
 function AllTweetsViewInner() {
   const { allTweets } = useStore();
@@ -14,8 +20,18 @@ function AllTweetsViewInner() {
   const searchParam = params.get("search");
   const accountIdParam = params.get("account_id");
 
-  const filteredTweets = useFilterBySearchParam(searchParam, allTweets).filter(
-    (tweet) => (accountIdParam ? tweet.account_id === accountIdParam : true),
+  const searchedTweets = useFilterBySearchParam(searchParam, allTweets);
+  const filteredTweets = useMemo(
+    () =>
+      searchedTweets
+        .filter((tweet) =>
+          accountIdParam ? tweet.account_id === accountIdParam : true,
+        )
+        .sort(
+          (a, b) =>
+            getTweetTimestamp(b.created_at) - getTweetTimestamp(a.created_at),
+        ),
+    [accountIdParam, searchedTweets],
   );
 
   const { itemsToDisplay, navigateNext, navigatePrevious } = usePagination({
