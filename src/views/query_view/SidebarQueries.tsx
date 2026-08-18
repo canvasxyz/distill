@@ -258,6 +258,32 @@ function RunQueryItem() {
   );
 }
 
+function AvatarItem() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const isActive = location.pathname === "/avatar";
+
+  return (
+    <NavigationMenu.Item value="avatar">
+      <SidebarItemContainer
+        isActive={isActive}
+        onClick={() => navigate("/avatar")}
+        onMouseEnter={undefined}
+        onMouseLeave={undefined}
+      >
+        <span
+          style={{ ...itemTitleBase, color: "var(--gray-12)", fontSize: "96%" }}
+        >
+          Avatar Generator
+        </span>
+        <Text size="1" style={{ visibility: "hidden" }}>
+          {" "}
+        </Text>
+      </SidebarItemContainer>
+    </NavigationMenu.Item>
+  );
+}
+
 function SettingsItem() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -292,6 +318,7 @@ export function PastQueries() {
   return (
     <div style={{ display: "flex", flexDirection: "column" }}>
       <RunQueryItem />
+      <AvatarItem />
       {/* <ArchiveChatItem /> */}
       <SettingsItem />
       {!queryResults || queryResults.length === 0 ? (
