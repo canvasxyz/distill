@@ -97,14 +97,7 @@ export type FeaturedQuery = {
   text: string | null;
 };
 
-export const AVATAR_PERSONALITY_QUERY =
-  "Describe {account}'s online personality in a way an illustrator could turn into a profile avatar. Cover: their core interests and recurring topics, their tone and sense of humour, the vibe or aesthetic they project, recurring motifs, objects, animals, or imagery they mention, and a colour palette that would suit them. Take their bio and current avatar into account. Finish with a short, concrete visual brief (2-4 sentences) for the avatar.";
-
 export const FEATURED_QUERIES_SINGULAR: FeaturedQuery[] = [
-  {
-    title: "Design an avatar based on {account}'s Twitter personality",
-    text: AVATAR_PERSONALITY_QUERY,
-  },
   {
     title: "What kids of topics does this user post about?",
     text: "Tell me about this user. First summarize any identifying clues about who they are. Then cover: What kinds of topics does this user post about? What kinds of projects or interests do they have?",

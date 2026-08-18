@@ -2,7 +2,6 @@ import type { StateCreator } from "zustand";
 import type { StoreSlices } from "./types";
 import {
   finalSystemPrompt,
-  generateAvatarImage,
   selectSubset,
   submitQuery,
   type BatchStatus,
@@ -15,8 +14,6 @@ import { v7 as uuidv7 } from "uuid";
 import { db } from "../db";
 import { formatTweetCitations } from "../utils";
 import {
-  DEFAULT_IMAGE_GEN_MODEL,
-  IMAGE_GEN_MODELS,
   DEFAULT_QUERY_BATCH_SIZE as DEFAULT_BATCH,
   GEMINI_FLASH_QUERY_BATCH_SIZE as GEMINI_BATCH,
   getBatchSizeForConfig,
@@ -102,23 +99,6 @@ export type LlmQuerySlice = {
   ) => void;
   updateBatchStatus: (batchId: number, status: BatchStatus) => void;
   setQueryError: (msg: string | null) => void;
-  // Avatar image generation from a query result
-  isGeneratingAvatar: boolean;
-  avatarError: string | null;
-  selectedImageModel: string;
-  setSelectedImageModel: (model: string) => void;
-  generateAvatar: (queryResult: QueryResult, styleHint?: string) => Promise<void>;
-};
-
-const IMAGE_MODEL_STORAGE_KEY = "llm:imageGenModel";
-const loadStoredImageModel = (): string => {
-  try {
-    const stored = localStorage.getItem(IMAGE_MODEL_STORAGE_KEY);
-    if (stored && IMAGE_GEN_MODELS.some((m) => m.id === stored)) return stored;
-  } catch {
-    // ignore
-  }
-  return DEFAULT_IMAGE_GEN_MODEL;
 };
 
 const concurrency = 5;
@@ -139,57 +119,6 @@ export const createLlmQuerySlice: StateCreator<
   llmQueryQueue,
   selectedConfigIndex: 0,
   setSelectedConfigIndex: (idx: number) => set({ selectedConfigIndex: idx }),
-  isGeneratingAvatar: false,
-  avatarError: null,
-  selectedImageModel: loadStoredImageModel(),
-  setSelectedImageModel: (model: string) => {
-    try {
-      localStorage.setItem(IMAGE_MODEL_STORAGE_KEY, model);
-    } catch {
-      // ignore
-    }
-    set({ selectedImageModel: model });
-  },
-
-  generateAvatar: async (queryResult: QueryResult, styleHint?: string) => {
-    const handle = (queryResult.queriedHandle || "").replace(/^@/, "");
-    const account = get().accounts.find(
-      (a) => a.username.toLowerCase() === handle.toLowerCase(),
-    );
-    if (!account) {
-      set({ avatarError: "Could not find the account for this query." });
-      return;
-    }
-    set({ isGeneratingAvatar: true, avatarError: null });
-    try {
-      const profile = await db.profiles.get(account.accountId);
-      const { imageDataUrl } = await generateAvatarImage({
-        analysis: queryResult.result,
-        account,
-        profile,
-        styleHint,
-        model: get().selectedImageModel,
-      });
-      const generatedImages = [
-        ...(queryResult.generatedImages || []),
-        imageDataUrl,
-      ];
-      await db.queryResults.update(queryResult.id, { generatedImages });
-      const current = get().queryResult;
-      if (current && current.id === queryResult.id) {
-        set({ queryResult: { ...current, generatedImages } });
-      }
-      set({ isGeneratingAvatar: false });
-    } catch (error) {
-      console.error("Avatar generation failed:", error);
-      set({
-        isGeneratingAvatar: false,
-        avatarError:
-          (error as Error)?.message || "Avatar generation failed. Please try again.",
-      });
-    }
-  },
-
   submit: (
     filteredTweetsToAnalyse: Tweet[],
     account: Account,

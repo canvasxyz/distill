@@ -8,7 +8,6 @@ import type { RangeSelection } from "./ai_utils";
 import { db } from "../../db";
 import { Button, Text, Heading } from "@radix-ui/themes";
 import { QueryResultMarkdown } from "./QueryResultMarkdown";
-import { GeneratedAvatarPanel } from "./GeneratedAvatarPanel";
 import type { Tweet } from "../../types";
 
 function formatDateTime(d: Date) {
@@ -170,7 +169,6 @@ export function PastQueryDetailView() {
             tweetsById={tweetsById}
             accountIdToUsername={accountIdToUsername}
           />
-          <GeneratedAvatarPanel queryResult={query} />
         </ResultsBox>
       </div>
 

@@ -42,7 +42,6 @@ import {
 } from "@radix-ui/themes";
 import type { Tweet } from "../../types";
 import { QueryResultMarkdown } from "./QueryResultMarkdown";
-import { GeneratedAvatarPanel } from "./GeneratedAvatarPanel";
 
 export function RunQueries() {
   const [exampleQueriesModalIsOpen, setExampleQueriesModalIsOpen] =
@@ -497,7 +496,6 @@ export function RunQueries() {
                 tweetsById={tweetsById}
                 accountIdToUsername={accountIdToUsername}
               />
-              <GeneratedAvatarPanel queryResult={queryResult} />
             </ResultsBox>
           </>
         )}

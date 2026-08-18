@@ -4,10 +4,7 @@ import type { ChatCompletion } from "openai/resources";
 import type { Account, Profile, Tweet } from "../../types";
 import OpenAI from "openai";
 import {
-  DEFAULT_IMAGE_GEN_MODEL,
-  IMAGE_GEN_MODELS,
   VISION_CAPABLE_MODELS,
-  getImageGenModel,
   type LLMQueryProvider,
   type PromptPlacement,
 } from "../../constants";
@@ -75,8 +72,6 @@ export type QueryResult = {
   model: string;
   // The handle that was queried when this result was created (e.g. "@alice")
   queriedHandle?: string;
-  // Data URLs of avatar images generated from this result
-  generatedImages?: string[];
 };
 
 export const finalSystemPrompt =
@@ -393,142 +388,3 @@ export const selectSubset = (
     throw new Error("Unknown rangeSelection type (should never happen)");
   }
 };
-
-// ---------------------------------------------------------------------------
-// Avatar image generation
-// ---------------------------------------------------------------------------
-
-type ImageMessage = ChatCompletion["choices"][0]["message"] & {
-  images?: { type: "image_url"; image_url: { url: string } }[];
-};
-type ImageChatCompletion = Omit<ChatCompletion, "choices"> & {
-  choices: Array<
-    Omit<ChatCompletion["choices"][0], "message"> & { message: ImageMessage }
-  >;
-  model?: string;
-};
-
-export const AVATAR_IMAGE_SYSTEM_PROMPT =
-  "You are an illustrator that designs profile avatars. You will be given a description of a person's online personality (derived from their tweets), their bio, and possibly their current avatar image. Produce a single square avatar image that visually captures their personality — their interests, tone, and vibe. If a current avatar is provided, use it as loose inspiration (palette, subject, or mood) but create something new. No text or letters in the image.";
-
-export function buildAvatarImagePrompt(params: {
-  analysis: string;
-  account: Account;
-  profile?: Profile | null;
-  styleHint?: string;
-}) {
-  const { analysis, account, profile, styleHint } = params;
-  // Strip any <think>...</think> reasoning from the analysis text
-  const cleanAnalysis = analysis.replace(/<think>[\s\S]*?<\/think>/g, "").trim();
-  return [
-    `Design a new profile avatar for @${account.username}.`,
-    styleHint ? `Style: ${styleHint}` : "",
-    "",
-    formatProfileBlock(account, profile),
-    "",
-    "<PersonalityAnalysis>",
-    cleanAnalysis,
-    "</PersonalityAnalysis>",
-  ]
-    .filter((line) => line !== null)
-    .join("\n");
-}
-
-export async function generateAvatarImage(params: {
-  analysis: string;
-  account: Account;
-  profile?: Profile | null;
-  styleHint?: string;
-  model?: string;
-}): Promise<{ imageDataUrl: string; model: string; runTime: number }> {
-  const { profile } = params;
-  const model = params.model || DEFAULT_IMAGE_GEN_MODEL;
-  const startTime = performance.now();
-
-  const promptText = buildAvatarImagePrompt(params);
-  const avatarUrl = getFullSizeAvatarUrl(profile?.avatarMediaUrl);
-
-  const userContent: ChatCompletionMessageParam["content"] = avatarUrl
-    ? [
-        { type: "text", text: "Current avatar image, for reference:" },
-        { type: "image_url", image_url: { url: avatarUrl } },
-        { type: "text", text: promptText },
-      ]
-    : promptText;
-
-  const aiParams: Omit<ChatCompletionParams, "modalities"> & {
-    modalities?: string[];
-  } = {
-    model,
-    messages: [
-      { role: "system", content: AVATAR_IMAGE_SYSTEM_PROMPT },
-      { role: "user", content: userContent },
-    ],
-    modalities: getImageGenModel(model)?.modalities ?? ["image", "text"],
-  };
-
-  const selectedProvider = getSelectedProvider();
-  let data: ImageChatCompletion;
-
-  if (selectedProvider === "openrouter" && getProviderApiKey("openrouter")) {
-    // Direct call with the user's own OpenRouter key
-    const response = await fetch(
-      `${getProviderUrl("openrouter")}/chat/completions`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${getProviderApiKey("openrouter")}`,
-        },
-        body: JSON.stringify(aiParams),
-      },
-    );
-    if (response.status !== 200) {
-      throw new Error(`Provider error (${response.status}): ${await response.text()}`);
-    }
-    data = await response.json();
-    data.model = data.model || model;
-  } else {
-    // Proxy through the worker; it tries the selected model first and then
-    // falls back to the other image models in order.
-    type WorkerLLMConfig = [string, LLMQueryProvider, string | null, boolean, number];
-    const selectedModalities = (aiParams.modalities ?? []).join(",");
-    const orderedModels = [
-      model,
-      ...IMAGE_GEN_MODELS.filter(
-        (m) => m.id !== model && m.modalities.join(",") === selectedModalities,
-      ).map((m) => m.id),
-    ];
-    const llmConfigs: WorkerLLMConfig[] = orderedModels.map((m) => [
-      m,
-      "openrouter",
-      null,
-      false,
-      1,
-    ]);
-    const response = await fetch(serverUrl, {
-      method: "POST",
-      body: JSON.stringify({ params: aiParams, provider: "openrouter", llmConfigs }),
-      headers: { "Content-Type": "application/json" },
-    });
-    if (response.status !== 200) {
-      throw new Error(await response.text());
-    }
-    data = await response.json();
-  }
-
-  const message = data.choices?.[0]?.message;
-  const imageDataUrl = message?.images?.[0]?.image_url?.url;
-  if (!imageDataUrl) {
-    const text = typeof message?.content === "string" ? message.content : "";
-    throw new Error(
-      `Image model returned no image${text ? `: ${text.slice(0, 300)}` : "."}`,
-    );
-  }
-
-  return {
-    imageDataUrl,
-    model: data.model || model,
-    runTime: performance.now() - startTime,
-  };
-}
