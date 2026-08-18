@@ -4,6 +4,7 @@ import type { ChatCompletion } from "openai/resources";
 import type { Account, Profile, Tweet } from "../../types";
 import OpenAI from "openai";
 import {
+  DEFAULT_IMAGE_GEN_MODEL,
   IMAGE_GEN_MODELS,
   VISION_CAPABLE_MODELS,
   type LLMQueryProvider,
@@ -437,8 +438,10 @@ export async function generateAvatarImage(params: {
   account: Account;
   profile?: Profile | null;
   styleHint?: string;
+  model?: string;
 }): Promise<{ imageDataUrl: string; model: string; runTime: number }> {
   const { profile } = params;
+  const model = params.model || DEFAULT_IMAGE_GEN_MODEL;
   const startTime = performance.now();
 
   const promptText = buildAvatarImagePrompt(params);
@@ -455,7 +458,7 @@ export async function generateAvatarImage(params: {
   const aiParams: Omit<ChatCompletionParams, "modalities"> & {
     modalities?: string[];
   } = {
-    model: IMAGE_GEN_MODELS[0],
+    model,
     messages: [
       { role: "system", content: AVATAR_IMAGE_SYSTEM_PROMPT },
       { role: "user", content: userContent },
@@ -483,11 +486,16 @@ export async function generateAvatarImage(params: {
       throw new Error(`Provider error (${response.status}): ${await response.text()}`);
     }
     data = await response.json();
-    data.model = data.model || IMAGE_GEN_MODELS[0];
+    data.model = data.model || model;
   } else {
-    // Proxy through the worker; it tries each config in order.
+    // Proxy through the worker; it tries the selected model first and then
+    // falls back to the other image models in order.
     type WorkerLLMConfig = [string, LLMQueryProvider, string | null, boolean, number];
-    const llmConfigs: WorkerLLMConfig[] = IMAGE_GEN_MODELS.map((m) => [
+    const orderedModels = [
+      model,
+      ...IMAGE_GEN_MODELS.map((m) => m.id).filter((id) => id !== model),
+    ];
+    const llmConfigs: WorkerLLMConfig[] = orderedModels.map((m) => [
       m,
       "openrouter",
       null,
@@ -516,7 +524,7 @@ export async function generateAvatarImage(params: {
 
   return {
     imageDataUrl,
-    model: data.model || IMAGE_GEN_MODELS[0],
+    model: data.model || model,
     runTime: performance.now() - startTime,
   };
 }

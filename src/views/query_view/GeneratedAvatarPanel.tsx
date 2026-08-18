@@ -6,10 +6,12 @@ import {
   Flex,
   Text,
   TextField,
+  Select,
   Spinner,
 } from "@radix-ui/themes";
 import type { QueryResult } from "./ai_utils";
 import { useStore } from "../../state/store";
+import { IMAGE_GEN_MODELS } from "../../constants";
 
 /**
  * Shows a "Generate avatar" action for a query result and any avatars that
@@ -20,7 +22,13 @@ export function GeneratedAvatarPanel({
 }: {
   queryResult: QueryResult;
 }) {
-  const { generateAvatar, isGeneratingAvatar, avatarError } = useStore();
+  const {
+    generateAvatar,
+    isGeneratingAvatar,
+    avatarError,
+    selectedImageModel,
+    setSelectedImageModel,
+  } = useStore();
   const [styleHint, setStyleHint] = useState("");
   const images = queryResult.generatedImages || [];
   const handle = (queryResult.queriedHandle || "avatar").replace(/^@/, "");
@@ -53,6 +61,20 @@ export function GeneratedAvatarPanel({
             onChange={(e) => setStyleHint(e.target.value)}
             style={{ flex: 1, minWidth: 220 }}
           />
+          <Select.Root
+            value={selectedImageModel}
+            onValueChange={setSelectedImageModel}
+            disabled={isGeneratingAvatar}
+          >
+            <Select.Trigger style={{ maxWidth: 220 }} />
+            <Select.Content>
+              {IMAGE_GEN_MODELS.map((m) => (
+                <Select.Item key={m.id} value={m.id}>
+                  {m.label}
+                </Select.Item>
+              ))}
+            </Select.Content>
+          </Select.Root>
         </Flex>
         <Text size="1" color="gray">
           Uses this answer, the account bio and current avatar as inputs to an
