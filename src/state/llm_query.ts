@@ -2,6 +2,7 @@ import type { StateCreator } from "zustand";
 import type { StoreSlices } from "./types";
 import {
   finalSystemPrompt,
+  generateAvatarImage,
   selectSubset,
   submitQuery,
   type BatchStatus,
@@ -99,6 +100,10 @@ export type LlmQuerySlice = {
   ) => void;
   updateBatchStatus: (batchId: number, status: BatchStatus) => void;
   setQueryError: (msg: string | null) => void;
+  // Avatar image generation from a query result
+  isGeneratingAvatar: boolean;
+  avatarError: string | null;
+  generateAvatar: (queryResult: QueryResult, styleHint?: string) => Promise<void>;
 };
 
 const concurrency = 5;
@@ -119,6 +124,46 @@ export const createLlmQuerySlice: StateCreator<
   llmQueryQueue,
   selectedConfigIndex: 0,
   setSelectedConfigIndex: (idx: number) => set({ selectedConfigIndex: idx }),
+  isGeneratingAvatar: false,
+  avatarError: null,
+
+  generateAvatar: async (queryResult: QueryResult, styleHint?: string) => {
+    const handle = (queryResult.queriedHandle || "").replace(/^@/, "");
+    const account = get().accounts.find(
+      (a) => a.username.toLowerCase() === handle.toLowerCase(),
+    );
+    if (!account) {
+      set({ avatarError: "Could not find the account for this query." });
+      return;
+    }
+    set({ isGeneratingAvatar: true, avatarError: null });
+    try {
+      const profile = await db.profiles.get(account.accountId);
+      const { imageDataUrl } = await generateAvatarImage({
+        analysis: queryResult.result,
+        account,
+        profile,
+        styleHint,
+      });
+      const generatedImages = [
+        ...(queryResult.generatedImages || []),
+        imageDataUrl,
+      ];
+      await db.queryResults.update(queryResult.id, { generatedImages });
+      const current = get().queryResult;
+      if (current && current.id === queryResult.id) {
+        set({ queryResult: { ...current, generatedImages } });
+      }
+      set({ isGeneratingAvatar: false });
+    } catch (error) {
+      console.error("Avatar generation failed:", error);
+      set({
+        isGeneratingAvatar: false,
+        avatarError:
+          (error as Error)?.message || "Avatar generation failed. Please try again.",
+      });
+    }
+  },
 
   submit: (
     filteredTweetsToAnalyse: Tweet[],
@@ -185,6 +230,8 @@ export const createLlmQuerySlice: StateCreator<
           startTime,
         });
 
+        const profile = await db.profiles.get(account.accountId);
+
         const queryResult = await submitQuery({
           tweetsSample: batch,
           query: {
@@ -193,6 +240,7 @@ export const createLlmQuerySlice: StateCreator<
             promptPlacement,
           },
           account,
+          profile,
           model,
           provider,
           openrouterProvider: openrouterProvider,

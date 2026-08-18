@@ -1,9 +1,11 @@
 import type { ChatCompletionMessageParam } from "openai/resources";
 import type { ChatCompletion } from "openai/resources";
 
-import type { Account, Tweet } from "../../types";
+import type { Account, Profile, Tweet } from "../../types";
 import OpenAI from "openai";
 import {
+  IMAGE_GEN_MODELS,
+  VISION_CAPABLE_MODELS,
   type LLMQueryProvider,
   type PromptPlacement,
 } from "../../constants";
@@ -71,10 +73,12 @@ export type QueryResult = {
   model: string;
   // The handle that was queried when this result was created (e.g. "@alice")
   queriedHandle?: string;
+  // Data URLs of avatar images generated from this result
+  generatedImages?: string[];
 };
 
 export const finalSystemPrompt =
-    "You will be given a list of tweets, and a prompt. Review the tweets and provide an answer to the prompt. Provide citations for claims that you make when they are grounded in specific tweets that have been provided. Citations should be provided inline, as Markdown links to the tweets themselves on x.com. Always use the tweet_id for the Markdown link's text, and https://x.com/i/status/{tweet_id} for the link (example: https://x.com/i/status/1111). Do not create tables in your response.";
+    "You will be given a user's profile (bio, and possibly their current avatar image), a list of their tweets, and a prompt. Review the tweets and provide an answer to the prompt. Provide citations for claims that you make when they are grounded in specific tweets that have been provided. Citations should be provided inline, as Markdown links to the tweets themselves on x.com. Always use the tweet_id for the Markdown link's text, and https://x.com/i/status/{tweet_id} for the link (example: https://x.com/i/status/1111). Do not create tables in your response.";
 
 const REASONING_ENABLED_MODELS = new Set([
   "google/gemini-3-flash-preview",
@@ -95,6 +99,22 @@ export function replaceAccountName(text: string, accountName: string) {
   }
   return text.replace(/\{account\}/g, `this user`);
 }
+export function formatProfileBlock(
+  account: Account,
+  profile?: Profile | null,
+) {
+  const parts = [
+    `<Profile username="@${account.username}" display_name="${account.accountDisplayName}">`,
+  ];
+  if (profile?.description?.bio) parts.push(`Bio: ${profile.description.bio}`);
+  if (profile?.description?.location)
+    parts.push(`Location: ${profile.description.location}`);
+  if (profile?.description?.website)
+    parts.push(`Website: ${profile.description.website}`);
+  parts.push("</Profile>");
+  return parts.join("\n");
+}
+
 export function makePromptMessages(
   tweetsSample: {
     id_str: string;
@@ -105,7 +125,9 @@ export function makePromptMessages(
   }[],
   query: Query,
   account: Account,
-) {
+  profile?: Profile | null,
+  includeAvatarImage = false,
+): ChatCompletionMessageParam[] {
   const promptPlacement = query.promptPlacement || "prompt-before";
   const tweetsContent = tweetsSample
     .map(
@@ -115,10 +137,20 @@ export function makePromptMessages(
     .join("\n");
 
   const promptText = replaceAccountName(query.prompt, account.username);
+  const profileBlock = formatProfileBlock(account, profile);
   const combinedUserContent =
     promptPlacement === "prompt-before"
-      ? `${promptText}\n\n${tweetsContent}`
-      : `${tweetsContent}\n\n${promptText}`;
+      ? `${promptText}\n\n${profileBlock}\n\n${tweetsContent}`
+      : `${profileBlock}\n\n${tweetsContent}\n\n${promptText}`;
+
+  const avatarUrl = includeAvatarImage ? profile?.avatarMediaUrl : undefined;
+  const userContent: ChatCompletionMessageParam["content"] = avatarUrl
+    ? [
+        { type: "text", text: "Current avatar image:" },
+        { type: "image_url", image_url: { url: avatarUrl } },
+        { type: "text", text: combinedUserContent },
+      ]
+    : combinedUserContent;
 
   return [
     {
@@ -131,7 +163,7 @@ export function makePromptMessages(
 
     {
       role: "user" as const,
-      content: combinedUserContent,
+      content: userContent,
     },
   ];
 }
@@ -148,16 +180,30 @@ export async function submitQuery(params: {
   }[];
   query: Query;
   account: Account;
+  profile?: Profile | null;
   model: string;
   provider: LLMQueryProvider;
   openrouterProvider?: string | null | undefined;
   isBatchRequest?: boolean;
 }) {
-  const { tweetsSample, query, account, model, provider, openrouterProvider } =
-    params;
+  const {
+    tweetsSample,
+    query,
+    account,
+    profile,
+    model,
+    provider,
+    openrouterProvider,
+  } = params;
   const startTime = performance.now();
 
-  const messages = makePromptMessages(tweetsSample, query, account);
+  const messages = makePromptMessages(
+    tweetsSample,
+    query,
+    account,
+    profile,
+    VISION_CAPABLE_MODELS.has(model),
+  );
   const aiParams: ChatCompletionParams = {
     model,
     messages,
@@ -324,3 +370,132 @@ export const selectSubset = (
     throw new Error("Unknown rangeSelection type (should never happen)");
   }
 };
+
+// ---------------------------------------------------------------------------
+// Avatar image generation
+// ---------------------------------------------------------------------------
+
+type ImageMessage = ChatCompletion["choices"][0]["message"] & {
+  images?: { type: "image_url"; image_url: { url: string } }[];
+};
+type ImageChatCompletion = Omit<ChatCompletion, "choices"> & {
+  choices: Array<
+    Omit<ChatCompletion["choices"][0], "message"> & { message: ImageMessage }
+  >;
+  model?: string;
+};
+
+export const AVATAR_IMAGE_SYSTEM_PROMPT =
+  "You are an illustrator that designs profile avatars. You will be given a description of a person's online personality (derived from their tweets), their bio, and possibly their current avatar image. Produce a single square avatar image that visually captures their personality — their interests, tone, and vibe. If a current avatar is provided, use it as loose inspiration (palette, subject, or mood) but create something new. No text or letters in the image.";
+
+export function buildAvatarImagePrompt(params: {
+  analysis: string;
+  account: Account;
+  profile?: Profile | null;
+  styleHint?: string;
+}) {
+  const { analysis, account, profile, styleHint } = params;
+  // Strip any <think>...</think> reasoning from the analysis text
+  const cleanAnalysis = analysis.replace(/<think>[\s\S]*?<\/think>/g, "").trim();
+  return [
+    `Design a new profile avatar for @${account.username}.`,
+    styleHint ? `Style: ${styleHint}` : "",
+    "",
+    formatProfileBlock(account, profile),
+    "",
+    "<PersonalityAnalysis>",
+    cleanAnalysis,
+    "</PersonalityAnalysis>",
+  ]
+    .filter((line) => line !== null)
+    .join("\n");
+}
+
+export async function generateAvatarImage(params: {
+  analysis: string;
+  account: Account;
+  profile?: Profile | null;
+  styleHint?: string;
+}): Promise<{ imageDataUrl: string; model: string; runTime: number }> {
+  const { profile } = params;
+  const startTime = performance.now();
+
+  const promptText = buildAvatarImagePrompt(params);
+  const avatarUrl = profile?.avatarMediaUrl;
+
+  const userContent: ChatCompletionMessageParam["content"] = avatarUrl
+    ? [
+        { type: "text", text: "Current avatar image, for reference:" },
+        { type: "image_url", image_url: { url: avatarUrl } },
+        { type: "text", text: promptText },
+      ]
+    : promptText;
+
+  const aiParams: Omit<ChatCompletionParams, "modalities"> & {
+    modalities?: string[];
+  } = {
+    model: IMAGE_GEN_MODELS[0],
+    messages: [
+      { role: "system", content: AVATAR_IMAGE_SYSTEM_PROMPT },
+      { role: "user", content: userContent },
+    ],
+    modalities: ["image", "text"],
+  };
+
+  const selectedProvider = getSelectedProvider();
+  let data: ImageChatCompletion;
+
+  if (selectedProvider === "openrouter" && getProviderApiKey("openrouter")) {
+    // Direct call with the user's own OpenRouter key
+    const response = await fetch(
+      `${getProviderUrl("openrouter")}/chat/completions`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getProviderApiKey("openrouter")}`,
+        },
+        body: JSON.stringify(aiParams),
+      },
+    );
+    if (response.status !== 200) {
+      throw new Error(`Provider error (${response.status}): ${await response.text()}`);
+    }
+    data = await response.json();
+    data.model = data.model || IMAGE_GEN_MODELS[0];
+  } else {
+    // Proxy through the worker; it tries each config in order.
+    type WorkerLLMConfig = [string, LLMQueryProvider, string | null, boolean, number];
+    const llmConfigs: WorkerLLMConfig[] = IMAGE_GEN_MODELS.map((m) => [
+      m,
+      "openrouter",
+      null,
+      false,
+      1,
+    ]);
+    const response = await fetch(serverUrl, {
+      method: "POST",
+      body: JSON.stringify({ params: aiParams, provider: "openrouter", llmConfigs }),
+      headers: { "Content-Type": "application/json" },
+    });
+    if (response.status !== 200) {
+      throw new Error(await response.text());
+    }
+    data = await response.json();
+  }
+
+  const message = data.choices?.[0]?.message;
+  const imageDataUrl = message?.images?.[0]?.image_url?.url;
+  if (!imageDataUrl) {
+    const text = typeof message?.content === "string" ? message.content : "";
+    throw new Error(
+      `Image model returned no image${text ? `: ${text.slice(0, 300)}` : "."}`,
+    );
+  }
+
+  return {
+    imageDataUrl,
+    model: data.model || IMAGE_GEN_MODELS[0],
+    runTime: performance.now() - startTime,
+  };
+}
