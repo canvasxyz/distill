@@ -99,18 +99,37 @@ export function replaceAccountName(text: string, accountName: string) {
   }
   return text.replace(/\{account\}/g, `this user`);
 }
+// Profiles from a .zip archive nest bio/website/location under `description`;
+// profiles from the Community Archive have them as flat columns.
+type FlatProfileFields = { bio?: string; website?: string; location?: string };
+
+export function getProfileFields(profile?: Profile | null) {
+  const flat = (profile || {}) as FlatProfileFields;
+  return {
+    bio: profile?.description?.bio || flat.bio || "",
+    website: profile?.description?.website || flat.website || "",
+    location: profile?.description?.location || flat.location || "",
+  };
+}
+
+// Twitter serves `_normal` (48px) thumbnails by default; ask for the
+// larger variant so the image model gets a usable reference.
+export function getFullSizeAvatarUrl(url?: string | null) {
+  if (!url) return undefined;
+  return url.replace(/_(normal|bigger|mini)(\.[a-z]+)$/i, "_400x400$2");
+}
+
 export function formatProfileBlock(
   account: Account,
   profile?: Profile | null,
 ) {
+  const { bio, website, location } = getProfileFields(profile);
   const parts = [
     `<Profile username="@${account.username}" display_name="${account.accountDisplayName}">`,
   ];
-  if (profile?.description?.bio) parts.push(`Bio: ${profile.description.bio}`);
-  if (profile?.description?.location)
-    parts.push(`Location: ${profile.description.location}`);
-  if (profile?.description?.website)
-    parts.push(`Website: ${profile.description.website}`);
+  if (bio) parts.push(`Bio: ${bio}`);
+  if (location) parts.push(`Location: ${location}`);
+  if (website) parts.push(`Website: ${website}`);
   parts.push("</Profile>");
   return parts.join("\n");
 }
@@ -143,7 +162,9 @@ export function makePromptMessages(
       ? `${promptText}\n\n${profileBlock}\n\n${tweetsContent}`
       : `${profileBlock}\n\n${tweetsContent}\n\n${promptText}`;
 
-  const avatarUrl = includeAvatarImage ? profile?.avatarMediaUrl : undefined;
+  const avatarUrl = includeAvatarImage
+    ? getFullSizeAvatarUrl(profile?.avatarMediaUrl)
+    : undefined;
   const userContent: ChatCompletionMessageParam["content"] = avatarUrl
     ? [
         { type: "text", text: "Current avatar image:" },
@@ -421,7 +442,7 @@ export async function generateAvatarImage(params: {
   const startTime = performance.now();
 
   const promptText = buildAvatarImagePrompt(params);
-  const avatarUrl = profile?.avatarMediaUrl;
+  const avatarUrl = getFullSizeAvatarUrl(profile?.avatarMediaUrl);
 
   const userContent: ChatCompletionMessageParam["content"] = avatarUrl
     ? [
