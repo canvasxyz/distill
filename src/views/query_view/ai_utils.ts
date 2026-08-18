@@ -7,6 +7,7 @@ import {
   DEFAULT_IMAGE_GEN_MODEL,
   IMAGE_GEN_MODELS,
   VISION_CAPABLE_MODELS,
+  getImageGenModel,
   type LLMQueryProvider,
   type PromptPlacement,
 } from "../../constants";
@@ -463,7 +464,7 @@ export async function generateAvatarImage(params: {
       { role: "system", content: AVATAR_IMAGE_SYSTEM_PROMPT },
       { role: "user", content: userContent },
     ],
-    modalities: ["image", "text"],
+    modalities: getImageGenModel(model)?.modalities ?? ["image", "text"],
   };
 
   const selectedProvider = getSelectedProvider();
@@ -491,9 +492,12 @@ export async function generateAvatarImage(params: {
     // Proxy through the worker; it tries the selected model first and then
     // falls back to the other image models in order.
     type WorkerLLMConfig = [string, LLMQueryProvider, string | null, boolean, number];
+    const selectedModalities = (aiParams.modalities ?? []).join(",");
     const orderedModels = [
       model,
-      ...IMAGE_GEN_MODELS.map((m) => m.id).filter((id) => id !== model),
+      ...IMAGE_GEN_MODELS.filter(
+        (m) => m.id !== model && m.modalities.join(",") === selectedModalities,
+      ).map((m) => m.id),
     ];
     const llmConfigs: WorkerLLMConfig[] = orderedModels.map((m) => [
       m,

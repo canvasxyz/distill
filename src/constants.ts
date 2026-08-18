@@ -22,14 +22,23 @@ export const getBatchSizeForConfig = (config?: LLMQueryConfig) =>
 
 // Image generation (avatar) models. All are OpenRouter models that accept
 // image input (reference avatar) and return image output.
-export type ImageGenModel = { id: string; label: string };
+// `modalities` is what we request from OpenRouter; image-only models reject
+// requests that also ask for text.
+export type ImageGenModel = {
+  id: string;
+  label: string;
+  modalities: ("image" | "text")[];
+};
 export const IMAGE_GEN_MODELS: ImageGenModel[] = [
-  { id: "google/gemini-3.1-flash-image", label: "Gemini 3.1 Flash Image" },
-  { id: "google/gemini-3-pro-image", label: "Gemini 3 Pro Image" },
-  { id: "google/gemini-2.5-flash-image", label: "Gemini 2.5 Flash Image" },
-  { id: "openai/gpt-5-image", label: "GPT-5 Image" },
-  { id: "openai/gpt-5-image-mini", label: "GPT-5 Image Mini" },
+  { id: "google/gemini-3.1-flash-image", label: "Gemini 3.1 Flash Image", modalities: ["image", "text"] },
+  { id: "google/gemini-3-pro-image", label: "Gemini 3 Pro Image", modalities: ["image", "text"] },
+  { id: "google/gemini-2.5-flash-image", label: "Gemini 2.5 Flash Image", modalities: ["image", "text"] },
+  { id: "openai/gpt-5-image", label: "GPT-5 Image", modalities: ["image", "text"] },
+  { id: "openai/gpt-5-image-mini", label: "GPT-5 Image Mini", modalities: ["image", "text"] },
+  { id: "x-ai/grok-imagine-image-2.0", label: "Grok Imagine 2.0", modalities: ["image"] },
 ];
+export const getImageGenModel = (id: string): ImageGenModel | undefined =>
+  IMAGE_GEN_MODELS.find((m) => m.id === id);
 export const DEFAULT_IMAGE_GEN_MODEL = IMAGE_GEN_MODELS[0].id;
 
 // Models that accept image_url content parts, so we can pass the user's
