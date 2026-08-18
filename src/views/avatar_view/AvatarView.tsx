@@ -40,6 +40,7 @@ function AvatarCard({
   onDelete: () => void;
 }) {
   const created = new Date(avatar.createdAt);
+  const [showPrompt, setShowPrompt] = useState(false);
   return (
     <Card size="2" style={{ width: "100%" }}>
       <Flex gap="4" wrap="wrap">
@@ -71,16 +72,26 @@ function AvatarCard({
               ? ` · $${avatar.cost.toFixed(3)}`
               : ""}
           </Text>
-          <Text size="2" style={{ whiteSpace: "pre-wrap" }}>
-            {avatar.description}
-          </Text>
+          {showPrompt && (
+            <Text size="2" style={{ whiteSpace: "pre-wrap" }}>
+              {avatar.description}
+            </Text>
+          )}
           <Flex gap="2" mt="1">
+            <Button
+              size="1"
+              variant="soft"
+              color="gray"
+              onClick={() => setShowPrompt((v) => !v)}
+            >
+              {showPrompt ? "Hide generated prompt" : "Show generated prompt"}
+            </Button>
             <Button
               size="1"
               variant="soft"
               disabled={disabled}
               onClick={onRerender}
-              title="Generate a new image from this same description"
+              title="Generate a new image from this same prompt"
             >
               Re-render image
             </Button>
@@ -104,7 +115,6 @@ export function AvatarView() {
     deleteAvatar,
     avatarStage,
     avatarError,
-    avatarDescription,
     latestAvatar,
     selectedImageModel,
     setSelectedImageModel,
@@ -189,9 +199,7 @@ export function AvatarView() {
 
           <Text size="2" color="gray">
             Generates a profile avatar from this account's tweets, bio, and current
-            avatar. The tweets are summarised into a description of what the image
-            should contain — no style direction is given, so the image model's own
-            look comes through.
+            avatar.
           </Text>
 
           <Flex align="center" gap="3" wrap="wrap">
@@ -273,17 +281,6 @@ export function AvatarView() {
             <Callout.Root color="red">
               <Callout.Text>{avatarError}</Callout.Text>
             </Callout.Root>
-          )}
-
-          {busy && avatarDescription && (
-            <Card>
-              <Text size="1" color="gray">
-                Description
-              </Text>
-              <Text as="p" size="2" style={{ whiteSpace: "pre-wrap" }}>
-                {avatarDescription}
-              </Text>
-            </Card>
           )}
 
           {latestAvatar && (
