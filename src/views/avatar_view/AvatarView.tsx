@@ -111,6 +111,7 @@ export function AvatarView() {
     accounts,
     allTweets,
     generateAvatar,
+    clearCachedPrompt,
     regenerateAvatarImage,
     deleteAvatar,
     avatarStage,
@@ -150,6 +151,17 @@ export function AvatarView() {
   const accountTweets = useMemo(
     () => (allTweets || []).filter((t) => t.account_id === selectedAccountId),
     [allTweets, selectedAccountId],
+  );
+
+  const selectedTextModel = (
+    AVAILABLE_LLM_CONFIGS[selectedConfigIndex] || AVAILABLE_LLM_CONFIGS[0]
+  )[0];
+  const cachedPrompt = useLiveQuery(
+    async () =>
+      selectedAccountId
+        ? await db.avatarPromptCache.get([selectedAccountId, selectedTextModel])
+        : undefined,
+    [selectedAccountId, selectedTextModel],
   );
 
   const history = useLiveQuery(
@@ -264,6 +276,24 @@ export function AvatarView() {
               </Select.Root>
             </Flex>
           </Flex>
+
+          {cachedPrompt && (
+            <Text size="1" color="gray">
+              Reusing the prompt generated on{" "}
+              {new Date(cachedPrompt.createdAt).toLocaleString()} for this
+              account and text model; generation will skip straight to the
+              image.{" "}
+              <a
+                style={{ cursor: "pointer", textDecoration: "underline" }}
+                onClick={() => {
+                  if (busy || !selectedAccountId) return;
+                  clearCachedPrompt(selectedAccountId, selectedTextModel);
+                }}
+              >
+                Build a fresh prompt
+              </a>
+            </Text>
+          )}
 
           <Text size="2" as="label">
             <Flex align="center" gap="2">
