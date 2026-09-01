@@ -15,15 +15,15 @@ A browser-based application for analyzing tweets from your `.zip` export, which 
 
 ## Usage
 
-Node.js 22+ and npm are required.
+Node.js 22+ and pnpm 10.9.0 are required.
 
 ```
-npm install
-npm run dev
+pnpm install
+pnpm dev
 ```
 
 To build for production:
 
 ```
-npm run build
+pnpm build
 ```
