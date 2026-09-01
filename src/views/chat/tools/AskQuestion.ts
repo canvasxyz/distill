@@ -55,7 +55,7 @@ export const AskQuestion: Tool<
 
     const { data: accountData } = await supabase
       .schema("public")
-      .from("account")
+      .from("all_account")
       .select("*")
       .eq("username", username)
       .maybeSingle();

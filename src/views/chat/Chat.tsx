@@ -189,9 +189,7 @@ function Chat() {
       }}
     >
       <Header
-        leftContent={
-          <div style={{ fontWeight: 600 }}>Archive Chat (Experimental)</div>
-        }
+        title="Archive Chat (Experimental)"
         rightContent={
           <Button
             onClick={() => setMessages([])}

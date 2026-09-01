@@ -187,7 +187,7 @@ export const createInitSlice: StateCreator<StoreSlices, [], [], InitSlice> = (
 
     const { data: accountData } = await supabase
       .schema("public")
-      .from("account")
+      .from("all_account")
       .select("*")
       .eq("account_id", accountId)
       .maybeSingle();

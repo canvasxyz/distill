@@ -1,32 +1,13 @@
-import { Box, Text, Button, IconButton } from "@radix-ui/themes";
+import { Box, Text, Button } from "@radix-ui/themes";
 import { useNavigate } from "react-router";
 import { Header } from "../components/Header";
-import { useTheme } from "../components/ThemeContext";
 
 export function NotFound() {
   const navigate = useNavigate();
-  const { appearance, toggleTheme } = useTheme();
 
   return (
     <Box style={{ width: "100%" }}>
-      <Header
-        leftContent={<div style={{ fontWeight: 600 }}>Distill Search</div>}
-        rightContent={
-          <IconButton
-            onClick={toggleTheme}
-            variant="outline"
-            size="2"
-            style={{ padding: "0 2px" }}
-            title={
-              appearance === "dark"
-                ? "Switch to light theme"
-                : "Switch to dark theme"
-            }
-          >
-            {appearance === "dark" ? "☀️" : "🌙"}
-          </IconButton>
-        }
-      />
+      <Header title="Distill Search" />
       <Box
         style={{
           maxWidth: "800px",
