@@ -1,17 +1,22 @@
+import { Heading } from "@radix-ui/themes";
 import type { ReactNode } from "react";
 
 interface HeaderProps {
-  leftContent: ReactNode;
+  leftContent?: ReactNode;
+  title?: string;
   rightContent?: ReactNode;
   height?: string;
   justifyContent?: "flex-start" | "center" | "flex-end" | "space-between";
+  reserveFloatingNavSpace?: boolean;
 }
 
 export function Header({
   leftContent,
+  title,
   rightContent,
   height = "52px",
   justifyContent = "space-between",
+  reserveFloatingNavSpace = true,
 }: HeaderProps) {
   return (
     <header
@@ -27,8 +32,17 @@ export function Header({
         maxWidth: "100%",
         flexShrink: 0,
       }}
+      className={reserveFloatingNavSpace ? "view-header" : undefined}
     >
-      <div style={{ flexShrink: 0 }}>{leftContent}</div>
+      <div style={{ flexShrink: 0, minWidth: 0 }}>
+        {title ? (
+          <Heading as="h1" size="4" weight="medium" m="0">
+            {title}
+          </Heading>
+        ) : (
+          leftContent
+        )}
+      </div>
       {rightContent && (
         <div
           style={{

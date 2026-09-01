@@ -63,7 +63,7 @@ export const GetMoreTweets: Tool<
     if (args.username) {
       const accountIdResponse = await supabase
         .schema("public")
-        .from("account")
+        .from("all_account")
         .select("account_id")
         .eq("username", args.username)
         .limit(1)
