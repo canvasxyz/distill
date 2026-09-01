@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Box, Link, IconButton } from "@radix-ui/themes";
+import { Box, Link, IconButton, Text } from "@radix-ui/themes";
 import * as Dialog from "@radix-ui/react-dialog";
 import * as NavigationMenu from "@radix-ui/react-navigation-menu";
 import { useNavigate, useLocation } from "react-router";
@@ -7,6 +7,39 @@ import { PastQueries } from "../views/query_view/SidebarQueries";
 import { Header } from "./Header";
 import { useTheme } from "./ThemeContext";
 import "./ResponsiveSidebar.css";
+
+function AttributionFooter() {
+  return (
+    <Box className="sidebar-attribution" aria-label="Creator attribution">
+      <Text as="p" size="1" color="gray" m="0">
+        Built by{" "}
+        <Link
+          href="https://github.com/raykyri"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          raykyri
+        </Link>{" "}
+        and{" "}
+        <Link
+          href="https://github.com/rjwebb"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          rjwebb
+        </Link>{" "}
+        <span aria-hidden="true">·</span>{" "}
+        <Link
+          href="http://canvas.xyz"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Canvas Technologies Inc
+        </Link>
+      </Text>
+    </Box>
+  );
+}
 
 export function ResponsiveSidebar() {
   const navigate = useNavigate();
@@ -59,7 +92,9 @@ export function ResponsiveSidebar() {
           display: "flex",
           flexDirection: "column",
           flex: 1,
-          overflow: "visible",
+          minHeight: 0,
+          overflowY: "auto",
+          overflowX: "hidden",
           listStyle: "none",
           margin: 0,
           padding: 0,
@@ -69,6 +104,7 @@ export function ResponsiveSidebar() {
           <PastQueries />
         </Box>
       </NavigationMenu.List>
+      <AttributionFooter />
     </NavigationMenu.Root>
   );
 
@@ -85,7 +121,7 @@ export function ResponsiveSidebar() {
           height: "100vh",
           display: "flex",
           flexDirection: "column",
-          overflow: "auto",
+          overflow: "hidden",
           boxShadow: `2px 0 1px ${boxShadowColor}`,
         }}
       >
@@ -133,7 +169,7 @@ export function ResponsiveSidebar() {
               style={{
                 width: "100%",
                 height: "100%",
-                overflowY: "auto",
+                overflow: "hidden",
                 borderRight: "1px solid var(--gray-6)",
               }}
             >
