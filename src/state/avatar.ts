@@ -15,6 +15,16 @@ import {
   generateAvatarImage,
 } from "../views/avatar_view/avatar_utils";
 
+// Cached output of the analysis step, keyed by account + text model, so
+// repeat generations can skip straight to the image stage.
+export type AvatarPromptCacheEntry = {
+  accountId: string;
+  textModel: string;
+  description: string;
+  numTweets: number;
+  createdAt: string;
+};
+
 export type GeneratedAvatar = {
   id: string;
   accountId: string;
@@ -40,6 +50,7 @@ export type AvatarSlice = {
   avatarDescription: string | null;
   latestAvatar: GeneratedAvatar | null;
   generateAvatar: (account: Account, tweets: Tweet[]) => Promise<void>;
+  clearCachedPrompt: (accountId: string, textModel: string) => Promise<void>;
   // Re-render an image from an existing description (skips the analysis step)
   regenerateAvatarImage: (avatar: GeneratedAvatar) => Promise<void>;
   deleteAvatar: (id: string) => Promise<void>;
@@ -96,24 +107,44 @@ export const createAvatarSlice: StateCreator<
       return;
     }
 
+    const textModel = config[0];
+    const cached = await db.avatarPromptCache.get([account.accountId, textModel]);
+
     set({
-      avatarStage: "analysing",
+      avatarStage: cached ? "rendering" : "analysing",
       avatarError: null,
-      avatarDescription: null,
+      avatarDescription: cached?.description ?? null,
       latestAvatar: null,
     });
     try {
       const profile = await db.profiles.get(account.accountId);
-      const analysis = await analyseTweetsForAvatar({
-        tweets: sample,
-        account,
-        profile,
-        config,
-      });
-      set({ avatarStage: "rendering", avatarDescription: analysis.description });
+
+      let description: string;
+      let numTweets: number;
+      if (cached) {
+        description = cached.description;
+        numTweets = cached.numTweets;
+      } else {
+        const analysis = await analyseTweetsForAvatar({
+          tweets: sample,
+          account,
+          profile,
+          config,
+        });
+        description = analysis.description;
+        numTweets = sample.length;
+        await db.avatarPromptCache.put({
+          accountId: account.accountId,
+          textModel,
+          description,
+          numTweets,
+          createdAt: new Date().toISOString(),
+        });
+        set({ avatarStage: "rendering", avatarDescription: description });
+      }
 
       const image = await generateAvatarImage({
-        description: analysis.description,
+        description,
         account,
         profile,
         model: get().selectedImageModel,
@@ -125,11 +156,11 @@ export const createAvatarSlice: StateCreator<
         accountId: account.accountId,
         username: account.username,
         createdAt: new Date().toISOString(),
-        description: analysis.description,
+        description,
         imageDataUrl: image.imageDataUrl,
-        textModel: analysis.model,
+        textModel,
         imageModel: image.model,
-        numTweets: sample.length,
+        numTweets,
         cost: image.cost,
       };
       await db.avatars.add(avatar);
@@ -184,6 +215,10 @@ export const createAvatarSlice: StateCreator<
           (error as Error)?.message || "Avatar generation failed. Please try again.",
       });
     }
+  },
+
+  clearCachedPrompt: async (accountId, textModel) => {
+    await db.avatarPromptCache.delete([accountId, textModel]);
   },
 
   deleteAvatar: async (id) => {

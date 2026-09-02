@@ -21,8 +21,7 @@ import { SelectUser } from "../SelectUser";
 import { IMAGE_GEN_MODELS } from "../../constants";
 import { AVAILABLE_LLM_CONFIGS, getLlmConfigLabel } from "../../state/llm_query";
 import type { GeneratedAvatar } from "../../state/avatar";
-import { useTheme } from "../../components/ThemeContext";
-import { IconButton } from "@radix-ui/themes";
+import { ArchiveHeaderActions } from "../../components/ArchiveHeaderActions";
 
 const ACCOUNT_STORAGE_KEY = "llm:lastSelectedAccountId";
 
@@ -111,6 +110,7 @@ export function AvatarView() {
     accounts,
     allTweets,
     generateAvatar,
+    clearCachedPrompt,
     regenerateAvatarImage,
     deleteAvatar,
     avatarStage,
@@ -123,7 +123,6 @@ export function AvatarView() {
     selectedConfigIndex,
     setSelectedConfigIndex,
   } = useStore();
-  const { appearance, toggleTheme } = useTheme();
 
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(
     () => {
@@ -152,6 +151,17 @@ export function AvatarView() {
     [allTweets, selectedAccountId],
   );
 
+  const selectedTextModel = (
+    AVAILABLE_LLM_CONFIGS[selectedConfigIndex] || AVAILABLE_LLM_CONFIGS[0]
+  )[0];
+  const cachedPrompt = useLiveQuery(
+    async () =>
+      selectedAccountId
+        ? await db.avatarPromptCache.get([selectedAccountId, selectedTextModel])
+        : undefined,
+    [selectedAccountId, selectedTextModel],
+  );
+
   const history = useLiveQuery(
     () =>
       selectedAccountId
@@ -176,17 +186,7 @@ export function AvatarView() {
     <Box style={{ width: "100%" }}>
       <Header
         leftContent={<div style={{ fontWeight: 600 }}>Avatar Generator</div>}
-        rightContent={
-          <IconButton
-            onClick={toggleTheme}
-            variant="outline"
-            size="2"
-            style={{ padding: "0 2px" }}
-            title={appearance === "dark" ? "Switch to light theme" : "Switch to dark theme"}
-          >
-            {appearance === "dark" ? "☀️" : "🌙"}
-          </IconButton>
-        }
+        rightContent={<ArchiveHeaderActions />}
       />
       <Box style={{ maxWidth: "800px", margin: "auto", width: "100%", boxSizing: "border-box", padding: "0 16px" }}>
         <Flex direction="column" gap="4" pb="6">
@@ -264,6 +264,24 @@ export function AvatarView() {
               </Select.Root>
             </Flex>
           </Flex>
+
+          {cachedPrompt && (
+            <Text size="1" color="gray">
+              Reusing the prompt generated on{" "}
+              {new Date(cachedPrompt.createdAt).toLocaleString()} for this
+              account and text model; generation will skip straight to the
+              image.{" "}
+              <a
+                style={{ cursor: "pointer", textDecoration: "underline" }}
+                onClick={() => {
+                  if (busy || !selectedAccountId) return;
+                  clearCachedPrompt(selectedAccountId, selectedTextModel);
+                }}
+              >
+                Build a fresh prompt
+              </a>
+            </Text>
+          )}
 
           <Text size="2" as="label">
             <Flex align="center" gap="2">
