@@ -76,6 +76,23 @@
   outline: none;
 }
 
+.sidebar-attribution {
+  flex-shrink: 0;
+  padding: 12px 16px 14px;
+  border-top: 1px solid var(--gray-6);
+  background: var(--color-background);
+  line-height: 1.45;
+}
+
+.sidebar-attribution a {
+  color: var(--gray-11);
+  text-underline-offset: 2px;
+}
+
+.sidebar-attribution a:hover {
+  color: var(--accent-11);
+}
+
 @keyframes overlayShow {
   from {
     opacity: 0;
