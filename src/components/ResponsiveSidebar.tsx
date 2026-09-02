@@ -86,6 +86,7 @@ export function ResponsiveSidebar() {
           </Link>
         }
         justifyContent="flex-start"
+        reserveFloatingNavSpace={false}
       />
       <NavigationMenu.List
         style={{

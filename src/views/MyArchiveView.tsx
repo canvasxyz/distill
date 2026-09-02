@@ -1,7 +1,6 @@
 import { useStore } from "../state/store";
 import { ModelQuerySection } from "./query_view/ModelQueryView";
 import { LoadingView } from "./LoadingView";
-import { ArchiveHeaderActions } from "../components/ArchiveHeaderActions";
 import { Header } from "../components/Header";
 import { Box, Flex } from "@radix-ui/themes";
 
@@ -12,10 +11,7 @@ export function MyArchiveView() {
     <Box style={{ width: "100%" }}>
       {appIsReady ? (
         <>
-          <Header
-            leftContent={<div style={{ fontWeight: 600 }}>Distill Search</div>}
-            rightContent={<ArchiveHeaderActions />}
-          />
+          <Header title="Distill Search" />
           <Flex
             direction="column"
             p="4"

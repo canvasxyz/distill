@@ -10,7 +10,6 @@ import {
   Card,
 } from "@radix-ui/themes";
 import {
-  GearIcon,
   EyeOpenIcon,
   EyeClosedIcon,
   CheckCircledIcon,
@@ -107,16 +106,7 @@ export function Settings() {
   // For highlights & smooth-UI, separate provider choice visually
   return (
     <Box width="100%">
-      <Header
-        leftContent={
-          <Flex align="center" gap="2">
-            <GearIcon />
-            <span style={{ fontWeight: 700, fontSize: 20, letterSpacing: 0.5 }}>
-              Settings
-            </span>
-          </Flex>
-        }
-      />
+      <Header title="Settings" />
       <Box
         style={{
           maxWidth: "575px",

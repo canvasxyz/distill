@@ -21,7 +21,6 @@ import { SelectUser } from "../SelectUser";
 import { IMAGE_GEN_MODELS } from "../../constants";
 import { AVAILABLE_LLM_CONFIGS, getLlmConfigLabel } from "../../state/llm_query";
 import type { GeneratedAvatar } from "../../state/avatar";
-import { ArchiveHeaderActions } from "../../components/ArchiveHeaderActions";
 
 const ACCOUNT_STORAGE_KEY = "llm:lastSelectedAccountId";
 
@@ -184,10 +183,7 @@ export function AvatarView() {
 
   return (
     <Box style={{ width: "100%" }}>
-      <Header
-        leftContent={<div style={{ fontWeight: 600 }}>Avatar Generator</div>}
-        rightContent={<ArchiveHeaderActions />}
-      />
+      <Header title="Avatar Generator" />
       <Box style={{ maxWidth: "800px", margin: "auto", width: "100%", boxSizing: "border-box", padding: "0 16px" }}>
         <Flex direction="column" gap="4" pb="6">
           <Box mt="6">
