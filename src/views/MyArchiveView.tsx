@@ -2,7 +2,7 @@ import { useStore } from "../state/store";
 import { ModelQuerySection } from "./query_view/ModelQueryView";
 import { LoadingView } from "./LoadingView";
 import { Header } from "../components/Header";
-import { Box, Flex } from "@radix-ui/themes";
+import { Box } from "@radix-ui/themes";
 
 export function MyArchiveView() {
   const { appIsReady } = useStore();
@@ -12,20 +12,7 @@ export function MyArchiveView() {
       {appIsReady ? (
         <>
           <Header title="Distill Search" />
-          <Flex
-            direction="column"
-            p="4"
-            style={{
-              margin: "0 auto",
-              maxWidth: "1200px",
-              width: "100%",
-              boxSizing: "border-box",
-              overflowX: "hidden",
-            }}
-          >
-            <Box height="2" />
-            <ModelQuerySection />
-          </Flex>
+          <ModelQuerySection />
         </>
       ) : (
         <LoadingView />

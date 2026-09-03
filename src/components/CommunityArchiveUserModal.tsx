@@ -1,4 +1,4 @@
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import {
   PINNED_USERNAMES,
   useCommunityArchiveAccounts,
@@ -17,7 +17,7 @@ import {
   TextField,
 } from "@radix-ui/themes";
 
-const MAX_RENDERED_ACCOUNTS = 100;
+const SEARCH_DEBOUNCE_MS = 250;
 
 function HighlightedUsername({
   username,
@@ -55,8 +55,19 @@ export const CommunityArchiveUserModal = ({
   showModal: boolean;
   setShowModal: (show: boolean) => void;
 }) => {
-  const otherUserAccounts = useCommunityArchiveAccounts(showModal);
   const [query, setQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+
+  useEffect(() => {
+    const timeout = window.setTimeout(
+      () => setDebouncedQuery(query.trim()),
+      SEARCH_DEBOUNCE_MS,
+    );
+    return () => window.clearTimeout(timeout);
+  }, [query]);
+
+  const { accounts, error, hasMore, isLoading, isLoadingMore, loadMore } =
+    useCommunityArchiveAccounts(showModal, debouncedQuery);
 
   const pinnedSet = useMemo(
     () => new Set(PINNED_USERNAMES.map((u) => u.toLowerCase())),
@@ -64,17 +75,7 @@ export const CommunityArchiveUserModal = ({
   );
   const { loadCommunityArchiveUser } = useStore();
   const normalizedQuery = query.trim().toLowerCase();
-  const filteredAccounts = useMemo(
-    () => {
-      const accounts = otherUserAccounts || [];
-      if (!normalizedQuery) return accounts;
-      return accounts.filter((account) =>
-        (account.username || "").toLowerCase().includes(normalizedQuery),
-      );
-    },
-    [normalizedQuery, otherUserAccounts],
-  );
-  const visibleAccounts = filteredAccounts.slice(0, MAX_RENDERED_ACCOUNTS);
+  const isSearchPending = normalizedQuery !== debouncedQuery.toLowerCase();
 
   return (
     <Modal
@@ -90,27 +91,45 @@ export const CommunityArchiveUserModal = ({
           onChange={(event) => setQuery(event.target.value)}
           autoFocus
         />
-        {otherUserAccounts === null ? (
+        {isLoading || isSearchPending ? (
           <Flex align="center" justify="center" gap="2" py="6">
             <Spinner />
-            <Text color="gray">Loading users…</Text>
+            <Text color="gray">
+              {normalizedQuery ? "Searching users…" : "Loading users…"}
+            </Text>
           </Flex>
-        ) : filteredAccounts.length === 0 ? (
+        ) : accounts.length === 0 ? (
           <Box py="6" style={{ textAlign: "center" }}>
-            <Text color="gray">No usernames match “{query.trim()}”.</Text>
+            <Text color="gray">
+              {error
+                ? error
+                : normalizedQuery
+                  ? `No usernames match “${query.trim()}”.`
+                  : "No users found."}
+            </Text>
           </Box>
         ) : (
           <>
             <Text size="1" color="gray">
-              {normalizedQuery
-                ? `${filteredAccounts.length.toLocaleString()} matching users`
-                : `${filteredAccounts.length.toLocaleString()} users`}
-              {filteredAccounts.length > MAX_RENDERED_ACCOUNTS &&
-                ` · showing the first ${MAX_RENDERED_ACCOUNTS}`}
+              {accounts.length.toLocaleString()} users loaded
+              {normalizedQuery && " matching your search"}
             </Text>
-            <Box style={{ maxHeight: "min(60vh, 560px)", overflowY: "auto" }}>
+            <Box
+              style={{ maxHeight: "min(60vh, 560px)", overflowY: "auto" }}
+              onScroll={(event) => {
+                const element = event.currentTarget;
+                if (
+                  element.scrollHeight -
+                    element.scrollTop -
+                    element.clientHeight <
+                  100
+                ) {
+                  void loadMore();
+                }
+              }}
+            >
               <Grid columns="3" gap="2" align="center" pr="2">
-                {visibleAccounts.map((account) => {
+                {accounts.map((account) => {
                   const isPinned = pinnedSet.has(
                     (account.username || "").toLowerCase(),
                   );
@@ -140,7 +159,7 @@ export const CommunityArchiveUserModal = ({
                         </Text>
                       </Flex>
                       <Text style={{ textAlign: "center" }}>
-                        {account.numTweets.toLocaleString()}
+                        {account.numTweets?.toLocaleString() ?? "—"}
                       </Text>
                       <Flex justify="end" align="center" gap="2">
                         {isPinned && (
@@ -221,6 +240,35 @@ export const CommunityArchiveUserModal = ({
                   );
                 })}
               </Grid>
+              {hasMore && (
+                <Flex justify="center" py="3">
+                  <Button
+                    type="button"
+                    variant="soft"
+                    disabled={isLoadingMore}
+                    onClick={() => void loadMore()}
+                  >
+                    {isLoadingMore ? (
+                      <>
+                        <Spinner /> Loading…
+                      </>
+                    ) : (
+                      "Load more"
+                    )}
+                  </Button>
+                </Flex>
+              )}
+              {error && (
+                <Text
+                  as="p"
+                  size="1"
+                  color="red"
+                  align="center"
+                  style={{ padding: "8px 0" }}
+                >
+                  {error}
+                </Text>
+              )}
             </Box>
           </>
         )}

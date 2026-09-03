@@ -1,9 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  COMMUNITY_ARCHIVE_PAGE_SIZE,
-  loadAllCommunityArchiveAccounts,
-  type CAAccount,
-} from "./useUsers";
+import { mergeCommunityArchiveAccounts, type CAAccount } from "./useUsers";
 
 function account(accountId: string, username: string): CAAccount {
   return {
@@ -17,36 +13,31 @@ function account(accountId: string, username: string): CAAccount {
   };
 }
 
-describe("loadAllCommunityArchiveAccounts", () => {
-  it("loads users beyond Supabase's first page", async () => {
-    const expected = Array.from(
-      { length: COMMUNITY_ARCHIVE_PAGE_SIZE + 1 },
-      (_, index) =>
-        account(
-          String(index),
-          index === COMMUNITY_ARCHIVE_PAGE_SIZE
-            ? "page-two-user"
-            : `user-${index}`,
-        ),
-    );
-    const requestedRanges: Array<[number, number]> = [];
-
-    const result = await loadAllCommunityArchiveAccounts(
-      async (from, to) => {
-        requestedRanges.push([from, to]);
-        return expected.slice(from, to + 1);
-      },
-      COMMUNITY_ARCHIVE_PAGE_SIZE,
-      1,
-    );
-
-    expect(requestedRanges).toEqual([
-      [0, 999],
-      [1000, 1999],
+describe("mergeCommunityArchiveAccounts", () => {
+  it("puts starred users first in their configured order", () => {
+    const result = mergeCommunityArchiveAccounts([
+      account("popular", "popular-user"),
+      account("repligate", "repligate"),
+      account("exgenesis", "exgenesis"),
     ]);
-    expect(result).toHaveLength(1001);
-    expect(result?.some(({ username }) => username === "page-two-user")).toBe(
-      true,
-    );
+
+    expect(result.map(({ accountId }) => accountId)).toEqual([
+      "exgenesis",
+      "repligate",
+      "popular",
+    ]);
+  });
+
+  it("preserves page order and removes accounts repeated across pages", () => {
+    const firstPage = [account("one", "one"), account("two", "two")];
+    const secondPage = [account("two", "two"), account("three", "three")];
+
+    const result = mergeCommunityArchiveAccounts(firstPage, secondPage);
+
+    expect(result.map(({ accountId }) => accountId)).toEqual([
+      "one",
+      "two",
+      "three",
+    ]);
   });
 });

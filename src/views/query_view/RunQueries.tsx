@@ -27,6 +27,7 @@ import { AVAILABLE_LLM_CONFIGS, getLlmConfigLabel } from "../../state/llm_query"
 import { FeaturedQueryCard } from "../../components/FeaturedQueryCard";
 import { BrowseMoreButton } from "../../components/BrowseMoreButton";
 import { SelectUser } from "../SelectUser";
+import { PageContent } from "../../components/PageContent";
 import {
   Box,
   Flex,
@@ -322,7 +323,7 @@ export function RunQueries() {
     );
 
   return (
-    <Box style={{ maxWidth: "800px", margin: "auto", width: "100%", boxSizing: "border-box", padding: "0 16px" }}>
+    <PageContent>
       <Flex direction="column" gap="3" pb="5">
         <Box mt="6">
           <SelectUser
@@ -574,6 +575,6 @@ export function RunQueries() {
           onClose={() => setShowBatchTweetsModal(false)}
         />
       </Flex>
-    </Box>
+    </PageContent>
   );
 }
