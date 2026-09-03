@@ -757,6 +757,68 @@ test("current person has a separate non-selectable card that survives searching"
   await noOverflow(page);
 });
 
+test("people search sits directly above its results with loading options below", async ({
+  page,
+}, testInfo) => {
+  await importArchive(page);
+  await page.route("**/rest/v1/account?**", (route) => {
+    const query =
+      new URL(route.request().url()).searchParams
+        .getAll("username")
+        .find((value) => value.startsWith("ilike."))
+        ?.slice(6)
+        .replaceAll("%", "") || "";
+    return route.fulfill({
+      json: ["exgenesis", "repligate"]
+        .filter((username) => username.includes(query))
+        .map((username) => ({
+          account_id: username,
+          username,
+          num_tweets: 12345,
+          num_followers: 0,
+          profile: null,
+        })),
+    });
+  });
+  await page.locator(".account-context button").click();
+  const search = page.getByRole("textbox", { name: "Search people" });
+  const results = page.locator("#people-results");
+  const featured = page.getByRole("region", {
+    name: "A few people to start with",
+  });
+  await expect(featured.getByRole("button")).toHaveCount(2);
+  await expect(search).toHaveAttribute("aria-controls", "people-results");
+  expect(await search.evaluate((el) => el.nextElementSibling?.id)).toBe(
+    "people-results",
+  );
+  expect(
+    await results.evaluate((el) =>
+      el.nextElementSibling?.classList.contains("archive-load-choice"),
+    ),
+  ).toBe(true);
+  const searchBox = await search.boundingBox();
+  const featuredBox = await featured.boundingBox();
+  const gap = featuredBox!.y - (searchBox!.y + searchBox!.height);
+  expect(gap).toBeGreaterThanOrEqual(0);
+  expect(gap).toBeLessThanOrEqual(20);
+  await noOverflow(page);
+  await page.screenshot({
+    animations: "disabled",
+    path: testInfo.outputPath("people-search-adjacency.png"),
+    fullPage: true,
+  });
+  await search.fill("repligate");
+  await expect(featured.getByRole("button")).toHaveCount(1);
+  await expect(featured).toContainText("@repligate");
+  await expect(featured).not.toContainText("@exgenesis");
+  await page
+    .getByRole("combobox", { name: "When loading someone new" })
+    .selectOption("full");
+  await expect(
+    featured.getByRole("button", { name: "Load @repligate, full archive" }),
+  ).toBeVisible();
+});
+
 test("loading an archive keeps its username and progress text legible", async ({
   page,
 }, testInfo) => {

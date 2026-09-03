@@ -258,38 +258,24 @@ export function CommunityArchiveUserModal({
         <input
           id="people-search"
           aria-label="Search people"
+          aria-controls="people-results"
           className="people-search"
           placeholder="Find a person by name or @handle…"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
-        {loadError && (
-          <p role="alert" className="archive-upload-error">
-            {loadError}
-          </p>
-        )}
-        <div className="people-results" aria-busy={busy}>
+        <div id="people-results" className="people-results" aria-busy={busy}>
+          {loadError && (
+            <p role="alert" className="archive-upload-error">
+              {loadError}
+            </p>
+          )}
           {savedMatches.length > 0 && (
             <section aria-label="Other loaded archives">
               <h3>Other loaded archives</h3>
               {savedMatches.map((a) => savedPerson(a))}
             </section>
           )}
-          <div className="archive-load-choice">
-            <label htmlFor="archive-amount">When loading someone new</label>
-            <select
-              id="archive-amount"
-              value={fullHistory ? "full" : "recent"}
-              disabled={busy}
-              onChange={(e) => setFullHistory(e.target.value === "full")}
-            >
-              <option value="recent">Latest 10,000 posts</option>
-              <option value="full">Full archive · takes longer</option>
-            </select>
-            <small>
-              This is what gets loaded, not how many posts each answer uses.
-            </small>
-          </div>
           {isLoading || searchPending ? (
             <p className="people-status" role="status">
               <Spinner /> Finding people…
@@ -393,6 +379,21 @@ export function CommunityArchiveUserModal({
                 </span>
               </p>
             )}
+        </div>
+        <div className="archive-load-choice">
+          <label htmlFor="archive-amount">When loading someone new</label>
+          <select
+            id="archive-amount"
+            value={fullHistory ? "full" : "recent"}
+            disabled={busy}
+            onChange={(e) => setFullHistory(e.target.value === "full")}
+          >
+            <option value="recent">Latest 10,000 posts</option>
+            <option value="full">Full archive · takes longer</option>
+          </select>
+          <small>
+            This is what gets loaded, not how many posts each answer uses.
+          </small>
         </div>
         <div className="people-import">
           <span>Or use your own Twitter/X .zip</span>
