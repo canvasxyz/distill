@@ -1,184 +1,119 @@
-import { useState, useEffect } from "react";
-import { Box, Link, IconButton, Text } from "@radix-ui/themes";
-import * as Dialog from "@radix-ui/react-dialog";
-import * as NavigationMenu from "@radix-ui/react-navigation-menu";
-import { useNavigate, useLocation } from "react-router";
+import { useState } from "react";
+import { NavLink } from "react-router";
+import {
+  ChatBubbleIcon,
+  FaceIcon,
+  CounterClockwiseClockIcon,
+  GearIcon,
+  HamburgerMenuIcon,
+  Cross2Icon,
+} from "@radix-ui/react-icons";
 import { PastQueries } from "../views/query_view/SidebarQueries";
-import { Header } from "./Header";
-import { useTheme } from "./ThemeContext";
+import { useSelectedAccount } from "../hooks/useSelectedAccount";
+import { useStore } from "../state/store";
+import { SelectUser } from "../views/SelectUser";
+import { getCommunityArchiveUserProgressLabel } from "./CommunityArchiveUserProgress";
 import "./ResponsiveSidebar.css";
 
-function AttributionFooter() {
-  return (
-    <Box className="sidebar-attribution" aria-label="Creator attribution">
-      <Text as="p" size="1" color="gray" m="0">
-        Built by{" "}
-        <Link
-          href="https://github.com/raykyri"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          raykyri
-        </Link>{" "}
-        and{" "}
-        <Link
-          href="https://github.com/rjwebb"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          rjwebb
-        </Link>{" "}
-        <span aria-hidden="true">·</span>{" "}
-        <Link
-          href="http://canvas.xyz"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Canvas Technologies Inc
-        </Link>
-      </Text>
-    </Box>
-  );
-}
-
 export function ResponsiveSidebar() {
-  const navigate = useNavigate();
-  const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { appearance } = useTheme();
-
-  const boxShadowColor =
-    appearance === "dark" ? "rgba(255, 255, 255, 0.04)" : "rgba(0, 0, 0, 0.04)";
-
-  // Close mobile sidebar when location changes
-  useEffect(() => {
+  const { openPeople } = useSelectedAccount();
+  const choosePerson = () => {
     setMobileOpen(false);
-  }, [location.pathname]);
+    openPeople();
+  };
+  const { loadCommunityArchiveUserProgress } = useStore();
 
   const sidebarContent = (
-    <NavigationMenu.Root
-      orientation="vertical"
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        height: "100%",
-        width: "100%",
-      }}
-    >
-      <Header
-        leftContent={
-          <Link
-            onClick={() => {
-              navigate("/");
-              setMobileOpen(false);
-            }}
-            style={{
-              cursor: "pointer",
-              fontSize: 24,
-              textDecoration: "none",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              lineHeight: 1,
-            }}
-          >
-            🔎
-          </Link>
-        }
-        justifyContent="flex-start"
-        reserveFloatingNavSpace={false}
-      />
-      <NavigationMenu.List
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          flex: 1,
-          minHeight: 0,
-          overflowY: "auto",
-          overflowX: "hidden",
-          listStyle: "none",
-          margin: 0,
-          padding: 0,
+    <div className="sidebar-inner">
+      <div>
+        <p className="sidebar-label">Currently curious about</p>
+        <SelectUser onOpen={choosePerson} />
+      </div>
+      <nav
+        className="primary-nav"
+        aria-label="Main navigation"
+        onClick={(event) => {
+          if ((event.target as HTMLElement).closest("a")) setMobileOpen(false);
         }}
       >
-        <Box style={{ flex: 1, overflow: "visible" }}>
-          <PastQueries />
-        </Box>
-      </NavigationMenu.List>
-      <AttributionFooter />
-    </NavigationMenu.Root>
+        <NavLink to="/" end>
+          <ChatBubbleIcon />
+          Ask something
+        </NavLink>
+        <NavLink to="/avatar">
+          <FaceIcon />
+          Make an avatar
+        </NavLink>
+        <NavLink to="/history">
+          <CounterClockwiseClockIcon />
+          Past questions
+        </NavLink>
+      </nav>
+      {loadCommunityArchiveUserProgress && (
+        <p className="sidebar-label" role="status">
+          {getCommunityArchiveUserProgressLabel(
+            loadCommunityArchiveUserProgress,
+          )}
+        </p>
+      )}
+      <section className="sidebar-recents" aria-label="Recent questions">
+        <p className="sidebar-label">Last time you asked</p>
+        <PastQueries onNavigate={() => setMobileOpen(false)} />
+      </section>
+      <div className="sidebar-bottom">
+        <NavLink
+          className="settings-link"
+          to="/settings"
+          onClick={() => setMobileOpen(false)}
+        >
+          <GearIcon />
+          Settings
+        </NavLink>
+        <footer className="sidebar-attribution">
+          <a
+            href="https://www.community-archive.org/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Made possible by
+            <br />
+            Community Archive ↗
+          </a>
+        </footer>
+      </div>
+    </div>
   );
 
   return (
     <>
-      {/* Desktop Sidebar - visible on larger screens */}
-      <Box
-        className="responsive-sidebar-desktop"
-        style={{
-          minWidth: 220,
-          maxWidth: 220,
-          position: "sticky",
-          top: 0,
-          height: "100vh",
-          display: "flex",
-          flexDirection: "column",
-          overflow: "hidden",
-          boxShadow: `2px 0 1px ${boxShadowColor}`,
-        }}
+      <aside className="responsive-sidebar-desktop">{sidebarContent}</aside>
+      <button
+        className="mobile-sidebar-toggle icon-button"
+        aria-label={mobileOpen ? "Close navigation" : "Open navigation"}
+        aria-expanded={mobileOpen}
+        aria-controls="mobile-navigation"
+        onClick={() => setMobileOpen(!mobileOpen)}
       >
-        {sidebarContent}
-      </Box>
-
-      {/* Mobile Hamburger Button - fixed at bottom left */}
-      <IconButton
-        className="mobile-sidebar-toggle"
-        onClick={() => setMobileOpen(true)}
-        aria-label="Open sidebar"
-        variant="soft"
-        size="3"
-        style={{
-          position: "fixed",
-          bottom: "24px",
-          left: "24px",
-          width: "56px",
-          height: "56px",
-          borderRadius: "50%",
-        }}
-      >
-        <svg
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
+        {mobileOpen ? <Cross2Icon /> : <HamburgerMenuIcon />}
+      </button>
+      {mobileOpen && (
+        <aside
+          id="mobile-navigation"
+          className="mobile-sidebar-content"
+          aria-label="Navigation"
+          onKeyDown={(event) => {
+            if (event.key === "Escape") {
+              setMobileOpen(false);
+              document
+                .querySelector<HTMLButtonElement>(".mobile-sidebar-toggle")
+                ?.focus();
+            }
+          }}
         >
-          <line x1="3" y1="6" x2="21" y2="6"></line>
-          <line x1="3" y1="12" x2="21" y2="12"></line>
-          <line x1="3" y1="18" x2="21" y2="18"></line>
-        </svg>
-      </IconButton>
-
-      {/* Mobile Sidebar Overlay - using Radix Dialog */}
-      <Dialog.Root open={mobileOpen} onOpenChange={setMobileOpen}>
-        <Dialog.Portal>
-          <Dialog.Overlay className="mobile-sidebar-overlay" />
-          <Dialog.Content className="mobile-sidebar-content">
-            <Box
-              style={{
-                width: "100%",
-                height: "100%",
-                overflow: "hidden",
-                borderRight: "1px solid var(--gray-6)",
-              }}
-            >
-              {sidebarContent}
-            </Box>
-          </Dialog.Content>
-        </Dialog.Portal>
-      </Dialog.Root>
+          {sidebarContent}
+        </aside>
+      )}
     </>
   );
 }

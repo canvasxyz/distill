@@ -1,56 +1,42 @@
-import { useState } from "react";
-import { Button, Flex, IconButton } from "@radix-ui/themes";
-import { useStore } from "../state/store";
+import { Link } from "react-router";
+import { MoonIcon, SunIcon } from "@radix-ui/react-icons";
 import { useTheme } from "./ThemeContext";
-import { ArchiveDropZone } from "./ArchiveDropZone";
-import { CommunityArchiveUserModal } from "./CommunityArchiveUserModal";
-import { getCommunityArchiveUserProgressLabel } from "./CommunityArchiveUserProgress";
+import { useState } from "react";
+import { Modal } from "./Modal";
+import { AboutContent } from "../views/About";
 
 export function ArchiveNav() {
-  const { appIsReady, loadCommunityArchiveUserProgress } = useStore();
+  const [aboutOpen, setAboutOpen] = useState(false);
   const { appearance, toggleTheme } = useTheme();
-  const [showModal, setShowModal] = useState(false);
-
-  if (!appIsReady) return null;
-
+  const themeLabel =
+    appearance === "dark" ? "Switch to light theme" : "Switch to dark theme";
   return (
-    <>
-      <Flex className="archive-nav" align="center" justify="end" gap="2">
-        <ArchiveDropZone />
-        {loadCommunityArchiveUserProgress ? (
-          <Button disabled size="2" variant="outline" color="indigo">
-            {getCommunityArchiveUserProgressLabel(
-              loadCommunityArchiveUserProgress,
-            )}
-          </Button>
-        ) : (
-          <Button
-            onClick={() => setShowModal(true)}
-            size="2"
-            variant="outline"
-            color="blue"
-          >
-            Select from Community Archive
-          </Button>
-        )}
-        <IconButton
+    <header className="app-header">
+      <Link to="/" className="wordmark" aria-label="Distill home">
+        distill
+        <span className="brand-dot" aria-hidden="true" />
+      </Link>
+      <span className="app-tagline">people are interesting.</span>
+      <div className="app-header-actions">
+        <button className="plain-button" onClick={() => setAboutOpen(true)}>
+          What is this?
+        </button>
+        <button
+          className="icon-button"
           onClick={toggleTheme}
-          variant="outline"
-          size="2"
-          style={{ padding: "0 2px" }}
-          title={
-            appearance === "dark"
-              ? "Switch to light theme"
-              : "Switch to dark theme"
-          }
+          aria-label={themeLabel}
+          title={themeLabel}
         >
-          {appearance === "dark" ? "☀️" : "🌙"}
-        </IconButton>
-      </Flex>
-      <CommunityArchiveUserModal
-        showModal={showModal}
-        setShowModal={setShowModal}
-      />
-    </>
+          {appearance === "dark" ? <SunIcon /> : <MoonIcon />}
+        </button>
+      </div>
+      <Modal
+        open={aboutOpen}
+        onClose={() => setAboutOpen(false)}
+        title="What is this?"
+      >
+        <AboutContent />
+      </Modal>
+    </header>
   );
 }

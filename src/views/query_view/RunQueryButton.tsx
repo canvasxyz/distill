@@ -20,15 +20,16 @@ export function RunQueryButton({
 }) {
   return (
     <Button
+      type="button"
+      className="ask-button"
       onClick={disabled ? undefined : onClick}
       disabled={disabled}
-      color="blue"
       size="2"
       variant={variant}
     >
-      Query
+      Ask Distill <span aria-hidden="true">↗</span>
       {showShortcut && isMacPlatform && (
-        <Text size="1" style={{ opacity: 0.8 }}>
+        <Text className="shortcut-hint" size="1" style={{ opacity: 0.8 }}>
           ⌘⏎
         </Text>
       )}

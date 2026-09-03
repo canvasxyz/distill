@@ -1,16 +1,14 @@
-import {
-  type RangeSelection,
-  replaceAccountName,
-  selectSubset,
-} from "./ai_utils";
+import { replaceAccountName, selectSubset } from "./ai_utils";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useStore } from "../../state/store";
+import { useQuestionDraft } from "../../state/questionDraft";
 import { RunQueryButton } from "./RunQueryButton";
 import {
   ProgressBar,
   ProgressLabel,
   ResultsBox,
   QueryResultHeader,
+  QueryResultActions,
 } from "./ResultsBox";
 import { ExampleQueriesModal } from "./ExampleQueriesModal";
 import {
@@ -20,37 +18,37 @@ import {
 } from "./example_queries";
 import { useTweetCounts } from "./useTweetCounts";
 import { TweetFrequencyGraph } from "../../components/TweetFrequencyGraph";
-import { BatchTweetsModal } from "./BatchTweetsModal";
+import { SourceTweetsPanel } from "./SourceTweetsPanel";
 import { getBatchSizeForConfig, type PromptPlacement } from "../../constants";
 import { formatCompactNumber } from "../../utils";
-import { AVAILABLE_LLM_CONFIGS, getLlmConfigLabel } from "../../state/llm_query";
-import { FeaturedQueryCard } from "../../components/FeaturedQueryCard";
-import { BrowseMoreButton } from "../../components/BrowseMoreButton";
-import { SelectUser } from "../SelectUser";
-import { PageContent } from "../../components/PageContent";
 import {
-  Box,
-  Flex,
-  TextArea,
-  Select,
-  Checkbox,
-  RadioGroup,
-  Text,
-  Grid,
-  Button,
-  Callout,
-  Separator,
-} from "@radix-ui/themes";
+  AVAILABLE_LLM_CONFIGS,
+  getLlmConfigLabel,
+} from "../../state/llm_query";
+import { AccountContextLine } from "../../components/AccountContextLine";
+import { ChooseArchive } from "../../components/ChooseArchive";
+import { useSelectedAccount } from "../../hooks/useSelectedAccount";
+import { PageContent } from "../../components/PageContent";
+import { Flex, Select, Checkbox, Text, Callout } from "@radix-ui/themes";
 import type { Tweet } from "../../types";
 import { QueryResultMarkdown } from "./QueryResultMarkdown";
 
 export function RunQueries() {
   const [exampleQueriesModalIsOpen, setExampleQueriesModalIsOpen] =
     useState(false);
-  const [selectedQuery, setSelectedQuery] = useState("");
-
-  const [includeReplies, setIncludeReplies] = useState(true);
-  const [includeRetweets, setIncludeRetweets] = useState(true);
+  const {
+    selectedQuery,
+    setSelectedQuery,
+    showFilters,
+    setShowFilters,
+    includeReplies,
+    setIncludeReplies,
+    includeRetweets,
+    setIncludeRetweets,
+    rangeSelection,
+    setRangeSelection,
+    setDraftUsername,
+  } = useQuestionDraft();
   const promptPlacement: PromptPlacement = "prompt-before";
 
   const {
@@ -65,7 +63,6 @@ export function RunQueries() {
     errorMessage,
     selectedConfigIndex,
     setSelectedConfigIndex,
-    lastLoadedAccountId,
   } = useStore();
 
   const selectedConfig = useMemo(
@@ -79,15 +76,7 @@ export function RunQueries() {
     [selectedConfig],
   );
 
-  const [selectedAccountId, setSelectedAccountId] = useState<string | null>(
-    null,
-  );
-
-  const account = useMemo(
-    () => accounts.filter((a) => a.accountId === selectedAccountId)[0] || null,
-
-    [accounts, selectedAccountId],
-  );
+  const { selectedAccountId, account } = useSelectedAccount();
   const accountUsername = account?.username ?? null;
 
   const accountIdToUsername = useMemo(() => {
@@ -105,30 +94,20 @@ export function RunQueries() {
     return map;
   }, [allTweets]);
 
-  const hasReplies = useMemo(
-    () => (allTweets || []).some((t) => Boolean(t.in_reply_to_user_id)),
-    [allTweets],
+  const accountTweets = useMemo(
+    () => allTweets.filter((tweet) => tweet.account_id === selectedAccountId),
+    [allTweets, selectedAccountId],
   );
-  const hasRetweets = useMemo(
-    () => (allTweets || []).some((t) => t.full_text.startsWith("RT ")),
-    [allTweets],
+  const hasReplies = accountTweets.some((tweet) =>
+    Boolean(tweet.in_reply_to_user_id),
   );
-
-  // Keep UI state intuitive: if none exist, ensure toggles are off
-  useEffect(() => {
-    if (!hasReplies && includeReplies) setIncludeReplies(false);
-  }, [hasReplies, includeReplies]);
-  useEffect(() => {
-    if (!hasRetweets && includeRetweets) setIncludeRetweets(false);
-  }, [hasRetweets, includeRetweets]);
+  const hasRetweets = accountTweets.some((tweet) =>
+    tweet.full_text.startsWith("RT "),
+  );
 
   const filteredTweetsToAnalyse = useMemo(
     () =>
-      (allTweets || []).filter((tweet) => {
-        if (tweet.account_id !== selectedAccountId) {
-          return false;
-        }
-
+      accountTweets.filter((tweet) => {
         if (!includeReplies && tweet.in_reply_to_user_id) {
           return false;
         }
@@ -137,15 +116,10 @@ export function RunQueries() {
         }
         return true;
       }),
-    [allTweets, selectedAccountId, includeReplies, includeRetweets],
+    [accountTweets, includeReplies, includeRetweets],
   );
 
   const tweetCounts = useTweetCounts(filteredTweetsToAnalyse);
-
-  const [rangeSelection, setRangeSelection] = useState<RangeSelection>({
-    type: "last-tweets",
-    numTweets: batchSize,
-  });
 
   const lastTweetsCount =
     rangeSelection.type === "last-tweets" ? rangeSelection.numTweets : null;
@@ -157,7 +131,7 @@ export function RunQueries() {
     ) {
       setRangeSelection({ type: "last-tweets", numTweets: batchSize });
     }
-  }, [batchSize, lastTweetsCount, rangeSelection.type]);
+  }, [batchSize, lastTweetsCount, rangeSelection.type, setRangeSelection]);
 
   const [currentProgress, totalProgress] = useMemo(() => {
     if (batchStatuses === null) return [0, 1];
@@ -168,11 +142,18 @@ export function RunQueries() {
     return [currentProgress, totalProgress];
   }, [batchStatuses]);
 
-  const [showBatchTweetsModal, setShowBatchTweetsModal] = useState(false);
+  const [sourcesOpen, setSourcesOpen] = useState(false);
 
   const handleRunQuery = (queryText: string) => {
-    if (!account || queryText === "" || queryText.trim() === "") return;
+    if (
+      !account ||
+      isProcessing ||
+      !queryText.trim() ||
+      !selectSubset(filteredTweetsToAnalyse, rangeSelection).length
+    )
+      return;
 
+    setSourcesOpen(false);
     submit(
       filteredTweetsToAnalyse,
       account,
@@ -192,17 +173,9 @@ export function RunQueries() {
   }, [tweetsSelectedForQuery]);
 
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
-  const prevUsernameRef = useRef<string | null>(null);
-  const lastAutoSelectedAccountIdRef = useRef<string | null>(null);
-  const hasRestoredFromStorageRef = useRef(false);
+  const prevUsernameRef = useRef(useQuestionDraft.getState().username);
 
   const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-
-  useEffect(() => {
-    if (!account) return;
-    if (!selectedQuery) return;
-    textareaRef.current?.focus();
-  }, [account, selectedQuery]);
 
   // When switching between archives, replace mentions of the previous
   // account's handle with the new account's handle in the current query.
@@ -224,7 +197,8 @@ export function RunQueries() {
       if (replaced !== selectedQuery) setSelectedQuery(replaced);
     }
     prevUsernameRef.current = newUsername;
-  }, [accountUsername, selectedQuery]);
+    setDraftUsername(newUsername);
+  }, [accountUsername, selectedQuery, setSelectedQuery, setDraftUsername]);
 
   // Utility: only persist queries that don't reference a different @handle
   const shouldPersistQuery = (text: string, currentHandle: string) => {
@@ -250,7 +224,7 @@ export function RunQueries() {
     } catch {
       // ignore storage errors
     }
-  }, [account]);
+  }, [account, setSelectedQuery]);
 
   // Persist query text changes to localStorage when valid for this account
   useEffect(() => {
@@ -266,54 +240,6 @@ export function RunQueries() {
     }
   }, [selectedQuery, account]);
 
-  // Persist selected account ID to localStorage
-  useEffect(() => {
-    if (selectedAccountId) {
-      try {
-        localStorage.setItem("llm:lastSelectedAccountId", selectedAccountId);
-      } catch {
-        // ignore storage errors
-      }
-    }
-  }, [selectedAccountId]);
-
-  // Restore last selected account from localStorage after accounts are loaded
-  useEffect(() => {
-    if (
-      hasRestoredFromStorageRef.current ||
-      selectedAccountId !== null ||
-      accounts.length === 0
-    ) {
-      return;
-    }
-
-    try {
-      const savedAccountId = localStorage.getItem("llm:lastSelectedAccountId");
-      if (
-        savedAccountId &&
-        accounts.some((a) => a.accountId === savedAccountId)
-      ) {
-        setSelectedAccountId(savedAccountId);
-        hasRestoredFromStorageRef.current = true;
-      }
-    } catch {
-      // ignore storage errors
-    }
-  }, [accounts, selectedAccountId, setSelectedAccountId]);
-
-  // Automatically select newly loaded archive
-  useEffect(() => {
-    if (
-      lastLoadedAccountId &&
-      lastLoadedAccountId !== lastAutoSelectedAccountIdRef.current &&
-      accounts.some((a) => a.accountId === lastLoadedAccountId)
-    ) {
-      setSelectedAccountId(lastLoadedAccountId);
-      lastAutoSelectedAccountIdRef.current = lastLoadedAccountId;
-      hasRestoredFromStorageRef.current = true; // Prevent restoring from storage after auto-selecting new archive
-    }
-  }, [lastLoadedAccountId, accounts, setSelectedAccountId]);
-
   const totalPostsCount = filteredTweetsToAnalyse.length;
   const lastTweetsLabel =
     totalPostsCount < batchSize ? (
@@ -322,259 +248,341 @@ export function RunQueries() {
       <>Most recent {formatCompactNumber(batchSize)}</>
     );
 
+  const selectedPostCount = Math.min(tweetsSelectedForQuery.length, batchSize);
+
+  if (!account)
+    return (
+      <PageContent>
+        <AccountContextLine />
+        <div className="page-intro">
+          <h1>What’s their deal?</h1>
+          <p className="intro-copy">
+            A little self-reflection. A concrete impression of a friend.
+            <br />
+            Start with their tweets and ask whatever you’re curious about.
+          </p>
+        </div>
+        <ChooseArchive />
+      </PageContent>
+    );
+
   return (
     <PageContent>
-      <Flex direction="column" gap="3" pb="5">
-        <Box mt="6">
-          <SelectUser
-            selectedAccountId={selectedAccountId}
-            setSelectedAccountId={setSelectedAccountId}
-          />
-        </Box>
-        <Box>
-          <TextArea
+      <AccountContextLine />
+      <div className="page-intro">
+        <h1>What’s their deal?</h1>
+        <p className="intro-copy">
+          Their strengths, their soft spots, their oddly specific interests.
+          <br />
+          Ask whatever you’re curious about.
+        </p>
+      </div>
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          handleRunQuery(selectedQuery);
+        }}
+      >
+        <div className="question-composer">
+          <label htmlFor="question">Your question</label>
+          <textarea
+            id="question"
             ref={textareaRef}
             value={selectedQuery}
             disabled={isProcessing || !account}
-            onChange={(e) => setSelectedQuery(e.target.value)}
+            onChange={(event) => setSelectedQuery(event.target.value)}
             onKeyDown={(event) => {
-              if (event.key !== "Enter") return;
-              if (!event.metaKey) return;
-              event.preventDefault();
-              if (isProcessing) return;
-              handleRunQuery(selectedQuery);
+              if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
+                event.preventDefault();
+                handleRunQuery(selectedQuery);
+              }
             }}
             placeholder={
-              account ? "Type your query here..." : "Select a user to query..."
+              account
+                ? "What would you like to know?"
+                : "Choose someone to get started"
             }
-            size="3"
-            rows={3}
-            style={{ minHeight: "60px" }}
+            rows={2}
           />
-        </Box>
-        <Flex align="center" gap="3" mb="3">
-          <RunQueryButton
-            disabled={isProcessing || !account}
+          <div className="composer-footer">
+            <span>According to their tweets, anyway.</span>
+            <RunQueryButton
+              disabled={
+                isProcessing ||
+                !account ||
+                !selectedQuery.trim() ||
+                selectedPostCount === 0
+              }
+              onClick={() => handleRunQuery(selectedQuery)}
+              showShortcut
+            />
+          </div>
+        </div>
+        <div className="scope-row">
+          <span>
+            {selectedPostCount.toLocaleString()} of{" "}
+            {accountTweets.length.toLocaleString()} posts ·{" "}
+            {rangeSelection.type === "last-tweets"
+              ? "Most recent"
+              : "Selected dates"}
+          </span>
+          <button
+            className="plain-button"
+            type="button"
+            aria-expanded={showFilters}
+            aria-controls="post-filters"
+            onClick={() => setShowFilters(!showFilters)}
+          >
+            Which posts?{" "}
+            <span aria-hidden="true">{showFilters ? "−" : "+"}</span>
+          </button>
+        </div>
+      </form>
+      <section
+        className="post-filters"
+        id="post-filters"
+        aria-label="Choose posts"
+        hidden={!showFilters}
+      >
+        <div className="filter-heading">
+          <h2>Which posts should count?</h2>
+          <button
+            className="plain-button"
             onClick={() => {
-              handleRunQuery(selectedQuery);
+              setShowFilters(false);
+              document
+                .querySelector<HTMLButtonElement>(
+                  '[aria-controls="post-filters"]',
+                )
+                ?.focus();
             }}
-            showShortcut
-          />
-          <Flex align="center" gap="4" ml="1">
-            <RadioGroup.Root
-              value={rangeSelection.type}
-              onValueChange={(value) => {
-                if (value === "last-tweets") {
-                  setRangeSelection({
-                    type: "last-tweets",
-                    numTweets: batchSize,
-                  });
-                } else if (value === "date-range") {
-                  setRangeSelection({
-                    type: "date-range",
-                    startDate: "",
-                    endDate: "",
-                  });
+            aria-label="Close post filters"
+          >
+            Close ×
+          </button>
+        </div>
+        <label className="field-label" htmlFor="post-range">
+          Post range
+        </label>
+        <select
+          id="post-range"
+          value={rangeSelection.type}
+          disabled={isProcessing || !account}
+          onChange={({ target: { value } }) => {
+            if (value === "last-tweets")
+              setRangeSelection({ type: "last-tweets", numTweets: batchSize });
+            else
+              setRangeSelection({
+                type: "date-range",
+                startDate: "",
+                endDate: "",
+              });
+          }}
+        >
+          <option value="last-tweets">{lastTweetsLabel}</option>
+          <option value="date-range">Choose dates</option>
+        </select>
+        {rangeSelection.type === "date-range" && (
+          <>
+            <div className="month-range">
+              <label>
+                From month
+                <input
+                  type="month"
+                  aria-label="From month"
+                  value={rangeSelection.startDate.slice(0, 7)}
+                  max={rangeSelection.endDate.slice(0, 7) || undefined}
+                  disabled={isProcessing || !account}
+                  onChange={(event) =>
+                    setRangeSelection({
+                      ...rangeSelection,
+                      startDate: event.target.value
+                        ? `${event.target.value}-01`
+                        : "",
+                    })
+                  }
+                />
+              </label>
+              <label>
+                Through month
+                <input
+                  type="month"
+                  aria-label="Through month"
+                  value={rangeSelection.endDate.slice(0, 7)}
+                  min={rangeSelection.startDate.slice(0, 7) || undefined}
+                  disabled={isProcessing || !account}
+                  onChange={(event) =>
+                    setRangeSelection({
+                      ...rangeSelection,
+                      endDate: event.target.value
+                        ? `${event.target.value}-01`
+                        : "",
+                    })
+                  }
+                />
+              </label>
+            </div>
+            <details className="timeline-details">
+              <summary>Show posting activity</summary>
+              <TweetFrequencyGraph
+                tweetCounts={tweetCounts}
+                startDate={rangeSelection.startDate}
+                endDate={rangeSelection.endDate}
+                onRangeSelect={(startDate, endDate) => {
+                  if (isProcessing) return;
+                  setRangeSelection({ type: "date-range", startDate, endDate });
+                }}
+              />
+            </details>
+          </>
+        )}
+        <Flex gap="4" wrap="wrap" my="4">
+          <Text size="2" as="label">
+            <Flex align="center" gap="2">
+              <Checkbox
+                disabled={isProcessing || !account || !hasReplies}
+                checked={hasReplies && includeReplies}
+                onCheckedChange={(checked) =>
+                  setIncludeReplies(checked === true)
                 }
-              }}
-              disabled={isProcessing || !account}
-            >
-              <Flex gap="2">
-                <Text size="2" as="label">
-                  <Flex align="center" gap="2" style={{ textWrap: "nowrap" }}>
-                    <RadioGroup.Item value="last-tweets" />
-                    {lastTweetsLabel}
-                  </Flex>
-                </Text>
-                <Text size="2" as="label">
-                  <Flex align="center" gap="2">
-                    <RadioGroup.Item value="date-range" />
-                    Custom
-                  </Flex>
-                </Text>
-              </Flex>
-            </RadioGroup.Root>
-
-            <Separator orientation="vertical" />
-
-            <Text size="2" as="label">
-              <Flex align="center" gap="2">
-                <Checkbox
-                  disabled={isProcessing || !account || !hasReplies}
-                  checked={includeReplies}
-                  onCheckedChange={(checked) =>
-                    setIncludeReplies(checked === true)
-                  }
-                />
-                Replies
-              </Flex>
-            </Text>
-            <Text size="2" as="label">
-              <Flex align="center" gap="2">
-                <Checkbox
-                  disabled={isProcessing || !account || !hasRetweets}
-                  checked={includeRetweets}
-                  onCheckedChange={(checked) =>
-                    setIncludeRetweets(checked === true)
-                  }
-                />
-                RTs
-              </Flex>
-            </Text>
-          </Flex>
-          <Box style={{ flex: 1 }} />
+              />
+              Include replies
+            </Flex>
+          </Text>
+          <Text size="2" as="label">
+            <Flex align="center" gap="2">
+              <Checkbox
+                disabled={isProcessing || !account || !hasRetweets}
+                checked={hasRetweets && includeRetweets}
+                onCheckedChange={(checked) =>
+                  setIncludeRetweets(checked === true)
+                }
+              />
+              Include reposts
+            </Flex>
+          </Text>
+        </Flex>
+        <p className="quiet-note">
+          Up to {batchSize.toLocaleString()} posts with this model. If more
+          match, the most recent are used.
+        </p>
+        <details className="model-details">
+          <summary>AI model</summary>
           <Select.Root
             value={String(selectedConfigIndex)}
             onValueChange={(value) => setSelectedConfigIndex(Number(value))}
             disabled={isProcessing || !account}
           >
-            <Select.Trigger style={{ maxWidth: 280 }} />
+            <Select.Trigger aria-label="Question model" />
             <Select.Content>
-              {AVAILABLE_LLM_CONFIGS.map(
-                (config, idx) => (
-                  <Select.Item
-                    key={`${config[0]}-${config[1]}-${config[2] || ""}`}
-                    value={String(idx)}
-                  >
-                    {config[3] && "️⭐️ "}
-                    {getLlmConfigLabel(config)}
-                  </Select.Item>
-                ),
-              )}
+              {AVAILABLE_LLM_CONFIGS.map((config, index) => (
+                <Select.Item
+                  key={`${config[0]}-${config[1]}-${config[2] || ""}`}
+                  value={String(index)}
+                >
+                  {getLlmConfigLabel(config)}
+                  {config[3] ? " · recommended" : ""}
+                </Select.Item>
+              ))}
             </Select.Content>
           </Select.Root>
-        </Flex>
-        {rangeSelection.type === "date-range" && (
-          <TweetFrequencyGraph
-            tweetCounts={tweetCounts}
-            startDate={rangeSelection.startDate}
-            endDate={rangeSelection.endDate}
-            onRangeSelect={(newStartDate, newEndDate) => {
-              setRangeSelection({
-                type: "date-range",
-                startDate: newStartDate,
-                endDate: newEndDate,
-              });
-            }}
-          />
-        )}
-        {errorMessage && (
-          <Callout.Root color="red" mt="2">
-            <Callout.Text>{errorMessage}</Callout.Text>
-          </Callout.Root>
-        )}
+          <p className="quiet-note">
+            The selected posts are sent to the chosen AI provider when you ask.
+          </p>
+        </details>
+      </section>
 
-        {isProcessing && currentRunningQuery && (
+      <div className="question-suggestions" aria-label="Try a question">
+        {FEATURED_QUERIES_SINGULAR.map((featuredQuery: FeaturedQuery) => {
+          const query = replaceAccountName(
+            featuredQuery.text ?? featuredQuery.title,
+            account ? account.username : "this user",
+          );
+          return (
+            <button
+              key={featuredQuery.title}
+              type="button"
+              disabled={isProcessing || !account}
+              aria-pressed={selectedQuery === query}
+              onClick={() => {
+                setSelectedQuery(query);
+                textareaRef.current?.focus();
+              }}
+            >
+              {featuredQuery.title}
+            </button>
+          );
+        })}
+        <button
+          type="button"
+          disabled={isProcessing || !account}
+          className="more-questions"
+          onClick={() => setExampleQueriesModalIsOpen(true)}
+        >
+          More ideas ↗
+        </button>
+      </div>
+
+      {errorMessage && (
+        <Callout.Root color="red" mt="4" role="alert">
+          <Callout.Text>{errorMessage}</Callout.Text>
+        </Callout.Root>
+      )}
+      {isProcessing && currentRunningQuery && (
+        <div role="status" aria-live="polite">
           <ResultsBox>
-            <Box pt="1" pb="2">
-              <ProgressLabel
-                currentProgress={currentProgress}
-                totalProgress={totalProgress}
+            <ProgressLabel
+              currentProgress={currentProgress}
+              totalProgress={totalProgress}
+            />
+            <ProgressBar
+              currentProgress={currentProgress}
+              totalProgress={totalProgress}
+              startedAtMs={startedProcessingTime}
+              isProcessing={isProcessing}
+              numBatches={batchCount || totalProgress}
+            />
+          </ResultsBox>
+        </div>
+      )}
+      {queryResult &&
+        !isProcessing &&
+        queryResult.queriedHandle?.toLowerCase() ===
+          `@${account.username}`.toLowerCase() && (
+          <ResultsBox>
+            <QueryResultHeader result={queryResult} />
+            <QueryResultMarkdown
+              key={queryResult.id}
+              content={queryResult.result}
+              person={queryResult.queriedHandle}
+              tweetsById={tweetsById}
+              accountIdToUsername={accountIdToUsername}
+            />
+            <QueryResultActions
+              resultText={queryResult.result}
+              onShowEvidence={() => setSourcesOpen(!sourcesOpen)}
+              sourcesOpen={sourcesOpen}
+              sourcesId="answer-sources"
+            />
+            {sourcesOpen && (
+              <SourceTweetsPanel
+                key={queryResult.id}
+                result={queryResult}
+                id="answer-sources"
               />
-              <ProgressBar
-                currentProgress={currentProgress}
-                totalProgress={totalProgress}
-                startedAtMs={startedProcessingTime}
-                isProcessing={isProcessing}
-                numBatches={batchCount || totalProgress}
-              />
-            </Box>
+            )}
           </ResultsBox>
         )}
-        {queryResult && (
-          <>
-            <ResultsBox>
-              <QueryResultHeader
-                query={queryResult.query}
-                subtitle={`completed in ${(queryResult.totalRunTime / 1000).toFixed(2)} seconds, ${queryResult.totalTokens} tokens`}
-                resultText={queryResult.result}
-                onShowEvidence={() => {
-                  setShowBatchTweetsModal(true);
-                }}
-              />
-              <QueryResultMarkdown
-                content={queryResult.result}
-                tweetsById={tweetsById}
-                accountIdToUsername={accountIdToUsername}
-              />
-            </ResultsBox>
-          </>
-        )}
-        <Grid
-          columns={{ initial: "1", sm: "2", md: "3" }}
-          gap="3"
-          mt="2"
-          style={{ alignItems: "stretch" }}
-        >
-          {FEATURED_QUERIES_SINGULAR.map((featuredQuery: FeaturedQuery) => {
-            const title = replaceAccountName(
-              featuredQuery.title,
-              account ? account.username : "this user",
-            );
-            const textTemplate = featuredQuery.text ?? featuredQuery.title;
-            const query = replaceAccountName(
-              textTemplate,
-              account ? account.username : "this user",
-            );
-
-            return (
-              <FeaturedQueryCard key={featuredQuery.title} isProcessing={isProcessing}>
-                <Box py="1">{title}</Box>
-                <Flex justify="center" width="100%" gap="2">
-                  <RunQueryButton
-                    variant="outline"
-                    disabled={isProcessing || !account}
-                    onClick={() => {
-                      if (isProcessing) return;
-                      setSelectedQuery(query);
-                      handleRunQuery(query);
-                      textareaRef.current?.focus();
-                    }}
-                  />
-                  <Button
-                    type="button"
-                    disabled={isProcessing || !account}
-                    variant="outline"
-                    color="gray"
-                    size="2"
-                    onClick={() => {
-                      if (isProcessing) return;
-                      setSelectedQuery(query);
-                      textareaRef.current?.focus();
-                    }}
-                  >
-                    Edit
-                  </Button>
-                </Flex>
-              </FeaturedQueryCard>
-            );
-          })}
-        </Grid>
-        <BrowseMoreButton
-          isProcessing={isProcessing}
-          onClick={() => {
-            if (isProcessing) return;
-            setExampleQueriesModalIsOpen(true);
-          }}
-        />
-        <ExampleQueriesModal
-          queries={EXAMPLE_QUERIES_SINGULAR}
-          isOpen={exampleQueriesModalIsOpen}
-          onClose={() => {
-            setExampleQueriesModalIsOpen(false);
-          }}
-          username={account ? account.username : ""}
-          onSelectQuery={(query) => {
-            setSelectedQuery(query);
-            setExampleQueriesModalIsOpen(false);
-          }}
-        />
-        <BatchTweetsModal
-          isOpen={showBatchTweetsModal}
-          queryResult={queryResult}
-          onClose={() => setShowBatchTweetsModal(false)}
-        />
-      </Flex>
+      <ExampleQueriesModal
+        queries={EXAMPLE_QUERIES_SINGULAR}
+        isOpen={exampleQueriesModalIsOpen}
+        onClose={() => setExampleQueriesModalIsOpen(false)}
+        username={account?.username ?? ""}
+        onSelectQuery={(query) => {
+          setSelectedQuery(query);
+          setExampleQueriesModalIsOpen(false);
+        }}
+      />
     </PageContent>
   );
 }

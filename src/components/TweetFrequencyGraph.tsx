@@ -33,7 +33,7 @@ export function SelectedTweetCount({
   );
 }
 
-const LOG_FUNC = Math.log;
+const LOG_FUNC = Math.log1p;
 
 // Tweet frequency graph component
 export function TweetFrequencyGraph({
@@ -108,7 +108,7 @@ export function TweetFrequencyGraph({
     >
       <Text size="3" style={{ marginBottom: 16 }}>
         {tweetCounts.length === 0 || !startDate || !endDate ? (
-          "Click and drag to select a date range"
+          "Use the month fields above, or drag across the chart."
         ) : (
           <>
             Selected{" "}
@@ -123,9 +123,14 @@ export function TweetFrequencyGraph({
         )}
       </Text>
       <svg
-        width={graphWidth}
-        height={graphHeight + 40}
+        viewBox={`0 0 ${graphWidth} ${graphHeight + 40}`}
+        width="100%"
+        role="img"
+        aria-label="Tweet activity by month. Use the month fields to select a range with a keyboard or touch screen."
         style={{
+          display: "block",
+          height: "auto",
+          marginTop: 12,
           border: "1px solid var(--gray-6)",
           borderRadius: "4px",
           cursor: "crosshair",
@@ -142,9 +147,9 @@ export function TweetFrequencyGraph({
 
           let fillColor = "var(--gray-6)";
           if (isInSelectedRange(data.date)) {
-            fillColor = "var(--green-9)";
+            fillColor = "var(--fluorescent)";
           } else if (isDragging && isInDragRange(index)) {
-            fillColor = "var(--green-7)";
+            fillColor = "var(--muted)";
           }
 
           return (

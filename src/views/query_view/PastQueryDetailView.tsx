@@ -2,11 +2,16 @@ import { useNavigate, useParams } from "react-router";
 import { useStore } from "../../state/store";
 import { useMemo, useState } from "react";
 import { extractTimestampFromUUIDv7 } from "../../utils";
-import { ResultsBox, QueryResultHeader } from "./ResultsBox";
-import { BatchTweetsModal } from "./BatchTweetsModal";
+import {
+  ResultsBox,
+  QueryResultHeader,
+  QueryResultActions,
+} from "./ResultsBox";
+import { SourceTweetsPanel } from "./SourceTweetsPanel";
 import type { RangeSelection } from "./ai_utils";
 import { db } from "../../db";
-import { Button, Text, Heading } from "@radix-ui/themes";
+import { Button } from "@radix-ui/themes";
+import { PageContent } from "../../components/PageContent";
 import { QueryResultMarkdown } from "./QueryResultMarkdown";
 import type { Tweet } from "../../types";
 
@@ -39,7 +44,8 @@ export function PastQueryDetailView() {
   const { queryId } = useParams<{ queryId: string }>();
   const { queryResults, accounts, allTweets } = useStore();
   const navigate = useNavigate();
-  const [showBatchTweetsModal, setShowBatchTweetsModal] = useState(false);
+  const [sourcesOpen, setSourcesOpen] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
   const query = queryResults?.find((q) => q.id === queryId);
   const accountIdToUsername = useMemo(
@@ -57,179 +63,102 @@ export function PastQueryDetailView() {
 
   if (!query) {
     return (
-      <div
-        style={{
-          padding: "20px",
-          maxWidth: "800px",
-          margin: "auto",
-          width: "100%",
-          boxSizing: "border-box",
-          overflowX: "hidden",
-        }}
-      >
-        <Button
-          onClick={() => navigate("/")}
-          variant="outline"
-          size="2"
-          style={{ marginBottom: "20px" }}
-        >
-          ← Back
-        </Button>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            width: "100%",
-          }}
-        >
-          <Text size="3" color="gray">
-            Query not found
-          </Text>
+      <PageContent>
+        <div className="empty-state">
+          <h1>Question not found.</h1>
+          <p>It may have been deleted or saved in a different browser.</p>
+          <Button onClick={() => navigate("/history")}>
+            Back to past questions
+          </Button>
         </div>
-      </div>
+      </PageContent>
     );
   }
 
   return (
-    <div
-      style={{
-        padding: "20px",
-        maxWidth: "800px",
-        margin: "auto",
-        width: "100%",
-        boxSizing: "border-box",
-        overflowX: "hidden",
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "20px",
-        }}
-      >
-        <Button onClick={() => navigate("/")} variant="outline" size="2">
-          ← Back
+    <PageContent>
+      <div className="past-question-toolbar">
+        <Button onClick={() => navigate("/history")} variant="outline">
+          ← Past questions
         </Button>
-
         <Button
-          aria-label="Delete this query"
+          aria-label="Delete this question"
+          variant="outline"
+          color="red"
           onClick={async () => {
-            const ok = confirm("Delete this query? This cannot be undone.");
-            if (!ok) return;
+            if (
+              !confirm(
+                "Delete this question and its answer? This cannot be undone.",
+              )
+            )
+              return;
             try {
               await db.queryResults.delete(query.id);
-            } finally {
-              navigate("/");
+              navigate("/history");
+            } catch {
+              setDeleteError("Couldn’t delete this answer. Please try again.");
             }
           }}
-          variant="outline"
-          size="2"
-          color="red"
         >
           Delete
         </Button>
       </div>
-
-      <div style={{ marginBottom: "20px" }}>
-        <Heading size="5" mb="3">
-          Query
-        </Heading>
-        <div
-          style={{
-            padding: "12px 16px",
-            background: "var(--gray-2)",
-            border: "1px solid var(--gray-6)",
-            borderRadius: "6px",
-          }}
-        >
-          <Text size="3">{query.query}</Text>
-        </div>
-      </div>
-
-      <div style={{ marginBottom: "20px" }}>
-        <ResultsBox>
-          <QueryResultHeader
-            query={query.query}
-            subtitle={[
-              query.queriedHandle,
-              query.model,
-              `${query.totalTokens} tokens`,
-            ]
-              .filter(Boolean)
-              .join(" — ")}
-            resultText={query.result}
-            onShowEvidence={() => {
-              setShowBatchTweetsModal(true);
-            }}
+      {deleteError && (
+        <p role="alert" className="archive-upload-error">
+          {deleteError}
+        </p>
+      )}
+      <ResultsBox>
+        <QueryResultHeader result={query} showQuestion />
+        <QueryResultMarkdown
+          content={query.result}
+          person={query.queriedHandle}
+          tweetsById={tweetsById}
+          accountIdToUsername={accountIdToUsername}
+        />
+        <QueryResultActions
+          resultText={query.result}
+          onShowEvidence={() => setSourcesOpen(!sourcesOpen)}
+          sourcesOpen={sourcesOpen}
+          sourcesId="saved-answer-sources"
+        />
+        {sourcesOpen && (
+          <SourceTweetsPanel
+            key={query.id}
+            result={query}
+            id="saved-answer-sources"
           />
-          <QueryResultMarkdown
-            content={query.result}
-            tweetsById={tweetsById}
-            accountIdToUsername={accountIdToUsername}
-          />
-        </ResultsBox>
-      </div>
-
-      <div
-        style={{
-          marginTop: "20px",
-          padding: "16px",
-          background: "var(--gray-2)",
-          border: "1px solid var(--gray-6)",
-          borderRadius: "6px",
-        }}
-      >
-        <Heading size="4" mb="3">
-          Query Details
-        </Heading>
-        <div style={{ display: "flex", gap: "2px 20px", flexWrap: "wrap" }}>
-          <span>
-            <span style={{ color: "var(--green-10)", fontWeight: 500 }}>
-              Total Run Time:
-            </span>{" "}
-            {(query.totalRunTime / 1000).toFixed(2)}s
-          </span>
-          <span>
-            <span style={{ color: "var(--red-10)", fontWeight: 500 }}>
-              Range:
-            </span>{" "}
-            {formatRangeSelection(query.rangeSelection)}
-          </span>
-          <span>
-            <span style={{ color: "var(--sky-11)", fontWeight: 500 }}>
-              Provider:
-            </span>{" "}
-            {query.provider}
-          </span>
-          <span>
-            <span style={{ color: "var(--red-10)", fontWeight: 500 }}>
-              Model:
-            </span>{" "}
-            {query.model}
-          </span>
-          <span>
-            <span style={{ color: "var(--red-10)", fontWeight: 500 }}>
-              Tokens:
-            </span>{" "}
-            {query.totalTokens}
-          </span>
-          <span>
-            <span style={{ color: "var(--gray-9)", fontWeight: 500 }}>
-              Date:
-            </span>{" "}
-            {formatDateTime(extractTimestampFromUUIDv7(query.id))}
-          </span>
-        </div>
-      </div>
-
-      <BatchTweetsModal
-        isOpen={showBatchTweetsModal}
-        queryResult={query}
-        onClose={() => setShowBatchTweetsModal(false)}
-      />
-      <br />
-    </div>
+        )}
+      </ResultsBox>
+      <details className="answer-details">
+        <summary>Answer details</summary>
+        <dl>
+          <div>
+            <dt>Time</dt>
+            <dd>{(query.totalRunTime / 1000).toFixed(2)} seconds</dd>
+          </div>
+          <div>
+            <dt>Post range</dt>
+            <dd>{formatRangeSelection(query.rangeSelection)}</dd>
+          </div>
+          <div>
+            <dt>Provider</dt>
+            <dd>{query.provider}</dd>
+          </div>
+          <div>
+            <dt>Model</dt>
+            <dd>{query.model}</dd>
+          </div>
+          <div>
+            <dt>Tokens</dt>
+            <dd>{query.totalTokens.toLocaleString()}</dd>
+          </div>
+          <div>
+            <dt>Date</dt>
+            <dd>{formatDateTime(extractTimestampFromUUIDv7(query.id))}</dd>
+          </div>
+        </dl>
+      </details>
+    </PageContent>
   );
 }

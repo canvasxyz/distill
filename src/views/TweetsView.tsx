@@ -53,10 +53,15 @@ export function TweetsView({
         <div style={{ marginBottom: "10px" }}>
           <input
             type="text"
+            aria-label="Search tweets"
             placeholder="Search tweets..."
             value={searchParam ?? ""}
             onChange={(e) => {
-              setSearchParams({ search: e.target.value });
+              setSearchParams((previous) => {
+                const next = new URLSearchParams(previous);
+                next.set("search", e.target.value);
+                return next;
+              });
             }}
             style={{
               width: "100%",
@@ -66,6 +71,8 @@ export function TweetsView({
               border: "1px solid var(--gray-6)",
               borderRadius: "4px",
               fontSize: "16px",
+              color: "var(--ink)",
+              background: "var(--paper)",
             }}
           />
           {allTweets.length} tweets

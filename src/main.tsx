@@ -1,4 +1,5 @@
 import "@radix-ui/themes/styles.css";
+import "@fontsource-variable/fraunces/full.css";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
@@ -12,6 +13,9 @@ import { NotFound } from "./views/NotFound.tsx";
 import { Settings } from "./views/Settings.tsx";
 import { AvatarView } from "./views/avatar_view/AvatarView.tsx";
 import { ThemeProvider } from "./components/ThemeProvider";
+import { About } from "./views/About";
+import { HistoryView } from "./views/query_view/HistoryView";
+import { PeopleView } from "./views/PeopleView";
 
 const router = createHashRouter([
   {
@@ -23,6 +27,9 @@ const router = createHashRouter([
       { path: "chat", Component: Chat },
       { path: "settings", Component: Settings },
       { path: "avatar", Component: AvatarView },
+      { path: "about", Component: About },
+      { path: "history", Component: HistoryView },
+      { path: "people", Component: PeopleView },
       { path: "query/:queryId", Component: PastQueryDetailView },
       { path: "*", Component: NotFound },
     ],

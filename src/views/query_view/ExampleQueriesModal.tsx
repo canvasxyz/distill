@@ -73,7 +73,6 @@ export function ExampleQueriesModal({
                       {onSelectQuery && (
                         <Button
                           size="2"
-                          color="blue"
                           onClick={() => onSelectQuery(queryWithAccountName)}
                         >
                           Select
