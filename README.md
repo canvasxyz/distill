@@ -9,7 +9,8 @@ A browser-based way to get an impression of yourself, a friend, or someone youâ€
 - Revisit answers saved in this browser, copy them, inspect their source tweets, or delete them.
 - Generate an avatar from tweets and profile details, optionally using the current avatar as a reference. Inspect the generated prompt, re-render, download, or delete an image.
 - Switch between charcoal and pale-violet themes, both with fluorescent green accents. Fraunces is bundled locally; no Google Fonts request is needed.
-- Archives and history are stored in IndexedDB. Importing an archive here does not contribute it to Community Archive. Use the person picker to remove a local archive.
+- Browse and switch people on a dedicated page with normal page scrolling. Search sits directly above its results; loading options expand inline. Back or selecting someone returns to the previous screen without losing your draft question or post filters.
+- Archives and history are stored in IndexedDB. Importing an archive here does not contribute it to Community Archive. Use the people page to remove a local archive.
 
 ## Usage
 
@@ -37,4 +38,4 @@ pnpm test:e2e
 
 The browser suite runs on desktop and mobile-sized Chromium, starts its own local server, and uses isolated storage, fictional archive imports, and intercepted network responses. No real AI or Community Archive requests are made. If Chrome is already installed, `DISTILL_BROWSER_CHANNEL=chrome pnpm test:e2e` can use it instead of downloading Chromium.
 
-Screenshots and traces are written to the ignored `test-results/` directory. The suite covers theme persistence, the shared person picker and import/removal flows, questions, filters, saved answer scope, inline sources, clipboard feedback, avatar generation/re-rendering/history, simplified settings, and error recovery. Layout assertions check the compact composer, answer alignment, desktop preview/control columns, and in-page mobile navigation. Screenshot captures disable animations for reliable visual review.
+Screenshots and traces are written to the ignored `test-results/` directory. The suite covers theme persistence, the shared people page and import/removal flows, questions, filters, saved answer scope, inline sources, clipboard feedback, avatar generation/re-rendering/history, simplified settings, and error recovery. Layout assertions check the compact composer, answer alignment, desktop preview/control columns, in-page mobile navigation, and a single page scrollbar while browsing people. Navigation checks cover returning to drafts, changing people, browser Back, reloads, and direct links to the people page. Screenshot captures disable animations for reliable visual review.

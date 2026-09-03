@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
-import { Link } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
 import { Avatar, DropdownMenu, Spinner } from "@radix-ui/themes";
 import { ChevronRightIcon } from "@radix-ui/react-icons";
 import type { Account } from "../types";
@@ -11,9 +11,9 @@ import {
 import { useSelectedAccount } from "../hooks/useSelectedAccount";
 import { useStore } from "../state/store";
 import { db } from "../db";
-import { Modal } from "./Modal";
-import { ArchiveDropZone } from "./ArchiveDropZone";
-import { getCommunityArchiveUserProgressLabel } from "./CommunityArchiveUserProgress";
+import { PageContent } from "../components/PageContent";
+import { ArchiveDropZone } from "../components/ArchiveDropZone";
+import { getCommunityArchiveUserProgressLabel } from "../components/CommunityArchiveUserProgress";
 
 function SavedPerson({
   account,
@@ -22,7 +22,6 @@ function SavedPerson({
   current = false,
   disabled,
   onSelect,
-  onClose,
   onRefresh,
   onRemove,
 }: {
@@ -32,7 +31,6 @@ function SavedPerson({
   current?: boolean;
   disabled: boolean;
   onSelect: () => void;
-  onClose: () => void;
   onRefresh: () => void;
   onRemove: () => void;
 }) {
@@ -83,7 +81,6 @@ function SavedPerson({
           <DropdownMenu.Item asChild>
             <Link
               to={`/all-tweets?account_id=${encodeURIComponent(account.accountId)}`}
-              onClick={onClose}
             >
               Browse posts
             </Link>
@@ -102,18 +99,30 @@ function SavedPerson({
   );
 }
 
-export function CommunityArchiveUserModal({
-  showModal,
-  setShowModal,
-}: {
-  showModal: boolean;
-  setShowModal: (show: boolean) => void;
-}) {
+export function PeopleView() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const from = (location.state as { peopleFrom?: string } | null)?.peopleFrom;
+  const hasOrigin =
+    typeof from === "string" && /^\/(?!\/|people(?:[/?]|$))/.test(from);
+  const mounted = useRef(false);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
+  const returnToWorkspace = () => {
+    if (!mounted.current) return;
+    if (hasOrigin) navigate(-1);
+    else navigate("/", { replace: true });
+  };
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [fullHistory, setFullHistory] = useState(false);
   const [loadingPerson, setLoadingPerson] = useState("");
   const [loadError, setLoadError] = useState("");
+  const [failedPerson, setFailedPerson] = useState("");
   const { selectedAccountId, setSelectedAccountId } = useSelectedAccount();
   const {
     accounts: savedAccounts,
@@ -146,7 +155,7 @@ export function CommunityArchiveUserModal({
     isLoadingMore,
     loadMore,
     retry,
-  } = useCommunityArchiveAccounts(showModal, debouncedQuery);
+  } = useCommunityArchiveAccounts(true, debouncedQuery);
   const busy =
     !!loadCommunityArchiveUserProgress || !!ingestTwitterArchiveProgress;
   const searchPending = query.trim() !== debouncedQuery;
@@ -179,13 +188,15 @@ export function CommunityArchiveUserModal({
   async function loadPerson(id: string, username: string, limit?: number) {
     if (busy) return;
     setLoadError("");
+    setFailedPerson("");
     setLoadingPerson(username);
     try {
       await loadCommunityArchiveUser(id, limit);
       setSelectedAccountId(id);
-      setShowModal(false);
+      returnToWorkspace();
     } catch {
       useStore.setState({ loadCommunityArchiveUserProgress: null });
+      setFailedPerson(username);
       setLoadError(`@${username} couldn’t be loaded. Please try again.`);
     } finally {
       setLoadingPerson("");
@@ -199,6 +210,7 @@ export function CommunityArchiveUserModal({
     )
       return;
     try {
+      setFailedPerson("");
       await removeArchive(id);
     } catch {
       setLoadError("Couldn’t remove this archive. Please try again.");
@@ -216,33 +228,38 @@ export function CommunityArchiveUserModal({
       postCount={counts.get(account.accountId) ?? 0}
       onSelect={() => {
         setSelectedAccountId(account.accountId);
-        setShowModal(false);
+        returnToWorkspace();
       }}
-      onClose={() => setShowModal(false)}
       onRefresh={() => void loadPerson(account.accountId, account.username)}
       onRemove={() => void removePerson(account.accountId)}
     />
   );
   return (
-    <Modal
-      open={showModal}
-      onClose={() => setShowModal(false)}
-      title="Who are you curious about?"
-      initialFocus="#people-search"
-    >
+    <PageContent>
       <div className="people-picker">
-        <p className="quiet-note">
-          Yourself, a friend, someone whose tweets stuck with you. Public
-          archives are shared voluntarily through{" "}
-          <a
-            href="https://www.community-archive.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Community Archive ↗
-          </a>
-          .
-        </p>
+        <div className="people-page-actions">
+          <button className="plain-button" onClick={returnToWorkspace}>
+            ← Back
+          </button>
+          <div className="people-import">
+            <ArchiveDropZone onImported={returnToWorkspace} />
+          </div>
+        </div>
+        <header className="page-intro">
+          <h1>Who are you curious about?</h1>
+          <p className="intro-copy">
+            Yourself, a friend, someone whose tweets stuck with you. Public
+            archives are shared voluntarily through{" "}
+            <a
+              href="https://www.community-archive.org/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Community Archive ↗
+            </a>
+            .
+          </p>
+        </header>
         {currentAccount && (
           <section
             className="current-person-section"
@@ -252,6 +269,31 @@ export function CommunityArchiveUserModal({
             {savedPerson(currentAccount, true)}
           </section>
         )}
+        <div className="people-tools">
+          <details className="people-options">
+            <summary>
+              Loading options{" "}
+              <span>
+                · {fullHistory ? "Full archive" : "Latest 10,000 posts"}
+              </span>
+            </summary>
+            <div className="archive-load-choice">
+              <label htmlFor="archive-amount">When loading someone new</label>
+              <select
+                id="archive-amount"
+                value={fullHistory ? "full" : "recent"}
+                disabled={busy}
+                onChange={(e) => setFullHistory(e.target.value === "full")}
+              >
+                <option value="recent">Latest 10,000 posts</option>
+                <option value="full">Full archive · takes longer</option>
+              </select>
+              <small>
+                This is what gets loaded, not how many posts each answer uses.
+              </small>
+            </div>
+          </details>
+        </div>
         <label className="field-label" htmlFor="people-search">
           {currentAccount ? "Choose another person" : "Find someone"}
         </label>
@@ -265,11 +307,12 @@ export function CommunityArchiveUserModal({
           onChange={(e) => setQuery(e.target.value)}
         />
         <div id="people-results" className="people-results" aria-busy={busy}>
-          {loadError && (
-            <p role="alert" className="archive-upload-error">
-              {loadError}
-            </p>
-          )}
+          {loadError &&
+            !newAccounts.some((a) => a.username === failedPerson) && (
+              <p role="alert" className="archive-upload-error">
+                {loadError}
+              </p>
+            )}
           {savedMatches.length > 0 && (
             <section aria-label="Other loaded archives">
               <h3>Other loaded archives</h3>
@@ -334,6 +377,14 @@ export function CommunityArchiveUserModal({
                             </span>
                           </p>
                         )}
+                        {loadError && failedPerson === a.username && (
+                          <p
+                            role="alert"
+                            className="person-error archive-upload-error"
+                          >
+                            {loadError}
+                          </p>
+                        )}
                       </div>
                     ))}
                   </section>
@@ -380,26 +431,7 @@ export function CommunityArchiveUserModal({
               </p>
             )}
         </div>
-        <div className="archive-load-choice">
-          <label htmlFor="archive-amount">When loading someone new</label>
-          <select
-            id="archive-amount"
-            value={fullHistory ? "full" : "recent"}
-            disabled={busy}
-            onChange={(e) => setFullHistory(e.target.value === "full")}
-          >
-            <option value="recent">Latest 10,000 posts</option>
-            <option value="full">Full archive · takes longer</option>
-          </select>
-          <small>
-            This is what gets loaded, not how many posts each answer uses.
-          </small>
-        </div>
-        <div className="people-import">
-          <span>Or use your own Twitter/X .zip</span>
-          <ArchiveDropZone onImported={() => setShowModal(false)} />
-        </div>
       </div>
-    </Modal>
+    </PageContent>
   );
 }

@@ -922,15 +922,35 @@ select:not(.rt-SelectNative),
 .timeline-details {
   font-size: 12px;
 }
-.people-picker > .quiet-note {
-  margin-top: 0;
+.people-page-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.people-tools {
+  margin: 20px 0;
+  border-block: 1px solid var(--line);
+}
+.people-options {
+  min-width: 0;
+  font-size: 12px;
+}
+.people-options summary {
+  min-height: 44px;
+  padding: 12px 0;
+}
+.people-options summary span {
+  color: var(--muted);
+}
+.people-options .archive-load-choice {
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 480px;
+  margin: 8px 0 16px;
 }
 .people-results {
-  max-height: 45vh;
-  overflow-y: auto;
-  overscroll-behavior: contain;
   margin-top: 16px;
-  padding-right: 4px;
 }
 .people-results h3,
 .current-person-section h3 {
@@ -1025,6 +1045,9 @@ select:not(.rt-SelectNative),
   align-items: start;
   gap: 8px;
 }
+.person-error {
+  grid-column: 1 / -1;
+}
 .archive-load-choice {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1046,14 +1069,7 @@ select:not(.rt-SelectNative),
   padding: 16px 0;
 }
 .people-import {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 12px;
-  padding-top: 16px;
-  margin-top: 16px;
-  border-top: 1px solid var(--line);
+  flex: 0 1 auto;
   font-size: 12px;
   color: var(--muted);
 }

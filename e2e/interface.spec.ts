@@ -55,6 +55,7 @@ function archive(username = "alexexample") {
 async function importArchive(page: Page, username = "alexexample") {
   await chooseFile(page, `${username}.zip`, archive(username));
   await expect(page.locator(".account-context")).toContainText(`@${username}`);
+  await expect(page.locator(".people-picker")).toHaveCount(0);
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await expect(page.locator(".mobile-sidebar-content")).toHaveCount(0);
 }
@@ -69,9 +70,6 @@ async function chooseFile(page: Page, name: string, buffer: Buffer) {
   await (await chooser).setFiles({ name, mimeType: "application/zip", buffer });
 }
 async function openNavigation(page: Page) {
-  await expect(
-    page.getByRole("dialog").filter({ has: page.locator("#people-search") }),
-  ).toHaveCount(0);
   const toggle = page.getByRole("button", { name: "Open navigation" });
   if (
     (await toggle.isVisible()) &&
@@ -80,6 +78,12 @@ async function openNavigation(page: Page) {
     await toggle.click();
     await expect(page.locator(".mobile-sidebar-content")).toBeVisible();
   }
+}
+async function loadingOptions(page: Page) {
+  const details = page.locator(".people-options");
+  if (!(await details.evaluate((el) => (el as HTMLDetailsElement).open)))
+    await details.locator("summary").click();
+  return page.getByRole("combobox", { name: "When loading someone new" });
 }
 async function navigate(page: Page, name: string) {
   await openNavigation(page);
@@ -193,12 +197,12 @@ test("empty state, theme persistence, and keyboard-accessible navigation", async
   await page
     .getByRole("button", { name: "Choose someone ↗", exact: true })
     .click();
-  await expect(page.getByRole("dialog")).toContainText(
+  await expect(page.locator(".people-picker")).toContainText(
     "Who are you curious about?",
   );
   await page.getByRole("textbox", { name: "Search people" }).fill("nobody");
-  await expect(page.getByRole("dialog")).toContainText("No people match");
-  await page.keyboard.press("Escape");
+  await expect(page.locator(".people-picker")).toContainText("No people match");
+  await page.getByRole("button", { name: "← Back", exact: true }).click();
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await navigate(page, "Past questions");
   await expect(
@@ -244,8 +248,7 @@ test("archive selection stays in sync across screens, removal, and reload", asyn
   await page
     .getByRole("menuitem", { name: "Remove @alexexample archive" })
     .click();
-  await page.keyboard.press("Escape");
-  await page.keyboard.press("Escape");
+  await page.getByRole("button", { name: "← Back", exact: true }).click();
   await expect(page.locator(".account-context")).toContainText("@samexample");
   await noOverflow(page);
 });
@@ -501,13 +504,14 @@ test("month ranges, model selection, and browsing one person's tweets", async ({
   await noOverflow(page);
 });
 
-test("one people picker, simple settings, and preview-led avatar layout", async ({
+test("a people page, simple settings, and preview-led avatar layout", async ({
   page,
 }, testInfo) => {
   await importArchive(page);
   await page.locator(".account-context button").click();
-  await expect(page.getByRole("dialog")).toHaveCount(1);
-  await expect(page.getByRole("dialog")).toContainText(
+  await expect(page).toHaveURL(/#\/people$/);
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await expect(page.locator(".people-picker")).toContainText(
     "Currently curious about",
   );
   await expect(
@@ -515,16 +519,16 @@ test("one people picker, simple settings, and preview-led avatar layout", async 
       .getByRole("button", { name: "Import my archive ↗" })
       .filter({ visible: true }),
   ).toHaveCount(1);
-  await expect(
-    page.getByRole("combobox", { name: "When loading someone new" }),
-  ).toBeVisible();
+  await expect(page.locator(".people-options summary")).toContainText(
+    "Latest 10,000 posts",
+  );
   await page.screenshot({
     animations: "disabled",
     path: testInfo.outputPath("people-picker.png"),
     fullPage: true,
   });
-  await page.keyboard.press("Escape");
-  await expect(page.locator(".account-context button")).toBeFocused();
+  await page.getByRole("button", { name: "← Back", exact: true }).click();
+  await expect(page.locator("main")).toBeFocused();
 
   await navigate(page, "Settings");
   await expect(
@@ -622,19 +626,17 @@ test("public directory failures recover without leaving the person picker", asyn
   await page
     .getByRole("button", { name: "Choose someone ↗", exact: true })
     .click();
-  await expect(page.getByRole("dialog")).toContainText("Failed to load");
+  await expect(page.locator(".people-picker")).toContainText("Failed to load");
   fails = false;
   await page.getByRole("button", { name: "Try again", exact: true }).click();
   await expect(
     page.getByRole("button", { name: "Load @testpublic, latest 10,000 posts" }),
   ).toBeVisible();
-  await page
-    .getByRole("combobox", { name: "When loading someone new" })
-    .selectOption("full");
+  await (await loadingOptions(page)).selectOption("full");
   await expect(
     page.getByRole("button", { name: "Load @testpublic, full archive" }),
   ).toBeVisible();
-  await expect(page.getByRole("dialog")).toContainText(
+  await expect(page.locator(".people-picker")).toContainText(
     "12,345 available posts",
   );
 });
@@ -741,7 +743,7 @@ test("current person has a separate non-selectable card that survives searching"
   await expect(
     page.getByRole("region", { name: "Other loaded archives" }),
   ).toContainText("@alexexample");
-  await expect(page.getByRole("dialog")).not.toContainText("✓");
+  await expect(page.locator(".people-picker")).not.toContainText("✓");
   await page.getByRole("textbox", { name: "Search people" }).fill("alex");
   await expect(current).toContainText("@samexample");
   await page.screenshot({
@@ -757,7 +759,7 @@ test("current person has a separate non-selectable card that survives searching"
   await noOverflow(page);
 });
 
-test("people search sits directly above its results with loading options below", async ({
+test("people search sits directly above its results with loading options separate", async ({
   page,
 }, testInfo) => {
   await importArchive(page);
@@ -791,11 +793,7 @@ test("people search sits directly above its results with loading options below",
   expect(await search.evaluate((el) => el.nextElementSibling?.id)).toBe(
     "people-results",
   );
-  expect(
-    await results.evaluate((el) =>
-      el.nextElementSibling?.classList.contains("archive-load-choice"),
-    ),
-  ).toBe(true);
+  await expect(results.locator(".archive-load-choice")).toHaveCount(0);
   const searchBox = await search.boundingBox();
   const featuredBox = await featured.boundingBox();
   const gap = featuredBox!.y - (searchBox!.y + searchBox!.height);
@@ -811,9 +809,7 @@ test("people search sits directly above its results with loading options below",
   await expect(featured.getByRole("button")).toHaveCount(1);
   await expect(featured).toContainText("@repligate");
   await expect(featured).not.toContainText("@exgenesis");
-  await page
-    .getByRole("combobox", { name: "When loading someone new" })
-    .selectOption("full");
+  await (await loadingOptions(page)).selectOption("full");
   await expect(
     featured.getByRole("button", { name: "Load @repligate, full archive" }),
   ).toBeVisible();
@@ -891,4 +887,213 @@ test("loading an archive keeps its username and progress text legible", async ({
     release();
   }
   await expect(page.getByRole("alert")).toContainText("couldn’t be loaded");
+});
+
+test("people browsing uses only page scrolling in both themes", async ({
+  page,
+}, testInfo) => {
+  await importArchive(page);
+  await page.route("**/rest/v1/account?**", (route) =>
+    route.fulfill({
+      json: Array.from({ length: 50 }, (_, i) => ({
+        account_id: `example${i}`,
+        username: i === 0 ? "exgenesis" : `example${i}`,
+        num_tweets: 12345,
+        num_followers: 0,
+        profile: null,
+      })),
+    }),
+  );
+  await page.locator(".account-context button").click();
+  await expect(page).toHaveURL(/#\/people$/);
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await expect(page.locator(".people-results .person-row")).toHaveCount(50);
+  await expect(
+    page.locator(".people-results .person-row").first(),
+  ).toBeInViewport();
+  await expect(
+    page.getByRole("textbox", { name: "Search people" }),
+  ).toBeInViewport();
+  for (const theme of ["dark", "light"]) {
+    if (theme === "light")
+      await page.getByRole("button", { name: "Switch to light theme" }).click();
+    const scrollContainers = await page
+      .locator(".app-shell *")
+      .evaluateAll((elements) =>
+        elements
+          .filter((el) => {
+            const style = getComputedStyle(el);
+            return (
+              /(auto|scroll)/.test(style.overflowY) &&
+              el.scrollHeight > el.clientHeight + 1
+            );
+          })
+          .map((el) => el.className),
+      );
+    expect(scrollContainers).toEqual([]);
+    await page.screenshot({
+      animations: "disabled",
+      path: testInfo.outputPath(`people-page-${theme}.png`),
+    });
+    await page.locator(".people-results").hover({ position: { x: 50, y: 30 } });
+    await page.mouse.wheel(0, 500);
+    await expect
+      .poll(() => page.evaluate(() => window.scrollY))
+      .toBeGreaterThan(200);
+    expect(
+      await page.locator(".people-results").evaluate((el) => el.scrollTop),
+    ).toBe(0);
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await noOverflow(page);
+  }
+  await page.route("**/rest/v1/tweets?**", (route) =>
+    route.fulfill({ status: 503, json: { message: "Test failure" } }),
+  );
+  const lastPerson = page.getByRole("button", {
+    name: "Load @example49, latest 10,000 posts",
+  });
+  await lastPerson.click();
+  const error = lastPerson.locator("..").getByRole("alert");
+  await expect(error).toContainText("@example49 couldn’t be loaded");
+  await expect(error).toBeInViewport();
+  await page.getByRole("button", { name: "← Back", exact: true }).click();
+  await expect(
+    page.getByRole("textbox", { name: "Your question" }),
+  ).toBeVisible();
+});
+
+test("leaving the people page preserves drafts, filters and the originating screen", async ({
+  page,
+}) => {
+  await importArchive(page);
+  await importArchive(page, "samexample");
+  const question = page.getByRole("textbox", { name: "Your question" });
+  await question.fill("What do @samexample and @friend enjoy?");
+  await page.getByRole("button", { name: "Which posts?" }).click();
+  await page.getByRole("checkbox", { name: "Include replies" }).uncheck();
+  await page.locator(".account-context button").click();
+  await page.goBack();
+  await expect(question).toHaveValue("What do @samexample and @friend enjoy?");
+  await expect(
+    page.getByRole("checkbox", { name: "Include replies" }),
+  ).not.toBeChecked();
+  await page.locator(".account-context button").click();
+  await page
+    .getByRole("button", { name: "Select @alexexample", exact: true })
+    .click();
+  await expect(question).toHaveValue("What do @alexexample and @friend enjoy?");
+  await expect(
+    page.getByRole("checkbox", { name: "Include replies" }),
+  ).not.toBeChecked();
+  await navigate(page, "Make an avatar");
+  await page.locator(".account-context button").click();
+  await page
+    .getByRole("button", { name: "Select @samexample", exact: true })
+    .click();
+  await expect(page).toHaveURL(/#\/avatar$/);
+  await expect(page.locator(".account-context")).toContainText("@samexample");
+  await page.locator(".account-context button").click();
+  await page.reload();
+  await expect(
+    page.getByRole("heading", { name: "Who are you curious about?" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "← Back", exact: true }).click();
+  await expect(page).toHaveURL(/#\/avatar$/);
+  await page.goto("./#/people");
+  await page.getByRole("button", { name: "← Back", exact: true }).click();
+  await expect(
+    page.getByRole("textbox", { name: "Your question" }),
+  ).toBeVisible();
+});
+
+test("a public archive returns to the workspace unless you have already left", async ({
+  page,
+}) => {
+  await importArchive(page);
+  for (const leaveEarly of [false, true]) {
+    const username = leaveEarly ? "publicexample2" : "publicexample1";
+    let release!: () => void;
+    const pending = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    await page.route("**/rest/v1/account?**", (route) =>
+      route.fulfill({
+        json: [
+          {
+            account_id: username,
+            username,
+            num_tweets: 1,
+            num_followers: 0,
+            profile: null,
+          },
+        ],
+      }),
+    );
+    await page.route("**/rest/v1/profile?**", (route) =>
+      route.fulfill({
+        json: {
+          account_id: username,
+          avatar_media_url: "",
+          description: { bio: "A fictional test person." },
+        },
+      }),
+    );
+    await page.route("**/rest/v1/all_account?**", (route) =>
+      route.fulfill({
+        json: {
+          account_id: username,
+          username,
+          account_display_name: "Public Example",
+          created_at: "2020-01-01",
+        },
+      }),
+    );
+    await page.route("**/rest/v1/tweets?**", async (route) => {
+      if (route.request().method() === "HEAD")
+        return route.fulfill({
+          status: 200,
+          headers: {
+            "content-range": "0-0/1",
+            "access-control-expose-headers": "content-range",
+          },
+          body: "",
+        });
+      await pending;
+      await route.fulfill({
+        json: [
+          {
+            tweet_id: `${username}-post`,
+            account_id: username,
+            full_text: "A fictional post about a walk.",
+            created_at: "2026-08-01T12:00:00Z",
+            tweet_media: [],
+          },
+        ],
+      });
+    });
+    try {
+      await navigate(page, "Make an avatar");
+      await page.locator(".account-context button").click();
+      await page
+        .getByRole("button", { name: `Load @${username}, latest 10,000 posts` })
+        .click();
+      await expect(page.locator(".person-loading")).toContainText(username);
+      if (leaveEarly) await navigate(page, "Settings");
+      release();
+      if (leaveEarly) {
+        await openNavigation(page);
+        await expect(
+          page.locator(".selected-person").filter({ visible: true }),
+        ).toContainText(`@${username}`);
+        await expect(page).toHaveURL(/#\/settings$/);
+      } else {
+        await expect(page).toHaveURL(/#\/avatar$/);
+        await expect(page.locator(".account-context")).toContainText(
+          `@${username}`,
+        );
+      }
+    } finally {
+      release();
+    }
+  }
 });

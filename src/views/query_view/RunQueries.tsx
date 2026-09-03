@@ -1,10 +1,7 @@
-import {
-  type RangeSelection,
-  replaceAccountName,
-  selectSubset,
-} from "./ai_utils";
+import { replaceAccountName, selectSubset } from "./ai_utils";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useStore } from "../../state/store";
+import { useQuestionDraft } from "../../state/questionDraft";
 import { RunQueryButton } from "./RunQueryButton";
 import {
   ProgressBar,
@@ -39,11 +36,19 @@ import { QueryResultMarkdown } from "./QueryResultMarkdown";
 export function RunQueries() {
   const [exampleQueriesModalIsOpen, setExampleQueriesModalIsOpen] =
     useState(false);
-  const [selectedQuery, setSelectedQuery] = useState("");
-  const [showFilters, setShowFilters] = useState(false);
-
-  const [includeReplies, setIncludeReplies] = useState(true);
-  const [includeRetweets, setIncludeRetweets] = useState(true);
+  const {
+    selectedQuery,
+    setSelectedQuery,
+    showFilters,
+    setShowFilters,
+    includeReplies,
+    setIncludeReplies,
+    includeRetweets,
+    setIncludeRetweets,
+    rangeSelection,
+    setRangeSelection,
+    setDraftUsername,
+  } = useQuestionDraft();
   const promptPlacement: PromptPlacement = "prompt-before";
 
   const {
@@ -116,11 +121,6 @@ export function RunQueries() {
 
   const tweetCounts = useTweetCounts(filteredTweetsToAnalyse);
 
-  const [rangeSelection, setRangeSelection] = useState<RangeSelection>({
-    type: "last-tweets",
-    numTweets: batchSize,
-  });
-
   const lastTweetsCount =
     rangeSelection.type === "last-tweets" ? rangeSelection.numTweets : null;
 
@@ -131,7 +131,7 @@ export function RunQueries() {
     ) {
       setRangeSelection({ type: "last-tweets", numTweets: batchSize });
     }
-  }, [batchSize, lastTweetsCount, rangeSelection.type]);
+  }, [batchSize, lastTweetsCount, rangeSelection.type, setRangeSelection]);
 
   const [currentProgress, totalProgress] = useMemo(() => {
     if (batchStatuses === null) return [0, 1];
@@ -173,7 +173,7 @@ export function RunQueries() {
   }, [tweetsSelectedForQuery]);
 
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
-  const prevUsernameRef = useRef<string | null>(null);
+  const prevUsernameRef = useRef(useQuestionDraft.getState().username);
 
   const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
@@ -197,7 +197,8 @@ export function RunQueries() {
       if (replaced !== selectedQuery) setSelectedQuery(replaced);
     }
     prevUsernameRef.current = newUsername;
-  }, [accountUsername, selectedQuery]);
+    setDraftUsername(newUsername);
+  }, [accountUsername, selectedQuery, setSelectedQuery, setDraftUsername]);
 
   // Utility: only persist queries that don't reference a different @handle
   const shouldPersistQuery = (text: string, currentHandle: string) => {
@@ -223,7 +224,7 @@ export function RunQueries() {
     } catch {
       // ignore storage errors
     }
-  }, [account]);
+  }, [account, setSelectedQuery]);
 
   // Persist query text changes to localStorage when valid for this account
   useEffect(() => {

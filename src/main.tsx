@@ -15,6 +15,7 @@ import { AvatarView } from "./views/avatar_view/AvatarView.tsx";
 import { ThemeProvider } from "./components/ThemeProvider";
 import { About } from "./views/About";
 import { HistoryView } from "./views/query_view/HistoryView";
+import { PeopleView } from "./views/PeopleView";
 
 const router = createHashRouter([
   {
@@ -28,6 +29,7 @@ const router = createHashRouter([
       { path: "avatar", Component: AvatarView },
       { path: "about", Component: About },
       { path: "history", Component: HistoryView },
+      { path: "people", Component: PeopleView },
       { path: "query/:queryId", Component: PastQueryDetailView },
       { path: "*", Component: NotFound },
     ],
