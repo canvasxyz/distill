@@ -4,7 +4,6 @@ import {
   ChatBubbleIcon,
   FaceIcon,
   CounterClockwiseClockIcon,
-  PersonIcon,
   GearIcon,
   HamburgerMenuIcon,
   Cross2Icon,
@@ -23,7 +22,7 @@ export function ResponsiveSidebar() {
     setMobileOpen(false);
     openPeople();
   };
-  const { appIsReady, loadCommunityArchiveUserProgress } = useStore();
+  const { loadCommunityArchiveUserProgress } = useStore();
 
   const sidebarContent = (
     <div className="sidebar-inner">
@@ -50,13 +49,6 @@ export function ResponsiveSidebar() {
           <CounterClockwiseClockIcon />
           Past questions
         </NavLink>
-        <button
-          disabled={!appIsReady || !!loadCommunityArchiveUserProgress}
-          onClick={choosePerson}
-        >
-          <PersonIcon />
-          Someone else
-        </button>
       </nav>
       {loadCommunityArchiveUserProgress && (
         <p className="sidebar-label" role="status">

@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { Link } from "react-router";
 import { Avatar, DropdownMenu, Spinner } from "@radix-ui/themes";
+import { ChevronRightIcon } from "@radix-ui/react-icons";
+import type { Account } from "../types";
 import {
   PINNED_USERNAMES,
   useCommunityArchiveAccounts,
@@ -12,6 +14,93 @@ import { db } from "../db";
 import { Modal } from "./Modal";
 import { ArchiveDropZone } from "./ArchiveDropZone";
 import { getCommunityArchiveUserProgressLabel } from "./CommunityArchiveUserProgress";
+
+function SavedPerson({
+  account,
+  avatarUrl,
+  postCount,
+  current = false,
+  disabled,
+  onSelect,
+  onClose,
+  onRefresh,
+  onRemove,
+}: {
+  account: Account;
+  avatarUrl?: string;
+  postCount: number;
+  current?: boolean;
+  disabled: boolean;
+  onSelect: () => void;
+  onClose: () => void;
+  onRefresh: () => void;
+  onRemove: () => void;
+}) {
+  const identity = (
+    <>
+      <Avatar
+        src={avatarUrl}
+        size="2"
+        radius="full"
+        fallback={(account.accountDisplayName || account.username).slice(0, 1)}
+      />
+      <span className="person-row-text">
+        <strong>{account.accountDisplayName || account.username}</strong>
+        <small>
+          <span className="person-username">@{account.username}</span> ·{" "}
+          {postCount.toLocaleString()} loaded posts
+          {account.fromArchive ? " · Your import" : ""}
+        </small>
+      </span>
+    </>
+  );
+  return (
+    <div className={`person-row${current ? " current-person-card" : ""}`}>
+      {current ? (
+        <div className="current-person-identity">{identity}</div>
+      ) : (
+        <button
+          className="person-row-select"
+          disabled={disabled}
+          aria-label={`Select @${account.username}`}
+          onClick={onSelect}
+        >
+          {identity}
+          <ChevronRightIcon aria-hidden="true" />
+        </button>
+      )}
+      <DropdownMenu.Root>
+        <DropdownMenu.Trigger>
+          <button
+            className="plain-button person-menu"
+            disabled={disabled}
+            aria-label={`Manage @${account.username} archive`}
+          >
+            •••
+          </button>
+        </DropdownMenu.Trigger>
+        <DropdownMenu.Content>
+          <DropdownMenu.Item asChild>
+            <Link
+              to={`/all-tweets?account_id=${encodeURIComponent(account.accountId)}`}
+              onClick={onClose}
+            >
+              Browse posts
+            </Link>
+          </DropdownMenu.Item>
+          {!account.fromArchive && (
+            <DropdownMenu.Item onSelect={onRefresh}>
+              Refresh full archive
+            </DropdownMenu.Item>
+          )}
+          <DropdownMenu.Item color="red" onSelect={onRemove}>
+            Remove @{account.username} archive
+          </DropdownMenu.Item>
+        </DropdownMenu.Content>
+      </DropdownMenu.Root>
+    </div>
+  );
+}
 
 export function CommunityArchiveUserModal({
   showModal,
@@ -61,10 +150,15 @@ export function CommunityArchiveUserModal({
   const busy =
     !!loadCommunityArchiveUserProgress || !!ingestTwitterArchiveProgress;
   const searchPending = query.trim() !== debouncedQuery;
-  const savedMatches = savedAccounts.filter((a) =>
-    `${a.username} ${a.accountDisplayName}`
-      .toLowerCase()
-      .includes(query.trim().toLowerCase()),
+  const currentAccount = savedAccounts.find(
+    (a) => a.accountId === selectedAccountId,
+  );
+  const savedMatches = savedAccounts.filter(
+    (a) =>
+      a.accountId !== selectedAccountId &&
+      `${a.username} ${a.accountDisplayName}`
+        .toLowerCase()
+        .includes(query.trim().toLowerCase()),
   );
   const newAccounts = accounts.filter(
     (a) => !savedAccounts.some((s) => s.accountId === a.accountId),
@@ -110,6 +204,25 @@ export function CommunityArchiveUserModal({
       setLoadError("Couldn’t remove this archive. Please try again.");
     }
   }
+  const savedPerson = (account: Account, current = false) => (
+    <SavedPerson
+      key={account.accountId}
+      account={account}
+      current={current}
+      disabled={busy}
+      avatarUrl={
+        profiles.find((p) => p.accountId === account.accountId)?.avatarMediaUrl
+      }
+      postCount={counts.get(account.accountId) ?? 0}
+      onSelect={() => {
+        setSelectedAccountId(account.accountId);
+        setShowModal(false);
+      }}
+      onClose={() => setShowModal(false)}
+      onRefresh={() => void loadPerson(account.accountId, account.username)}
+      onRemove={() => void removePerson(account.accountId)}
+    />
+  );
   return (
     <Modal
       open={showModal}
@@ -130,11 +243,21 @@ export function CommunityArchiveUserModal({
           </a>
           .
         </p>
-        <label className="visually-hidden" htmlFor="people-search">
-          Search people
+        {currentAccount && (
+          <section
+            className="current-person-section"
+            aria-labelledby="current-person-title"
+          >
+            <h3 id="current-person-title">Currently curious about</h3>
+            {savedPerson(currentAccount, true)}
+          </section>
+        )}
+        <label className="field-label" htmlFor="people-search">
+          {currentAccount ? "Choose another person" : "Find someone"}
         </label>
         <input
           id="people-search"
+          aria-label="Search people"
           className="people-search"
           placeholder="Find a person by name or @handle…"
           value={query}
@@ -147,82 +270,9 @@ export function CommunityArchiveUserModal({
         )}
         <div className="people-results" aria-busy={busy}>
           {savedMatches.length > 0 && (
-            <section aria-label="Already here">
-              <h3>Already here</h3>
-              {savedMatches.map((a) => (
-                <div className="person-row" key={a.accountId}>
-                  <button
-                    className="person-row-select"
-                    disabled={busy}
-                    aria-label={`Select @${a.username}`}
-                    aria-pressed={a.accountId === selectedAccountId}
-                    onClick={() => {
-                      setSelectedAccountId(a.accountId);
-                      setShowModal(false);
-                    }}
-                  >
-                    <Avatar
-                      src={
-                        profiles.find((p) => p.accountId === a.accountId)
-                          ?.avatarMediaUrl
-                      }
-                      size="2"
-                      radius="full"
-                      fallback={(a.accountDisplayName || a.username).slice(
-                        0,
-                        1,
-                      )}
-                    />
-                    <span>
-                      <strong>{a.accountDisplayName || a.username}</strong>
-                      <small>
-                        @{a.username} ·{" "}
-                        {(counts.get(a.accountId) ?? 0).toLocaleString()} loaded
-                        posts{a.fromArchive ? " · Your import" : ""}
-                      </small>
-                    </span>
-                    <span aria-hidden="true">
-                      {a.accountId === selectedAccountId ? "✓" : "↗"}
-                    </span>
-                  </button>
-                  <DropdownMenu.Root>
-                    <DropdownMenu.Trigger>
-                      <button
-                        className="plain-button person-menu"
-                        disabled={busy}
-                        aria-label={`Manage @${a.username} archive`}
-                      >
-                        •••
-                      </button>
-                    </DropdownMenu.Trigger>
-                    <DropdownMenu.Content>
-                      <DropdownMenu.Item asChild>
-                        <Link
-                          to={`/all-tweets?account_id=${encodeURIComponent(a.accountId)}`}
-                          onClick={() => setShowModal(false)}
-                        >
-                          Browse posts
-                        </Link>
-                      </DropdownMenu.Item>
-                      {!a.fromArchive && (
-                        <DropdownMenu.Item
-                          onSelect={() =>
-                            void loadPerson(a.accountId, a.username)
-                          }
-                        >
-                          Refresh full archive
-                        </DropdownMenu.Item>
-                      )}
-                      <DropdownMenu.Item
-                        color="red"
-                        onSelect={() => void removePerson(a.accountId)}
-                      >
-                        Remove @{a.username} archive
-                      </DropdownMenu.Item>
-                    </DropdownMenu.Content>
-                  </DropdownMenu.Root>
-                </div>
-              ))}
+            <section aria-label="Other loaded archives">
+              <h3>Other loaded archives</h3>
+              {savedMatches.map((a) => savedPerson(a))}
             </section>
           )}
           <div className="archive-load-choice">
@@ -270,23 +320,32 @@ export function CommunityArchiveUserModal({
                             radius="full"
                             fallback={a.username.slice(0, 1).toUpperCase()}
                           />
-                          <span>
-                            <strong>@{a.username}</strong>
+                          <span className="person-row-text">
+                            <strong className="person-username">
+                              @{a.username}
+                            </strong>
                             <small>
                               {a.numTweets == null
                                 ? "Post count unavailable"
                                 : `${a.numTweets.toLocaleString()} available posts`}
                             </small>
                           </span>
-                          <span aria-hidden="true">↗</span>
+                          <ChevronRightIcon aria-hidden="true" />
                         </button>
                         {loadingPerson === a.username && (
                           <p className="person-loading" role="status">
-                            <Spinner /> Loading @{a.username}…{" "}
-                            {loadCommunityArchiveUserProgress &&
-                              getCommunityArchiveUserProgressLabel(
-                                loadCommunityArchiveUserProgress,
-                              )}
+                            <Spinner />
+                            <span>
+                              Loading{" "}
+                              <span className="person-username">
+                                @{a.username}
+                              </span>
+                              …{" "}
+                              {loadCommunityArchiveUserProgress &&
+                                getCommunityArchiveUserProgressLabel(
+                                  loadCommunityArchiveUserProgress,
+                                )}
+                            </span>
                           </p>
                         )}
                       </div>
@@ -326,7 +385,13 @@ export function CommunityArchiveUserModal({
           )}
           {loadingPerson &&
             !newAccounts.some((a) => a.username === loadingPerson) && (
-              <p role="status">Refreshing @{loadingPerson}…</p>
+              <p className="person-loading" role="status">
+                <Spinner />
+                <span>
+                  Loading{" "}
+                  <span className="person-username">@{loadingPerson}</span>…
+                </span>
+              </p>
             )}
         </div>
         <div className="people-import">

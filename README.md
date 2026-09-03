@@ -1,6 +1,6 @@
 # Distill
 
-A browser-based way to get an impression of yourself, a friend, or someone you’re curious about from their tweets. Start with an archive contributed to [Community Archive](https://www.community-archive.org/), or import your own Twitter/X `.zip` export. An impression, not the whole person.
+A browser-based way to get an impression of yourself, a friend, or someone you’re curious about from their tweets. Start with an archive contributed to [Community Archive](https://www.community-archive.org/), or import your own Twitter/X `.zip` export.
 
 ## Features
 

@@ -932,7 +932,8 @@ select:not(.rt-SelectNative),
   margin-top: 16px;
   padding-right: 4px;
 }
-.people-results h3 {
+.people-results h3,
+.current-person-section h3 {
   font-size: 11px;
   font-weight: 500;
   color: var(--muted);
@@ -942,14 +943,15 @@ select:not(.rt-SelectNative),
   margin-top: 0;
 }
 .person-row {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   border-bottom: 1px solid var(--line);
 }
-.person-row-select {
-  display: flex;
-  flex: 1;
+.person-row-select,
+.current-person-identity {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) 15px;
   align-items: center;
   gap: 12px;
   min-width: 0;
@@ -962,34 +964,65 @@ select:not(.rt-SelectNative),
 .person-row-select:hover:not(:disabled) {
   background: var(--soft);
 }
-.person-row-select > span:nth-child(2) {
-  flex: 1;
+.person-row-text {
   min-width: 0;
 }
-.person-row-select strong {
+.person-row-text strong {
   display: block;
   font-size: 14px;
   font-weight: 500;
   overflow-wrap: anywhere;
 }
-.person-row-select small {
+.person-row-text small {
   display: block;
   color: var(--muted);
   font-size: 11px;
   margin-top: 3px;
 }
-.person-row-select > span:last-child {
-  padding-right: 5px;
+.person-username {
+  white-space: nowrap;
+}
+.current-person-section {
+  margin: 18px 0 22px;
+}
+.current-person-card {
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--fluorescent);
+  border-radius: 4px;
+  background: var(--soft);
+}
+.current-person-identity {
+  grid-template-columns: 32px minmax(0, 1fr);
+}
+.person-row-select > .rt-AvatarRoot,
+.current-person-identity > .rt-AvatarRoot {
+  width: 32px;
+}
+.people-picker > .field-label {
+  color: var(--muted);
+}
+.person-row-select:disabled {
+  color: var(--ink);
+  cursor: wait;
+}
+.person-row-select:disabled .person-row-text {
+  opacity: 0.75;
+}
+.person-loading > span {
+  min-width: 0;
+  line-height: 1.6;
 }
 .person-menu {
   padding: 10px;
 }
 .person-loading {
-  flex-basis: 100%;
+  grid-column: 1 / -1;
   font-size: 12px;
   margin: 0 0 12px;
-  display: flex;
-  align-items: center;
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr);
+  align-items: start;
   gap: 8px;
 }
 .archive-load-choice {
@@ -1116,7 +1149,7 @@ select:not(.rt-SelectNative),
     padding: 28px 24px 40px;
   }
   .app-shell {
-    grid-template-columns: 163px minmax(0, 1fr);
+    grid-template-columns: 190px minmax(0, 1fr);
   }
   .avatar-layout {
     grid-template-columns: 1fr;

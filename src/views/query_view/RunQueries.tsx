@@ -262,7 +262,6 @@ export function RunQueries() {
           </p>
         </div>
         <ChooseArchive />
-        <p className="page-footnote">An impression, not the whole person.</p>
       </PageContent>
     );
 
@@ -573,7 +572,6 @@ export function RunQueries() {
             )}
           </ResultsBox>
         )}
-      <p className="page-footnote">An impression, not the whole person.</p>
       <ExampleQueriesModal
         queries={EXAMPLE_QUERIES_SINGULAR}
         isOpen={exampleQueriesModalIsOpen}

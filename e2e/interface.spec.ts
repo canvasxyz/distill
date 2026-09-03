@@ -507,7 +507,9 @@ test("one people picker, simple settings, and preview-led avatar layout", async 
   await importArchive(page);
   await page.locator(".account-context button").click();
   await expect(page.getByRole("dialog")).toHaveCount(1);
-  await expect(page.getByRole("dialog")).toContainText("Already here");
+  await expect(page.getByRole("dialog")).toContainText(
+    "Currently curious about",
+  );
   await expect(
     page
       .getByRole("button", { name: "Import my archive ↗" })
@@ -656,4 +658,175 @@ test("mobile navigation expands in the page without covering the workspace", asy
   });
   await page.getByRole("button", { name: "Close navigation" }).click();
   await expect(page.locator(".mobile-sidebar-content")).toHaveCount(0);
+});
+
+test("navigation stays single-line without an independently scrolling sidebar", async ({
+  page,
+}, testInfo) => {
+  await importArchive(page);
+  // Exercise the previous narrow-sidebar breakpoint and short laptop screens.
+  await page.setViewportSize({
+    width: testInfo.project.name === "desktop" ? 760 : 320,
+    height: 500,
+  });
+  for (const name of ["Make an avatar", "Past questions", "Ask something"]) {
+    await navigate(page, name);
+    await openNavigation(page);
+    const active = page
+      .locator(".primary-nav a.active")
+      .filter({ visible: true });
+    await expect(active).toContainText(name);
+    const layout = await active.evaluate((el) => {
+      const style = getComputedStyle(el);
+      return {
+        height: el.getBoundingClientRect().height,
+        lineHeight: parseFloat(style.lineHeight),
+        nowrap: style.whiteSpace,
+        overflow: el.scrollWidth > el.clientWidth,
+      };
+    });
+    expect(layout.nowrap).toBe("nowrap");
+    expect(layout.overflow).toBe(false);
+    expect(layout.height).toBeLessThan(layout.lineHeight * 2 + 10);
+    if (testInfo.project.name === "mobile")
+      await page.getByRole("button", { name: "Close navigation" }).click();
+  }
+  if (testInfo.project.name === "desktop") {
+    await expect(page.locator(".responsive-sidebar-desktop")).toHaveCSS(
+      "overflow-y",
+      "visible",
+    );
+    await page
+      .getByRole("link", { name: "Settings", exact: true })
+      .scrollIntoViewIfNeeded();
+    await expect(
+      page.getByRole("link", { name: "Settings", exact: true }),
+    ).toBeInViewport();
+    const sidebarScroll = await page
+      .locator(".responsive-sidebar-desktop")
+      .evaluate((el) => {
+        el.scrollTop = 100;
+        return el.scrollTop;
+      });
+    expect(sidebarScroll).toBe(0);
+  }
+  await expect(
+    page.getByRole("button", { name: "Someone else", exact: true }),
+  ).toHaveCount(0);
+  await expect(
+    page.getByText("An impression, not the whole person.", { exact: true }),
+  ).toHaveCount(0);
+  await noOverflow(page);
+  await page.screenshot({
+    animations: "disabled",
+    path: testInfo.outputPath("navigation-short-screen.png"),
+    fullPage: true,
+  });
+});
+
+test("current person has a separate non-selectable card that survives searching", async ({
+  page,
+}, testInfo) => {
+  await importArchive(page);
+  await importArchive(page, "samexample");
+  await page.locator(".account-context button").click();
+  const current = page.getByRole("region", {
+    name: "Currently curious about",
+    exact: true,
+  });
+  await expect(current).toContainText("@samexample");
+  await expect(
+    current.getByRole("button", { name: "Select @samexample", exact: true }),
+  ).toHaveCount(0);
+  await expect(
+    page.getByRole("region", { name: "Other loaded archives" }),
+  ).toContainText("@alexexample");
+  await expect(page.getByRole("dialog")).not.toContainText("✓");
+  await page.getByRole("textbox", { name: "Search people" }).fill("alex");
+  await expect(current).toContainText("@samexample");
+  await page.screenshot({
+    animations: "disabled",
+    path: testInfo.outputPath("current-person-hierarchy.png"),
+    fullPage: true,
+  });
+  await page
+    .getByRole("button", { name: "Select @alexexample", exact: true })
+    .click();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await expect(page.locator(".account-context")).toContainText("@alexexample");
+  await noOverflow(page);
+});
+
+test("loading an archive keeps its username and progress text legible", async ({
+  page,
+}, testInfo) => {
+  const username = "longhandle12345";
+  let release!: () => void;
+  const pending = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  await page.route("**/rest/v1/account?**", (route) =>
+    route.fulfill({
+      json: [
+        {
+          account_id: "loadingperson",
+          username,
+          num_tweets: 123456,
+          num_followers: 0,
+          profile: null,
+        },
+      ],
+    }),
+  );
+  await page.route("**/rest/v1/tweets?**", async (route) => {
+    if (route.request().method() === "HEAD")
+      return route.fulfill({
+        status: 200,
+        headers: {
+          "content-range": "0-0/123456",
+          "access-control-expose-headers": "content-range",
+        },
+        body: "",
+      });
+    await pending;
+    await route.fulfill({
+      status: 503,
+      json: { message: "End of loading-state test" },
+    });
+  });
+  try {
+    await page
+      .getByRole("button", { name: "Choose someone ↗", exact: true })
+      .click();
+    const button = page.getByRole("button", {
+      name: `Load @${username}, latest 10,000 posts`,
+    });
+    await button.click();
+    await expect(button).toBeDisabled();
+    const status = page.locator(".person-loading");
+    await expect(status).toContainText(`@${username}`);
+    await expect(status).toContainText("Loading tweets... (0/10000)");
+    const handle = status.locator(".person-username");
+    const box = await handle.boundingBox();
+    expect(box!.width).toBeGreaterThan(90);
+    expect(box!.height).toBeLessThan(25);
+    const row = button.locator("..");
+    const buttonBox = await button.boundingBox();
+    const progressBox = await status.boundingBox();
+    expect(progressBox!.y).toBeGreaterThanOrEqual(
+      buttonBox!.y + buttonBox!.height,
+    );
+    expect(await row.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(
+      true,
+    );
+    await noOverflow(page);
+    await page.screenshot({
+      animations: "disabled",
+      path: testInfo.outputPath("person-loading.png"),
+      fullPage: true,
+    });
+  } finally {
+    release();
+  }
+  await expect(page.getByRole("alert")).toContainText("couldn’t be loaded");
 });
