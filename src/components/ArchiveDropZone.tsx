@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { useStore } from "../state/store";
 
-export function ArchiveDropZone() {
+export function ArchiveDropZone({ onImported }: { onImported?: () => void }) {
   const { ingestTwitterArchive, ingestTwitterArchiveProgress } = useStore();
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState("");
@@ -15,6 +15,7 @@ export function ArchiveDropZone() {
     setError("");
     try {
       await ingestTwitterArchive(file);
+      onImported?.();
     } catch {
       setError(
         "That archive couldn’t be imported. Check the .zip and try again.",

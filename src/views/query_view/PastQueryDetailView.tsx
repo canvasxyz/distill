@@ -7,7 +7,7 @@ import {
   QueryResultHeader,
   QueryResultActions,
 } from "./ResultsBox";
-import { BatchTweetsModal } from "./BatchTweetsModal";
+import { SourceTweetsPanel } from "./SourceTweetsPanel";
 import type { RangeSelection } from "./ai_utils";
 import { db } from "../../db";
 import { Button } from "@radix-ui/themes";
@@ -44,7 +44,7 @@ export function PastQueryDetailView() {
   const { queryId } = useParams<{ queryId: string }>();
   const { queryResults, accounts, allTweets } = useStore();
   const navigate = useNavigate();
-  const [showBatchTweetsModal, setShowBatchTweetsModal] = useState(false);
+  const [sourcesOpen, setSourcesOpen] = useState(false);
   const [deleteError, setDeleteError] = useState("");
 
   const query = queryResults?.find((q) => q.id === queryId);
@@ -108,26 +108,27 @@ export function PastQueryDetailView() {
           {deleteError}
         </p>
       )}
-      <h1 className="visually-hidden">Past question</h1>
       <ResultsBox>
-        <QueryResultHeader
-          query={query.query}
-          subtitle={[
-            query.queriedHandle,
-            formatDateTime(extractTimestampFromUUIDv7(query.id)),
-          ]
-            .filter(Boolean)
-            .join(" · ")}
-        />
+        <QueryResultHeader result={query} showQuestion />
         <QueryResultMarkdown
           content={query.result}
+          person={query.queriedHandle}
           tweetsById={tweetsById}
           accountIdToUsername={accountIdToUsername}
         />
         <QueryResultActions
           resultText={query.result}
-          onShowEvidence={() => setShowBatchTweetsModal(true)}
+          onShowEvidence={() => setSourcesOpen(!sourcesOpen)}
+          sourcesOpen={sourcesOpen}
+          sourcesId="saved-answer-sources"
         />
+        {sourcesOpen && (
+          <SourceTweetsPanel
+            key={query.id}
+            result={query}
+            id="saved-answer-sources"
+          />
+        )}
       </ResultsBox>
       <details className="answer-details">
         <summary>Answer details</summary>
@@ -158,11 +159,6 @@ export function PastQueryDetailView() {
           </div>
         </dl>
       </details>
-      <BatchTweetsModal
-        isOpen={showBatchTweetsModal}
-        queryResult={query}
-        onClose={() => setShowBatchTweetsModal(false)}
-      />
     </PageContent>
   );
 }

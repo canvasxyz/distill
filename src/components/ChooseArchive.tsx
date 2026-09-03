@@ -1,33 +1,34 @@
-import { useState } from "react";
-import { useStore } from "../state/store";
-import { CommunityArchiveUserModal } from "./CommunityArchiveUserModal";
+import { useSelectedAccount } from "../hooks/useSelectedAccount";
 import { ArchiveDropZone } from "./ArchiveDropZone";
-import { getCommunityArchiveUserProgressLabel } from "./CommunityArchiveUserProgress";
 
 export function ChooseArchive() {
-  const [open, setOpen] = useState(false);
-  const { loadCommunityArchiveUserProgress } = useStore();
+  const { openPeople } = useSelectedAccount();
   return (
-    <div className="getting-started">
-      <p>Start with an archive someone has shared, or bring your own.</p>
-      <div className="choose-archive-actions">
-        <button
-          className="choose-person-button"
-          onClick={() => setOpen(true)}
-          disabled={!!loadCommunityArchiveUserProgress}
-        >
-          Choose someone ↗
-        </button>
-        <ArchiveDropZone />
+    <section className="getting-started" aria-label="Get started">
+      <div className="start-options">
+        <div>
+          <h2>Someone you’re curious about</h2>
+          <p>
+            Choose from Twitter archives people have shared with Community
+            Archive.
+          </p>
+          <button className="choose-person-button" onClick={openPeople}>
+            Choose someone ↗
+          </button>
+        </div>
+        <div>
+          <h2>A little self-reflection</h2>
+          <p>
+            Bring your own Twitter/X archive. Keep it as the original .zip file.
+          </p>
+          <ArchiveDropZone />
+        </div>
       </div>
-      {loadCommunityArchiveUserProgress && (
-        <p role="status">
-          {getCommunityArchiveUserProgressLabel(
-            loadCommunityArchiveUserProgress,
-          )}
-        </p>
-      )}
-      <CommunityArchiveUserModal showModal={open} setShowModal={setOpen} />
-    </div>
+      <p className="quiet-note">
+        Archives stay in this browser. When you ask a question, the selected
+        posts are sent to the AI provider. Importing here doesn’t publish your
+        archive.
+      </p>
+    </section>
   );
 }

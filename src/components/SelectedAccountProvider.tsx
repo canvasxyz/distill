@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useStore } from "../state/store";
 import { SelectedAccountContext } from "../hooks/useSelectedAccount";
+import { CommunityArchiveUserModal } from "./CommunityArchiveUserModal";
 
 const STORAGE_KEY = "llm:lastSelectedAccountId";
 
 export function SelectedAccountProvider({ children }: { children: ReactNode }) {
   const { accounts, lastLoadedAccountId } = useStore();
+  const [peopleOpen, setPeopleOpen] = useState(false);
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(
     () => {
       try {
@@ -50,9 +52,14 @@ export function SelectedAccountProvider({ children }: { children: ReactNode }) {
         account,
         selectedAccountId: account?.accountId ?? null,
         setSelectedAccountId,
+        openPeople: () => setPeopleOpen(true),
       }}
     >
       {children}
+      <CommunityArchiveUserModal
+        showModal={peopleOpen}
+        setShowModal={setPeopleOpen}
+      />
     </SelectedAccountContext.Provider>
   );
 }

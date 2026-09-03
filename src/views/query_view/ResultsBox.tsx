@@ -1,5 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Flex, Text, Progress } from "@radix-ui/themes";
+import type { QueryResult } from "./ai_utils";
+import { getAnswerScope } from "./answer_sources";
 
 export const CopyButton = ({ text }: { text: string }) => {
   const [copied, setCopied] = useState(false);
@@ -112,18 +114,19 @@ export function ResultsBox({ children }: { children: ReactNode }) {
 }
 
 export function QueryResultHeader({
-  query,
-  subtitle,
+  result,
+  showQuestion = false,
 }: {
-  query: string;
-  subtitle?: string;
+  result: QueryResult;
+  showQuestion?: boolean;
 }) {
   return (
     <header className="result-header">
-      <span className="result-kicker">You asked</span>
-      <p className="result-question">{query}</p>
-      {subtitle && <span className="result-subtitle">{subtitle}</span>}
-      <p className="result-caveat">A guess, not a verdict.</p>
+      {showQuestion && <h1 className="saved-question">{result.query}</h1>}
+      <div className="answer-context">
+        <span>About {result.queriedHandle || "this person"}</span>
+        <span>{getAnswerScope(result)}</span>
+      </div>
     </header>
   );
 }
@@ -131,14 +134,23 @@ export function QueryResultHeader({
 export function QueryResultActions({
   resultText,
   onShowEvidence,
+  sourcesOpen,
+  sourcesId,
 }: {
   resultText: string;
   onShowEvidence: () => void;
+  sourcesOpen: boolean;
+  sourcesId: string;
 }) {
   return (
     <div className="result-actions">
-      <button className="plain-button" onClick={onShowEvidence}>
-        The tweets behind this ↗
+      <button
+        className="plain-button"
+        onClick={onShowEvidence}
+        aria-expanded={sourcesOpen}
+        aria-controls={sourcesId}
+      >
+        The tweets behind this {sourcesOpen ? "−" : "+"}
       </button>
       <CopyButton text={resultText} />
     </div>

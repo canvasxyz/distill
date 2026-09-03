@@ -21,7 +21,7 @@ import {
 } from "./example_queries";
 import { useTweetCounts } from "./useTweetCounts";
 import { TweetFrequencyGraph } from "../../components/TweetFrequencyGraph";
-import { BatchTweetsModal } from "./BatchTweetsModal";
+import { SourceTweetsPanel } from "./SourceTweetsPanel";
 import { getBatchSizeForConfig, type PromptPlacement } from "../../constants";
 import { formatCompactNumber } from "../../utils";
 import {
@@ -32,15 +32,7 @@ import { AccountContextLine } from "../../components/AccountContextLine";
 import { ChooseArchive } from "../../components/ChooseArchive";
 import { useSelectedAccount } from "../../hooks/useSelectedAccount";
 import { PageContent } from "../../components/PageContent";
-import {
-  Flex,
-  TextArea,
-  Select,
-  Checkbox,
-  RadioGroup,
-  Text,
-  Callout,
-} from "@radix-ui/themes";
+import { Flex, Select, Checkbox, Text, Callout } from "@radix-ui/themes";
 import type { Tweet } from "../../types";
 import { QueryResultMarkdown } from "./QueryResultMarkdown";
 
@@ -150,17 +142,18 @@ export function RunQueries() {
     return [currentProgress, totalProgress];
   }, [batchStatuses]);
 
-  const [showBatchTweetsModal, setShowBatchTweetsModal] = useState(false);
+  const [sourcesOpen, setSourcesOpen] = useState(false);
 
   const handleRunQuery = (queryText: string) => {
     if (
       !account ||
       isProcessing ||
       !queryText.trim() ||
-      !filteredTweetsToAnalyse.length
+      !selectSubset(filteredTweetsToAnalyse, rangeSelection).length
     )
       return;
 
+    setSourcesOpen(false);
     submit(
       filteredTweetsToAnalyse,
       account,
@@ -183,12 +176,6 @@ export function RunQueries() {
   const prevUsernameRef = useRef<string | null>(null);
 
   const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-
-  useEffect(() => {
-    if (!account) return;
-    if (!selectedQuery) return;
-    textareaRef.current?.focus();
-  }, [account, selectedQuery]);
 
   // When switching between archives, replace mentions of the previous
   // account's handle with the new account's handle in the current query.
@@ -262,6 +249,23 @@ export function RunQueries() {
 
   const selectedPostCount = Math.min(tweetsSelectedForQuery.length, batchSize);
 
+  if (!account)
+    return (
+      <PageContent>
+        <AccountContextLine />
+        <div className="page-intro">
+          <h1>What’s their deal?</h1>
+          <p className="intro-copy">
+            A little self-reflection. A concrete impression of a friend.
+            <br />
+            Start with their tweets and ask whatever you’re curious about.
+          </p>
+        </div>
+        <ChooseArchive />
+        <p className="page-footnote">An impression, not the whole person.</p>
+      </PageContent>
+    );
+
   return (
     <PageContent>
       <AccountContextLine />
@@ -273,7 +277,6 @@ export function RunQueries() {
           Ask whatever you’re curious about.
         </p>
       </div>
-      {!account && <ChooseArchive />}
       <form
         onSubmit={(event) => {
           event.preventDefault();
@@ -282,7 +285,7 @@ export function RunQueries() {
       >
         <div className="question-composer">
           <label htmlFor="question">Your question</label>
-          <TextArea
+          <textarea
             id="question"
             ref={textareaRef}
             value={selectedQuery}
@@ -299,7 +302,7 @@ export function RunQueries() {
                 ? "What would you like to know?"
                 : "Choose someone to get started"
             }
-            rows={3}
+            rows={2}
           />
           <div className="composer-footer">
             <span>According to their tweets, anyway.</span>
@@ -341,11 +344,31 @@ export function RunQueries() {
         aria-label="Choose posts"
         hidden={!showFilters}
       >
-        <h2>Which posts should count?</h2>
-        <RadioGroup.Root
+        <div className="filter-heading">
+          <h2>Which posts should count?</h2>
+          <button
+            className="plain-button"
+            onClick={() => {
+              setShowFilters(false);
+              document
+                .querySelector<HTMLButtonElement>(
+                  '[aria-controls="post-filters"]',
+                )
+                ?.focus();
+            }}
+            aria-label="Close post filters"
+          >
+            Close ×
+          </button>
+        </div>
+        <label className="field-label" htmlFor="post-range">
+          Post range
+        </label>
+        <select
+          id="post-range"
           value={rangeSelection.type}
           disabled={isProcessing || !account}
-          onValueChange={(value) => {
+          onChange={({ target: { value } }) => {
             if (value === "last-tweets")
               setRangeSelection({ type: "last-tweets", numTweets: batchSize });
             else
@@ -356,21 +379,9 @@ export function RunQueries() {
               });
           }}
         >
-          <Flex gap="4" wrap="wrap">
-            <Text size="2" as="label">
-              <Flex align="center" gap="2">
-                <RadioGroup.Item value="last-tweets" />
-                {lastTweetsLabel}
-              </Flex>
-            </Text>
-            <Text size="2" as="label">
-              <Flex align="center" gap="2">
-                <RadioGroup.Item value="date-range" />
-                Choose dates
-              </Flex>
-            </Text>
-          </Flex>
-        </RadioGroup.Root>
+          <option value="last-tweets">{lastTweetsLabel}</option>
+          <option value="date-range">Choose dates</option>
+        </select>
         {rangeSelection.type === "date-range" && (
           <>
             <div className="month-range">
@@ -411,15 +422,18 @@ export function RunQueries() {
                 />
               </label>
             </div>
-            <TweetFrequencyGraph
-              tweetCounts={tweetCounts}
-              startDate={rangeSelection.startDate}
-              endDate={rangeSelection.endDate}
-              onRangeSelect={(startDate, endDate) => {
-                if (isProcessing) return;
-                setRangeSelection({ type: "date-range", startDate, endDate });
-              }}
-            />
+            <details className="timeline-details">
+              <summary>Show posting activity</summary>
+              <TweetFrequencyGraph
+                tweetCounts={tweetCounts}
+                startDate={rangeSelection.startDate}
+                endDate={rangeSelection.endDate}
+                onRangeSelect={(startDate, endDate) => {
+                  if (isProcessing) return;
+                  setRangeSelection({ type: "date-range", startDate, endDate });
+                }}
+              />
+            </details>
           </>
         )}
         <Flex gap="4" wrap="wrap" my="4">
@@ -531,23 +545,34 @@ export function RunQueries() {
           </ResultsBox>
         </div>
       )}
-      {queryResult && (
-        <ResultsBox>
-          <QueryResultHeader
-            query={queryResult.query}
-            subtitle={`${queryResult.queriedHandle || ""} · ${(queryResult.totalRunTime / 1000).toFixed(1)} seconds · ${queryResult.totalTokens.toLocaleString()} tokens`}
-          />
-          <QueryResultMarkdown
-            content={queryResult.result}
-            tweetsById={tweetsById}
-            accountIdToUsername={accountIdToUsername}
-          />
-          <QueryResultActions
-            resultText={queryResult.result}
-            onShowEvidence={() => setShowBatchTweetsModal(true)}
-          />
-        </ResultsBox>
-      )}
+      {queryResult &&
+        !isProcessing &&
+        queryResult.queriedHandle?.toLowerCase() ===
+          `@${account.username}`.toLowerCase() && (
+          <ResultsBox>
+            <QueryResultHeader result={queryResult} />
+            <QueryResultMarkdown
+              key={queryResult.id}
+              content={queryResult.result}
+              person={queryResult.queriedHandle}
+              tweetsById={tweetsById}
+              accountIdToUsername={accountIdToUsername}
+            />
+            <QueryResultActions
+              resultText={queryResult.result}
+              onShowEvidence={() => setSourcesOpen(!sourcesOpen)}
+              sourcesOpen={sourcesOpen}
+              sourcesId="answer-sources"
+            />
+            {sourcesOpen && (
+              <SourceTweetsPanel
+                key={queryResult.id}
+                result={queryResult}
+                id="answer-sources"
+              />
+            )}
+          </ResultsBox>
+        )}
       <p className="page-footnote">An impression, not the whole person.</p>
       <ExampleQueriesModal
         queries={EXAMPLE_QUERIES_SINGULAR}
@@ -558,11 +583,6 @@ export function RunQueries() {
           setSelectedQuery(query);
           setExampleQueriesModalIsOpen(false);
         }}
-      />
-      <BatchTweetsModal
-        isOpen={showBatchTweetsModal}
-        queryResult={queryResult}
-        onClose={() => setShowBatchTweetsModal(false)}
       />
     </PageContent>
   );

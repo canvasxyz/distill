@@ -126,6 +126,8 @@ export const useCommunityArchiveAccounts = (
   searchQuery = "",
 ) => {
   const normalizedQuery = searchQuery.trim();
+  const [retryCount, setRetryCount] = useState(0);
+  const retry = useCallback(() => setRetryCount((count) => count + 1), []);
   const [state, setState] = useState(EMPTY_STATE);
   const requestIdRef = useRef(0);
   const nextOffsetRef = useRef(0);
@@ -178,7 +180,7 @@ export const useCommunityArchiveAccounts = (
     return () => {
       cancelled = true;
     };
-  }, [enabled, normalizedQuery]);
+  }, [enabled, normalizedQuery, retryCount]);
 
   const loadMore = useCallback(async () => {
     if (!enabled || !hasMoreRef.current || isLoadingMoreRef.current) return;
@@ -218,5 +220,5 @@ export const useCommunityArchiveAccounts = (
     }
   }, [enabled, normalizedQuery]);
 
-  return { ...state, loadMore };
+  return { ...state, loadMore, retry };
 };

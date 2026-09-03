@@ -1,349 +1,149 @@
-import {
-  Box,
-  Text,
-  Flex,
-  Switch,
-  TextField,
-  RadioGroup,
-  Tooltip,
-  IconButton,
-  Card,
-} from "@radix-ui/themes";
-import {
-  EyeOpenIcon,
-  EyeClosedIcon,
-  CheckCircledIcon,
-} from "@radix-ui/react-icons";
-import { Header } from "../components/Header";
+import { useState } from "react";
+import { EyeOpenIcon, EyeClosedIcon } from "@radix-ui/react-icons";
 import { useTheme } from "../components/ThemeContext";
-import { useState, useEffect } from "react";
+import { PageContent } from "../components/PageContent";
 import type { LLMQueryProvider } from "../constants";
 import {
   getStoredApiKey,
   setStoredApiKey,
   getSelectedProvider,
   setSelectedProvider,
-  hasProviderApiKey,
 } from "../utils/provider";
 
-const PROVIDER_INFO = [
-  {
-    key: "cerebras",
-    label: "Cerebras",
-    color: "violet",
-    description: "Fast, open weights. API key required.",
-  },
-  {
-    key: "deepinfra",
-    label: "Deep Infra",
-    color: "pink",
-    description: "Selection of leading open models. API key required.",
-  },
-  {
-    key: "openrouter",
-    label: "OpenRouter",
-    color: "blue",
-    description: "Multi-backend router for various models.",
-  },
-  {
-    key: "groq",
-    label: "Groq",
-    color: "orange",
-    description: "Very fast inference for Llama and Mixtral. API key required.",
-  },
-  {
-    key: "fireworks",
-    label: "Fireworks",
-    color: "yellow",
-    description: "Fast inference, lots of open models. API key required.",
-  },
+const providers: { key: LLMQueryProvider; label: string }[] = [
+  { key: "cerebras", label: "Cerebras" },
+  { key: "deepinfra", label: "Deep Infra" },
+  { key: "openrouter", label: "OpenRouter" },
+  { key: "groq", label: "Groq" },
+  { key: "fireworks", label: "Fireworks" },
 ];
 
 export function Settings() {
   const { appearance, toggleTheme } = useTheme();
-
-  const [cerebrasKey, setCerebrasKey] = useState("");
-  const [deepinfraKey, setDeepinfraKey] = useState("");
-  const [openrouterKey, setOpenrouterKey] = useState("");
-  const [groqKey, setGroqKey] = useState("");
-  const [fireworksKey, setFireworksKey] = useState("");
-  const [selectedProvider, setSelectedProviderState] =
-    useState<LLMQueryProvider | null>(null);
-
-  // Reveal API-key visibility
-  const [visibleKeys, setVisibleKeys] = useState<Record<string, boolean>>({});
-
-  useEffect(() => {
-    setCerebrasKey(getStoredApiKey("cerebras"));
-    setDeepinfraKey(getStoredApiKey("deepinfra"));
-    setOpenrouterKey(getStoredApiKey("openrouter"));
-    setGroqKey(getStoredApiKey("groq"));
-    setFireworksKey(getStoredApiKey("fireworks"));
-    setSelectedProviderState(getSelectedProvider());
-  }, []);
-
-  const handleApiKeyChange =
-    (provider: LLMQueryProvider, setter: (val: string) => void) =>
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const value = e.target.value;
-      setter(value);
-      setStoredApiKey(provider, value);
-    };
-
-  const handleProviderChange = (value: string) => {
-    const provider = value === "default" ? null : (value as LLMQueryProvider);
-    setSelectedProviderState(provider);
-    setSelectedProvider(provider);
-  };
-
-  const toggleKeyVisibility = (provider: LLMQueryProvider) => {
-    setVisibleKeys((prev) => ({
-      ...prev,
-      [provider]: !prev[provider],
-    }));
-  };
-
-  // For highlights & smooth-UI, separate provider choice visually
+  const [provider, updateProvider] = useState(getSelectedProvider);
+  const [keys, updateKeys] = useState(() =>
+    Object.fromEntries(providers.map((p) => [p.key, getStoredApiKey(p.key)])),
+  );
+  const [visible, setVisible] = useState(false);
+  const label = providers.find((p) => p.key === provider)?.label;
   return (
-    <Box width="100%">
-      <Header title="Settings" />
-      <Box
-        style={{
-          maxWidth: "575px",
-          margin: "36px auto 0 auto",
-          width: "100%",
-          boxSizing: "border-box",
-          padding: "0 20px 20px",
-        }}
-      >
-        <Card
-          size="2"
-          style={{
-            overflow: "hidden",
-            boxShadow: "0 2px 12px 0 rgba(30, 35, 74, 0.08)",
-          }}
-        >
-          {/* Appearance */}
-          <Box mb="5">
-            <Flex
-              align="center"
-              justify="between"
-              style={{
-                background: "var(--gray-2)",
-                borderRadius: 10,
-                padding: "18px 20px",
+    <PageContent>
+      <div className="page-intro">
+        <h1>Make yourself at home.</h1>
+        <p className="intro-copy">
+          A few preferences. Everything else is ready to go.
+        </p>
+      </div>
+      <section className="settings-section" aria-labelledby="appearance-title">
+        <h2 id="appearance-title">Appearance</h2>
+        <p>Fluorescent green, two ways.</p>
+        <div className="theme-choices" aria-label="Theme">
+          {(["light", "dark"] as const).map((theme) => (
+            <button
+              key={theme}
+              aria-pressed={appearance === theme}
+              onClick={() => {
+                if (appearance !== theme) toggleTheme();
               }}
             >
-              <Flex direction="column">
-                <Text size="4" weight="medium">
-                  Theme
-                </Text>
-                <Text size="2" color="gray" mt="1">
-                  <span style={{ verticalAlign: "middle" }}>
-                    {appearance === "dark" ? "Dark" : "Light"}
-                  </span>{" "}
-                  mode
-                </Text>
-              </Flex>
-              <Flex align="center" gap="3">
-                <Text size="2" color="gray">
-                  {appearance === "dark" ? "🌙" : "☀️"}
-                </Text>
-                <Switch
-                  checked={appearance === "dark"}
-                  onCheckedChange={toggleTheme}
-                  size="3"
-                />
-              </Flex>
-            </Flex>
-          </Box>
-          {/* Provider */}
-          <Box mb="5">
-            <Box mb="2">
-              <Text size="4" weight="medium" as="span">
-                LLM Provider
-              </Text>
-              <Text size="2" color="gray" ml="2">
-                (choose preferred cloud API, or use fast built-in default)
-              </Text>
-            </Box>
-            <RadioGroup.Root
-              value={selectedProvider || "default"}
-              onValueChange={handleProviderChange}
-            >
-              <Flex
-                direction="column"
-                gap="2"
-                style={{ marginLeft: 2, marginTop: 5 }}
-              >
-                <Card
-                  variant={selectedProvider === null ? "classic" : "surface"}
-                  style={{
-                    borderLeft: "4px solid var(--accent-8)",
-                    background:
-                      selectedProvider === null
-                        ? "var(--accent-a2)"
-                        : undefined,
-                    padding: "13px",
+              <span className={`theme-swatch ${theme}`} aria-hidden="true">
+                <i />
+              </span>
+              {theme === "light" ? "Pale violet" : "After dark"}
+            </button>
+          ))}
+        </div>
+      </section>
+      <section className="settings-section" aria-labelledby="connection-title">
+        <h2 id="connection-title">AI connection</h2>
+        <p className="connection-status">
+          <span className="status-dot" aria-hidden="true" />
+          {provider
+            ? `${label} · your connection`
+            : "Built-in service · no setup needed"}
+        </p>
+        <details
+          className="connection-options"
+          open={provider ? true : undefined}
+        >
+          <summary>Advanced connection options</summary>
+          <label className="field-label" htmlFor="ai-provider">
+            Connection
+          </label>
+          <select
+            id="ai-provider"
+            value={provider ?? "default"}
+            onChange={(e) => {
+              const next =
+                e.target.value === "default"
+                  ? null
+                  : (e.target.value as LLMQueryProvider);
+              updateProvider(next);
+              setSelectedProvider(next);
+              setVisible(false);
+            }}
+          >
+            <option value="default">Built-in service</option>
+            {providers.map((p) => (
+              <option key={p.key} value={p.key}>
+                {p.label}
+              </option>
+            ))}
+          </select>
+          {provider && (
+            <>
+              <label className="field-label" htmlFor="provider-key">
+                {label} API key
+              </label>
+              <div className="api-key-input">
+                <input
+                  id="provider-key"
+                  type={visible ? "text" : "password"}
+                  autoComplete="off"
+                  spellCheck={false}
+                  value={keys[provider]}
+                  onChange={(e) => {
+                    updateKeys({ ...keys, [provider]: e.target.value });
+                    setStoredApiKey(provider, e.target.value);
                   }}
+                />
+                <button
+                  className="icon-button"
+                  aria-label={visible ? "Hide API key" : "Show API key"}
+                  onClick={() => setVisible(!visible)}
                 >
-                  <Text
-                    as="label"
-                    size="3"
-                    weight={selectedProvider === null ? "bold" : "medium"}
-                  >
-                    <Flex align="center" gap="3">
-                      <RadioGroup.Item value="default" />
-                      <Box>
-                        <Text size="3">Default (Proxy Server)</Text>
-                        <Text as="div" size="2" color="gray" mt="0.5">
-                          No setup needed • Fastest for most users
-                        </Text>
-                      </Box>
-                    </Flex>
-                  </Text>
-                </Card>
-                {PROVIDER_INFO.map((prov) => (
-                  <Card
-                    key={prov.key}
-                    variant={
-                      selectedProvider === prov.key ? "classic" : "surface"
-                    }
-                    style={{
-                      borderLeft: `4px solid var(--${prov.color}-8)`,
-                      background:
-                        selectedProvider === prov.key
-                          ? `var(--${prov.color}-a2)`
-                          : undefined,
-                      padding: "13px",
-                    }}
-                  >
-                    <Text
-                      as="label"
-                      size="3"
-                      weight={selectedProvider === prov.key ? "bold" : "medium"}
-                    >
-                      <Flex align="center" gap="3">
-                        <RadioGroup.Item value={prov.key} />
-                        <Box>
-                          <Flex gap="1" align="center">
-                            <Text size="3">{prov.label}</Text>
-                            {hasProviderApiKey(
-                              prov.key as LLMQueryProvider,
-                            ) && (
-                              <Tooltip content="API key set">
-                                <CheckCircledIcon
-                                  color="var(--green-9)"
-                                  width={16}
-                                  height={16}
-                                />
-                              </Tooltip>
-                            )}
-                          </Flex>
-                          <Text as="div" size="2" color="gray" mt="0.5">
-                            {prov.description}
-                          </Text>
-                        </Box>
-                      </Flex>
-                    </Text>
-                  </Card>
-                ))}
-              </Flex>
-            </RadioGroup.Root>
-          </Box>
-          {/* API Keys */}
-          <Box mb="2">
-            <Box mb="2">
-              <Text size="4" weight="medium" as="span">
-                API Keys
-              </Text>
-              <Text size="2" color="gray" ml="2">
-                (optional; private to your browser)
-              </Text>
-            </Box>
-            <Flex direction="column" gap="4">
-              {PROVIDER_INFO.map((prov) => {
-                const keyValue = (() => {
-                  switch (prov.key) {
-                    case "cerebras":
-                      return cerebrasKey;
-                    case "deepinfra":
-                      return deepinfraKey;
-                    case "openrouter":
-                      return openrouterKey;
-                    case "groq":
-                      return groqKey;
-                    case "fireworks":
-                      return fireworksKey;
-                    default:
-                      return "";
-                  }
-                })();
-                const setter = (() => {
-                  switch (prov.key) {
-                    case "cerebras":
-                      return setCerebrasKey;
-                    case "deepinfra":
-                      return setDeepinfraKey;
-                    case "openrouter":
-                      return setOpenrouterKey;
-                    case "groq":
-                      return setGroqKey;
-                    case "fireworks":
-                      return setFireworksKey;
-                    default:
-                      return () => {};
-                  }
-                })();
-                const label = prov.label + " API Key";
-                return (
-                  <Flex key={prov.key} align="center" gap="3">
-                    <Box flexGrow="1">
-                      <Text size="2" weight="medium">
-                        {label}
-                      </Text>
-                      <TextField.Root
-                        type={visibleKeys[prov.key] ? "text" : "password"}
-                        placeholder={`Enter ${prov.label} API Key`}
-                        value={keyValue}
-                        onChange={handleApiKeyChange(
-                          prov.key as LLMQueryProvider,
-                          setter,
-                        )}
-                        style={{
-                          width: "100%",
-                          marginTop: 4,
-                        }}
-                        autoComplete="off"
-                      />
-                    </Box>
-                    <Tooltip
-                      content={visibleKeys[prov.key] ? "Hide key" : "Show key"}
-                    >
-                      <IconButton
-                        size="2"
-                        variant="soft"
-                        color="gray"
-                        style={{ marginTop: 22 }}
-                        onClick={() =>
-                          toggleKeyVisibility(prov.key as LLMQueryProvider)
-                        }
-                        aria-label="Toggle visibility"
-                      >
-                        {visibleKeys[prov.key] ? (
-                          <EyeOpenIcon />
-                        ) : (
-                          <EyeClosedIcon />
-                        )}
-                      </IconButton>
-                    </Tooltip>
-                  </Flex>
-                );
-              })}
-            </Flex>
-          </Box>
-        </Card>
-      </Box>
-    </Box>
+                  {visible ? <EyeClosedIcon /> : <EyeOpenIcon />}
+                </button>
+              </div>
+              {!keys[provider] && (
+                <p className="quiet-note">
+                  Add a key to use this connection, or switch back to the
+                  built-in service.
+                </p>
+              )}
+            </>
+          )}
+          <p className="quiet-note">
+            Keys are saved in this browser and sent to the selected provider
+            with requests. Choose a compatible model under “Which posts?” when
+            asking a question. Avatar image generation uses its own image
+            service.
+          </p>
+        </details>
+      </section>
+      <section className="settings-section" aria-labelledby="data-title">
+        <h2 id="data-title">Your archives and answers</h2>
+        <p>
+          Saved in this browser. Use the person picker to browse, refresh or
+          remove an archive; past questions and avatars have their own delete
+          controls.
+        </p>
+        <p className="quiet-note">
+          Asking sends the selected posts to the AI service. Avatar generation
+          also uses profile details and, if enabled, the current avatar image.
+          Clearing browser data removes local archives, answers and saved keys.
+        </p>
+      </section>
+    </PageContent>
   );
 }

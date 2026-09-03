@@ -3,7 +3,7 @@ import { useStore } from "../../state/store";
 
 export function PastQueries({ onNavigate }: { onNavigate?: () => void }) {
   const { queryResults } = useStore();
-  const recent = [...(queryResults ?? [])].reverse().slice(0, 4);
+  const recent = [...(queryResults ?? [])].reverse().slice(0, 3);
   return recent.length ? (
     <ul className="recent-questions">
       {recent.map((query) => (

@@ -5,6 +5,7 @@ export const SelectedAccountContext = createContext<{
   account: Account | null;
   selectedAccountId: string | null;
   setSelectedAccountId: (id: string | null) => void;
+  openPeople: () => void;
 } | null>(null);
 
 export function useSelectedAccount() {

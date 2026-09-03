@@ -101,15 +101,15 @@ export type FeaturedQuery = {
 export const FEATURED_QUERIES_SINGULAR: FeaturedQuery[] = [
   {
     title: "What are they like?",
-    text: "What are they like? Give me an impression of their personality and what they enjoy, based on these tweets.",
+    text: "What are they like, going by these tweets?",
   },
   {
     title: "Strengths & weak spots",
-    text: "Based on these tweets, what are {account}'s strengths and weak spots? Treat this as a tentative impression, not a verdict.",
+    text: "What are their strengths and weak spots? Just an impression from these tweets.",
   },
   {
     title: "What would they enjoy?",
-    text: "Based on these tweets, what activities, ideas, or experiences might {account} enjoy? Explain what gives you that impression.",
+    text: "What would they enjoy? What in their tweets makes you think so?",
   },
   {
     title: "MBTI, for fun",

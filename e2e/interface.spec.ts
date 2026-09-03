@@ -55,19 +55,23 @@ function archive(username = "alexexample") {
 async function importArchive(page: Page, username = "alexexample") {
   await chooseFile(page, `${username}.zip`, archive(username));
   await expect(page.locator(".account-context")).toContainText(`@${username}`);
-  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog")).toHaveCount(0);
   await expect(page.locator(".mobile-sidebar-content")).toHaveCount(0);
 }
 async function chooseFile(page: Page, name: string, buffer: Buffer) {
   const upload = page
     .getByRole("button", { name: "Import my archive ↗", exact: true })
     .filter({ visible: true });
-  if (!(await upload.count())) await openNavigation(page);
+  if (!(await upload.count()))
+    await page.locator(".account-context button").click();
   const chooser = page.waitForEvent("filechooser");
   await upload.first().click();
   await (await chooser).setFiles({ name, mimeType: "application/zip", buffer });
 }
 async function openNavigation(page: Page) {
+  await expect(
+    page.getByRole("dialog").filter({ has: page.locator("#people-search") }),
+  ).toHaveCount(0);
   const toggle = page.getByRole("button", { name: "Open navigation" });
   if (
     (await toggle.isVisible()) &&
@@ -82,6 +86,7 @@ async function navigate(page: Page, name: string) {
   await page
     .getByRole("link", { name, exact: true })
     .filter({ visible: true })
+    .first()
     .click();
   await expect(page.locator(".mobile-sidebar-content")).toHaveCount(0);
 }
@@ -165,10 +170,18 @@ test("community archive picker shows loading failures and allows retry", async (
 test("empty state, theme persistence, and keyboard-accessible navigation", async ({
   page,
 }, testInfo) => {
+  await expect(page.getByRole("button", { name: /Ask Distill/ })).toHaveCount(
+    0,
+  );
   await expect(
-    page.getByRole("button", { name: /Ask Distill/ }),
-  ).toBeDisabled();
+    page.getByRole("textbox", { name: "Your question" }),
+  ).toHaveCount(0);
   await page.getByRole("button", { name: "Switch to light theme" }).click();
+  await page.screenshot({
+    animations: "disabled",
+    path: testInfo.outputPath("getting-started-light.png"),
+    fullPage: true,
+  });
   await expect(page.locator("#root > .radix-themes")).toHaveCSS(
     "background-color",
     "rgb(238, 232, 248)",
@@ -183,10 +196,8 @@ test("empty state, theme persistence, and keyboard-accessible navigation", async
   await expect(page.getByRole("dialog")).toContainText(
     "Who are you curious about?",
   );
-  await page
-    .getByRole("textbox", { name: "Search Community Archive users" })
-    .fill("nobody");
-  await expect(page.getByRole("dialog")).toContainText("No usernames match");
+  await page.getByRole("textbox", { name: "Search people" }).fill("nobody");
+  await expect(page.getByRole("dialog")).toContainText("No people match");
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await navigate(page, "Past questions");
@@ -195,6 +206,7 @@ test("empty state, theme persistence, and keyboard-accessible navigation", async
   ).toBeVisible();
   await noOverflow(page);
   await page.screenshot({
+    animations: "disabled",
     path: testInfo.outputPath("empty-light.png"),
     fullPage: true,
   });
@@ -209,15 +221,13 @@ test("archive selection stays in sync across screens, removal, and reload", asyn
   await page
     .getByRole("button", { name: "Change person: @samexample" })
     .filter({ visible: true })
+    .first()
     .click();
   await page
     .getByRole("button", { name: "Select @alexexample", exact: true })
     .click();
-  // Choosing a person in the mobile drawer must not switch back on navigation.
-  await page
-    .getByRole("link", { name: "Make an avatar", exact: true })
-    .filter({ visible: true })
-    .click();
+  // Every entry point uses the same picker and selection survives navigation.
+  await navigate(page, "Make an avatar");
   await expect(page.locator(".account-context")).toContainText("@alexexample");
   await page.reload();
   await expect(page.locator(".account-context")).toContainText("@alexexample");
@@ -225,10 +235,14 @@ test("archive selection stays in sync across screens, removal, and reload", asyn
   await page
     .getByRole("button", { name: "Change person: @alexexample" })
     .filter({ visible: true })
+    .first()
+    .click();
+  await page
+    .getByRole("button", { name: "Manage @alexexample archive" })
     .click();
   page.once("dialog", (dialog) => dialog.accept());
   await page
-    .getByRole("button", { name: "Remove @alexexample archive" })
+    .getByRole("menuitem", { name: "Remove @alexexample archive" })
     .click();
   await page.keyboard.press("Escape");
   await page.keyboard.press("Escape");
@@ -240,6 +254,8 @@ test("questions, post filters, sources, saved answers and deletion", async ({
   page,
 }, testInfo) => {
   await importArchive(page);
+  if (testInfo.project.name === "mobile")
+    await expect(page.locator(".shortcut-hint")).not.toBeVisible();
   let calls = 0;
   let requestBody = "";
   await page.route(
@@ -295,26 +311,55 @@ test("questions, post filters, sources, saved answers and deletion", async ({
   expect(requestBody).not.toContain("RT @friend");
   expect(requestBody).not.toContain("@friend A good walk");
   await page.getByRole("button", { name: /The tweets behind this/ }).click();
-  await expect(page.getByRole("dialog")).toBeVisible();
-  await page.getByRole("button", { name: /Posts sent/ }).click();
-  await expect(page.getByRole("dialog")).toContainText(
-    "I enjoy making tiny useful things",
-  );
-  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog")).toHaveCount(0);
   await expect(
-    page.getByRole("button", { name: /The tweets behind this/ }),
-  ).toBeFocused();
+    page.getByRole("region", { name: "The tweets behind this" }),
+  ).toContainText("I enjoy making tiny useful things");
+  await expect(page.locator(".source-posts li")).toHaveCount(1);
+  await page.getByRole("button", { name: /The tweets behind this/ }).click();
+  await expect(page.locator(".source-posts")).toHaveCount(0);
+  await expect(page.locator(".answer-context")).toContainText("1 post used");
+  await expect(page.locator(".result-question")).toHaveCount(0);
+  await expect(page.locator(".answer-lead")).toContainText(
+    "A guess, not a verdict.",
+  );
+  if (testInfo.project.name === "desktop") {
+    const composer = await page.locator(".question-composer").boundingBox();
+    const answer = await page.locator(".answer-lead").boundingBox();
+    expect(composer!.height).toBeLessThan(190);
+    expect(answer!.y).toBeLessThan(610);
+    expect(answer!.x).toBe(composer!.x);
+    expect(answer!.width).toBe(composer!.width);
+  }
   await noOverflow(page);
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.screenshot({
+    animations: "disabled",
     path: testInfo.outputPath("answer-dark.png"),
     fullPage: true,
   });
   await page.getByRole("button", { name: "Switch to light theme" }).click();
   await page.screenshot({
+    animations: "disabled",
     path: testInfo.outputPath("answer-light.png"),
     fullPage: true,
   });
+  if (testInfo.project.name === "desktop") {
+    await page.setViewportSize({ width: 1024, height: 900 });
+    await page.screenshot({
+      animations: "disabled",
+      path: testInfo.outputPath("answer-light-1024.png"),
+      fullPage: true,
+    });
+  }
+  await page.getByRole("button", { name: "Which posts?" }).click();
+  await page.getByRole("checkbox", { name: "Include replies" }).check();
+  await expect(page.locator(".scope-row")).toContainText("2 of 3 posts");
+  await expect(page.locator(".answer-context")).toContainText("1 post used");
+  await importArchive(page, "samexample");
+  await expect(
+    page.getByRole("region", { name: "Answer", exact: true }),
+  ).toHaveCount(0);
   await navigate(page, "Past questions");
   await page.locator(".history-list a").click();
   await expect(
@@ -369,6 +414,7 @@ test("avatar generation, prompt reuse, rerender and per-person history", async (
   await expect(
     page.getByRole("img", { name: "Generated avatar for @alexexample" }),
   ).toBeVisible();
+  await page.getByText("Prompt & image details", { exact: true }).click();
   await page.getByRole("button", { name: "Show generated prompt" }).click();
   await expect(
     page.getByText(
@@ -385,6 +431,7 @@ test("avatar generation, prompt reuse, rerender and per-person history", async (
   expect(imageCalls).toBe(2);
   await noOverflow(page);
   await page.screenshot({
+    animations: "disabled",
     path: testInfo.outputPath("avatar-dark.png"),
     fullPage: true,
   });
@@ -422,7 +469,9 @@ test("month ranges, model selection, and browsing one person's tweets", async ({
   await importArchive(page);
   await importArchive(page, "samexample");
   await page.getByRole("button", { name: "Which posts?" }).click();
-  await page.getByRole("radio", { name: "Choose dates" }).check();
+  await page
+    .getByRole("combobox", { name: "Post range" })
+    .selectOption("date-range");
   await page.getByLabel("From month").fill("2026-08");
   await page.getByLabel("Through month").fill("2026-08");
   await expect(page.locator(".scope-row")).toContainText(
@@ -437,12 +486,174 @@ test("month ranges, model selection, and browsing one person's tweets", async ({
   await noOverflow(page);
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.screenshot({
+    animations: "disabled",
     path: testInfo.outputPath("filters-dark.png"),
     fullPage: true,
   });
-  await page.locator(".account-context a").first().click();
+  await page.locator(".account-context button").click();
+  await page
+    .getByRole("button", { name: "Manage @samexample archive" })
+    .click();
+  await page.getByRole("menuitem", { name: "Browse posts" }).click();
   await page.getByRole("textbox", { name: "Search tweets" }).fill("walk");
   await expect(page).toHaveURL(/account_id=samexample/);
   await expect(page).toHaveURL(/search=walk/);
   await noOverflow(page);
+});
+
+test("one people picker, simple settings, and preview-led avatar layout", async ({
+  page,
+}, testInfo) => {
+  await importArchive(page);
+  await page.locator(".account-context button").click();
+  await expect(page.getByRole("dialog")).toHaveCount(1);
+  await expect(page.getByRole("dialog")).toContainText("Already here");
+  await expect(
+    page
+      .getByRole("button", { name: "Import my archive ↗" })
+      .filter({ visible: true }),
+  ).toHaveCount(1);
+  await expect(
+    page.getByRole("combobox", { name: "When loading someone new" }),
+  ).toBeVisible();
+  await page.screenshot({
+    animations: "disabled",
+    path: testInfo.outputPath("people-picker.png"),
+    fullPage: true,
+  });
+  await page.keyboard.press("Escape");
+  await expect(page.locator(".account-context button")).toBeFocused();
+
+  await navigate(page, "Settings");
+  await expect(
+    page.getByText("Built-in service · no setup needed"),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("combobox", { name: "Connection" }),
+  ).not.toBeVisible();
+  await expect(page.locator('input[type="password"]')).toHaveCount(0);
+  await page.screenshot({
+    animations: "disabled",
+    path: testInfo.outputPath("settings.png"),
+    fullPage: true,
+  });
+  await page.getByText("Advanced connection options", { exact: true }).click();
+  await page.getByRole("combobox", { name: "Connection" }).selectOption("groq");
+  await expect(page.getByLabel("Groq API key")).toBeVisible();
+  await expect(page.locator('input[type="password"]')).toHaveCount(1);
+  await page.getByLabel("Groq API key").fill("test-key-not-a-real-secret");
+  await page
+    .getByRole("combobox", { name: "Connection" })
+    .selectOption("cerebras");
+  await expect(page.getByLabel("Cerebras API key")).toHaveValue("");
+  await page.getByRole("combobox", { name: "Connection" }).selectOption("groq");
+  await expect(page.getByLabel("Groq API key")).toHaveValue(
+    "test-key-not-a-real-secret",
+  );
+  await page
+    .getByRole("combobox", { name: "Connection" })
+    .selectOption("default");
+
+  await navigate(page, "Make an avatar");
+  await expect(
+    page.getByRole("combobox", { name: "Text model" }),
+  ).not.toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Generate avatar ↗" }),
+  ).toBeEnabled();
+  if (testInfo.project.name === "desktop") {
+    await page.setViewportSize({ width: 1024, height: 900 });
+    const preview = await page.locator(".avatar-empty").boundingBox();
+    const controls = await page.locator(".avatar-options").boundingBox();
+    expect(preview!.y).toBe(controls!.y);
+    expect(controls!.x).toBeGreaterThan(preview!.x + preview!.width);
+    expect(
+      await page
+        .locator(".app-content")
+        .evaluate((el) => el.getBoundingClientRect().x),
+    ).toBe(190);
+  }
+  await page.getByText("AI models", { exact: true }).click();
+  await expect(
+    page.getByRole("combobox", { name: "Text model" }),
+  ).toBeVisible();
+  await page.getByText("AI models", { exact: true }).click();
+  await page
+    .getByRole("button", { name: "What is this?", exact: true })
+    .click();
+  await expect(page.getByRole("dialog")).toContainText(
+    "Knowing the person is still a separate",
+  );
+  await expect(page).toHaveURL(/avatar/);
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await noOverflow(page);
+  await page.screenshot({
+    animations: "disabled",
+    path: testInfo.outputPath("avatar-layout.png"),
+    fullPage: true,
+  });
+});
+
+test("public directory failures recover without leaving the person picker", async ({
+  page,
+}) => {
+  let fails = true;
+  await page.route("**/rest/v1/account?**", (route) =>
+    fails
+      ? route.fulfill({
+          status: 503,
+          json: { message: "Directory unavailable" },
+        })
+      : route.fulfill({
+          json: [
+            {
+              account_id: "testpublic",
+              username: "testpublic",
+              num_tweets: 12345,
+              num_followers: 0,
+              profile: null,
+            },
+          ],
+        }),
+  );
+  await page
+    .getByRole("button", { name: "Choose someone ↗", exact: true })
+    .click();
+  await expect(page.getByRole("dialog")).toContainText("Failed to load");
+  fails = false;
+  await page.getByRole("button", { name: "Try again", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "Load @testpublic, latest 10,000 posts" }),
+  ).toBeVisible();
+  await page
+    .getByRole("combobox", { name: "When loading someone new" })
+    .selectOption("full");
+  await expect(
+    page.getByRole("button", { name: "Load @testpublic, full archive" }),
+  ).toBeVisible();
+  await expect(page.getByRole("dialog")).toContainText(
+    "12,345 available posts",
+  );
+});
+
+test("mobile navigation expands in the page without covering the workspace", async ({
+  page,
+}, testInfo) => {
+  test.skip(testInfo.project.name !== "mobile");
+  await importArchive(page);
+  await openNavigation(page);
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  const navigation = await page
+    .locator(".mobile-sidebar-content")
+    .boundingBox();
+  const content = await page.locator("main").boundingBox();
+  expect(content!.y).toBeGreaterThanOrEqual(navigation!.y + navigation!.height);
+  await page.screenshot({
+    animations: "disabled",
+    path: testInfo.outputPath("mobile-navigation.png"),
+    fullPage: true,
+  });
+  await page.getByRole("button", { name: "Close navigation" }).click();
+  await expect(page.locator(".mobile-sidebar-content")).toHaveCount(0);
 });

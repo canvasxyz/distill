@@ -1,17 +1,18 @@
-import { Link } from "react-router";
 import { useSelectedAccount } from "../hooks/useSelectedAccount";
 
 export function AccountContextLine() {
-  const { account } = useSelectedAccount();
+  const { account, openPeople } = useSelectedAccount();
   return (
     <div className="account-context">
       {account ? (
         <>
-          <Link
-            to={`/all-tweets?account_id=${encodeURIComponent(account.accountId)}`}
+          <button
+            className="context-person"
+            onClick={openPeople}
+            aria-label={`Change person: @${account.username}`}
           >
-            @{account.username}
-          </Link>
+            @{account.username} <span aria-hidden="true">⌄</span>
+          </button>
           <span aria-hidden="true">·</span>
           {account.fromArchive ? (
             <span>Imported archive</span>

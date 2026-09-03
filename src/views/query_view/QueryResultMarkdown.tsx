@@ -7,6 +7,7 @@ import {
 import Markdown from "react-markdown";
 import type { ExtraProps } from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { answerLead } from "./answer_lead";
 import { HoverCard, Text, Flex } from "@radix-ui/themes";
 import type { Tweet } from "../../types";
 import {
@@ -194,6 +195,7 @@ const splitThinkingSegments = (input: string): ContentSegment[] => {
 
 type Props = {
   content: string;
+  person?: string;
   tweetsById: Map<string, Tweet>;
   accountIdToUsername: Map<string, string>;
 };
@@ -202,6 +204,7 @@ export function QueryResultMarkdown({
   content,
   tweetsById,
   accountIdToUsername,
+  person,
 }: Props) {
   const segments = useMemo(() => splitThinkingSegments(content), [content]);
   const [collapsedThinking, setCollapsedThinking] = useState<Set<number>>(
@@ -327,7 +330,11 @@ export function QueryResultMarkdown({
             }
           >
             <Markdown
-              remarkPlugins={[remarkGfm]}
+              remarkPlugins={
+                idx === segments.findIndex((item) => item.type === "content")
+                  ? [remarkGfm, answerLead(person)]
+                  : [remarkGfm]
+              }
               components={markdownComponents}
             >
               {segment.text}

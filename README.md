@@ -37,4 +37,4 @@ pnpm test:e2e
 
 The browser suite runs on desktop and mobile-sized Chromium, starts its own local server, and uses isolated storage, fictional archive imports, and intercepted network responses. No real AI or Community Archive requests are made. If Chrome is already installed, `DISTILL_BROWSER_CHANNEL=chrome pnpm test:e2e` can use it instead of downloading Chromium.
 
-Screenshots and traces are written to the ignored `test-results/` directory. The suite covers theme persistence, archive selection/import/removal, questions, filters, saved answers, source dialogs, clipboard feedback, avatar generation/re-rendering, and error recovery.
+Screenshots and traces are written to the ignored `test-results/` directory. The suite covers theme persistence, the shared person picker and import/removal flows, questions, filters, saved answer scope, inline sources, clipboard feedback, avatar generation/re-rendering/history, simplified settings, and error recovery. Layout assertions check the compact composer, answer alignment, desktop preview/control columns, and in-page mobile navigation. Screenshot captures disable animations for reliable visual review.

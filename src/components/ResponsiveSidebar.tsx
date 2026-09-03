@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { NavLink } from "react-router";
-import { Dialog } from "@radix-ui/themes";
 import {
   ChatBubbleIcon,
   FaceIcon,
@@ -14,25 +13,23 @@ import { PastQueries } from "../views/query_view/SidebarQueries";
 import { useSelectedAccount } from "../hooks/useSelectedAccount";
 import { useStore } from "../state/store";
 import { SelectUser } from "../views/SelectUser";
-import { ArchiveDropZone } from "./ArchiveDropZone";
-import { CommunityArchiveUserModal } from "./CommunityArchiveUserModal";
 import { getCommunityArchiveUserProgressLabel } from "./CommunityArchiveUserProgress";
 import "./ResponsiveSidebar.css";
 
 export function ResponsiveSidebar() {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [peopleOpen, setPeopleOpen] = useState(false);
-  const { selectedAccountId, setSelectedAccountId } = useSelectedAccount();
+  const { openPeople } = useSelectedAccount();
+  const choosePerson = () => {
+    setMobileOpen(false);
+    openPeople();
+  };
   const { appIsReady, loadCommunityArchiveUserProgress } = useStore();
 
   const sidebarContent = (
     <div className="sidebar-inner">
       <div>
         <p className="sidebar-label">Currently curious about</p>
-        <SelectUser
-          selectedAccountId={selectedAccountId}
-          setSelectedAccountId={setSelectedAccountId}
-        />
+        <SelectUser onOpen={choosePerson} />
       </div>
       <nav
         className="primary-nav"
@@ -55,10 +52,7 @@ export function ResponsiveSidebar() {
         </NavLink>
         <button
           disabled={!appIsReady || !!loadCommunityArchiveUserProgress}
-          onClick={() => {
-            setMobileOpen(false);
-            setPeopleOpen(true);
-          }}
+          onClick={choosePerson}
         >
           <PersonIcon />
           Someone else
@@ -76,7 +70,6 @@ export function ResponsiveSidebar() {
         <PastQueries onNavigate={() => setMobileOpen(false)} />
       </section>
       <div className="sidebar-bottom">
-        <ArchiveDropZone />
         <NavLink
           className="settings-link"
           to="/settings"
@@ -95,32 +88,6 @@ export function ResponsiveSidebar() {
             <br />
             Community Archive ↗
           </a>
-          <p>
-            Built by{" "}
-            <a
-              href="https://github.com/raykyri"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              raykyri
-            </a>{" "}
-            and{" "}
-            <a
-              href="https://github.com/rjwebb"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              rjwebb
-            </a>
-            <br />
-            <a
-              href="http://canvas.xyz"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Canvas Technologies Inc
-            </a>
-          </p>
         </footer>
       </div>
     </div>
@@ -129,34 +96,32 @@ export function ResponsiveSidebar() {
   return (
     <>
       <aside className="responsive-sidebar-desktop">{sidebarContent}</aside>
-      <Dialog.Root open={mobileOpen} onOpenChange={setMobileOpen}>
-        <Dialog.Trigger>
-          <button
-            className="mobile-sidebar-toggle icon-button"
-            aria-label="Open navigation"
-          >
-            <HamburgerMenuIcon />
-          </button>
-        </Dialog.Trigger>
-        <Dialog.Content
+      <button
+        className="mobile-sidebar-toggle icon-button"
+        aria-label={mobileOpen ? "Close navigation" : "Open navigation"}
+        aria-expanded={mobileOpen}
+        aria-controls="mobile-navigation"
+        onClick={() => setMobileOpen(!mobileOpen)}
+      >
+        {mobileOpen ? <Cross2Icon /> : <HamburgerMenuIcon />}
+      </button>
+      {mobileOpen && (
+        <aside
+          id="mobile-navigation"
           className="mobile-sidebar-content"
-          aria-describedby={undefined}
+          aria-label="Navigation"
+          onKeyDown={(event) => {
+            if (event.key === "Escape") {
+              setMobileOpen(false);
+              document
+                .querySelector<HTMLButtonElement>(".mobile-sidebar-toggle")
+                ?.focus();
+            }
+          }}
         >
-          <div className="mobile-sidebar-heading">
-            <Dialog.Title>Distill</Dialog.Title>
-            <Dialog.Close>
-              <button className="icon-button" aria-label="Close navigation">
-                <Cross2Icon />
-              </button>
-            </Dialog.Close>
-          </div>
           {sidebarContent}
-        </Dialog.Content>
-      </Dialog.Root>
-      <CommunityArchiveUserModal
-        showModal={peopleOpen}
-        setShowModal={setPeopleOpen}
-      />
+        </aside>
+      )}
     </>
   );
 }

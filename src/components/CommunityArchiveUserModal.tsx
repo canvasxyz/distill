@@ -1,312 +1,339 @@
-import { Fragment, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useLiveQuery } from "dexie-react-hooks";
+import { Link } from "react-router";
+import { Avatar, DropdownMenu, Spinner } from "@radix-ui/themes";
 import {
   PINNED_USERNAMES,
   useCommunityArchiveAccounts,
 } from "../hooks/useUsers";
+import { useSelectedAccount } from "../hooks/useSelectedAccount";
 import { useStore } from "../state/store";
+import { db } from "../db";
 import { Modal } from "./Modal";
+import { ArchiveDropZone } from "./ArchiveDropZone";
 import { getCommunityArchiveUserProgressLabel } from "./CommunityArchiveUserProgress";
-import {
-  Avatar,
-  Box,
-  Button,
-  DropdownMenu,
-  Flex,
-  Grid,
-  Spinner,
-  Text,
-  TextField,
-} from "@radix-ui/themes";
 
-const SEARCH_DEBOUNCE_MS = 250;
-
-function HighlightedUsername({
-  username,
-  query,
-}: {
-  username: string;
-  query: string;
-}) {
-  const matchStart = username.toLowerCase().indexOf(query.toLowerCase());
-  if (!query || matchStart === -1) return username;
-
-  const matchEnd = matchStart + query.length;
-  return (
-    <>
-      {username.slice(0, matchStart)}
-      <mark
-        style={{
-          background: "var(--fluorescent)",
-          color: "var(--on-green)",
-          borderRadius: 2,
-          padding: 0,
-        }}
-      >
-        {username.slice(matchStart, matchEnd)}
-      </mark>
-      {username.slice(matchEnd)}
-    </>
-  );
-}
-
-export const CommunityArchiveUserModal = ({
+export function CommunityArchiveUserModal({
   showModal,
   setShowModal,
 }: {
   showModal: boolean;
   setShowModal: (show: boolean) => void;
-}) => {
+}) {
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [fullHistory, setFullHistory] = useState(false);
+  const [loadingPerson, setLoadingPerson] = useState("");
   const [loadError, setLoadError] = useState("");
-
+  const { selectedAccountId, setSelectedAccountId } = useSelectedAccount();
+  const {
+    accounts: savedAccounts,
+    allTweets,
+    removeArchive,
+    loadCommunityArchiveUser,
+    loadCommunityArchiveUserProgress,
+    ingestTwitterArchiveProgress,
+  } = useStore();
+  const profiles = useLiveQuery(() => db.profiles.toArray(), [], []);
+  const counts = useMemo(() => {
+    const result = new Map<string, number>();
+    allTweets.forEach((t) =>
+      result.set(t.account_id, (result.get(t.account_id) ?? 0) + 1),
+    );
+    return result;
+  }, [allTweets]);
   useEffect(() => {
     const timeout = window.setTimeout(
       () => setDebouncedQuery(query.trim()),
-      SEARCH_DEBOUNCE_MS,
+      250,
     );
     return () => window.clearTimeout(timeout);
   }, [query]);
-
-  const { accounts, error, hasMore, isLoading, isLoadingMore, loadMore } =
-    useCommunityArchiveAccounts(showModal, debouncedQuery);
-
-  const pinnedSet = useMemo(
-    () => new Set(PINNED_USERNAMES.map((u) => u.toLowerCase())),
-    [],
+  const {
+    accounts,
+    error,
+    hasMore,
+    isLoading,
+    isLoadingMore,
+    loadMore,
+    retry,
+  } = useCommunityArchiveAccounts(showModal, debouncedQuery);
+  const busy =
+    !!loadCommunityArchiveUserProgress || !!ingestTwitterArchiveProgress;
+  const searchPending = query.trim() !== debouncedQuery;
+  const savedMatches = savedAccounts.filter((a) =>
+    `${a.username} ${a.accountDisplayName}`
+      .toLowerCase()
+      .includes(query.trim().toLowerCase()),
   );
-  const { loadCommunityArchiveUser, loadCommunityArchiveUserProgress } =
-    useStore();
-  const selectArchive = async (accountId: string, maxTweets?: number) => {
-    if (loadCommunityArchiveUserProgress) return;
+  const newAccounts = accounts.filter(
+    (a) => !savedAccounts.some((s) => s.accountId === a.accountId),
+  );
+  const featured = new Set(PINNED_USERNAMES.map((name) => name.toLowerCase()));
+  const sections = [
+    {
+      title: "A few people to start with",
+      people: newAccounts.filter((a) => featured.has(a.username.toLowerCase())),
+    },
+    {
+      title: "Community Archive",
+      people: newAccounts.filter(
+        (a) => !featured.has(a.username.toLowerCase()),
+      ),
+    },
+  ];
+  async function loadPerson(id: string, username: string, limit?: number) {
+    if (busy) return;
     setLoadError("");
+    setLoadingPerson(username);
     try {
-      await loadCommunityArchiveUser(accountId, maxTweets);
+      await loadCommunityArchiveUser(id, limit);
+      setSelectedAccountId(id);
       setShowModal(false);
     } catch {
       useStore.setState({ loadCommunityArchiveUserProgress: null });
-      setLoadError("That archive couldn’t be loaded. Please try again.");
+      setLoadError(`@${username} couldn’t be loaded. Please try again.`);
+    } finally {
+      setLoadingPerson("");
     }
-  };
-  const normalizedQuery = query.trim().toLowerCase();
-  const isSearchPending = normalizedQuery !== debouncedQuery.toLowerCase();
-
+  }
+  async function removePerson(id: string) {
+    if (
+      !window.confirm(
+        "Remove this archive? This will delete the locally stored tweets and profile for this account.",
+      )
+    )
+      return;
+    try {
+      await removeArchive(id);
+    } catch {
+      setLoadError("Couldn’t remove this archive. Please try again.");
+    }
+  }
   return (
     <Modal
       open={showModal}
       onClose={() => setShowModal(false)}
       title="Who are you curious about?"
+      initialFocus="#people-search"
     >
-      <Flex direction="column" gap="3">
-        {loadError && (
-          <Text color="red" size="2" role="alert">
-            {loadError}
-          </Text>
-        )}
-        {loadCommunityArchiveUserProgress && (
-          <Text size="2" role="status">
-            {getCommunityArchiveUserProgressLabel(
-              loadCommunityArchiveUserProgress,
-            )}
-          </Text>
-        )}
-        <Text size="2" color="gray">
-          Choose an archive someone has shared with{" "}
+      <div className="people-picker">
+        <p className="quiet-note">
+          Yourself, a friend, someone whose tweets stuck with you. Public
+          archives are shared voluntarily through{" "}
           <a
             href="https://www.community-archive.org/"
             target="_blank"
             rel="noopener noreferrer"
           >
-            Community Archive
+            Community Archive ↗
           </a>
           .
-        </Text>
-        <TextField.Root
-          aria-label="Search Community Archive users"
-          placeholder="Search by username…"
+        </p>
+        <label className="visually-hidden" htmlFor="people-search">
+          Search people
+        </label>
+        <input
+          id="people-search"
+          className="people-search"
+          placeholder="Find a person by name or @handle…"
           value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          autoFocus
+          onChange={(e) => setQuery(e.target.value)}
         />
-        {isLoading || isSearchPending ? (
-          <Flex align="center" justify="center" gap="2" py="6">
-            <Spinner />
-            <Text color="gray">
-              {normalizedQuery ? "Searching users…" : "Loading users…"}
-            </Text>
-          </Flex>
-        ) : accounts.length === 0 ? (
-          <Box py="6" style={{ textAlign: "center" }}>
-            <Text color="gray">
-              {error
-                ? error
-                : normalizedQuery
-                  ? `No usernames match “${query.trim()}”.`
-                  : "No users found."}
-            </Text>
-          </Box>
-        ) : (
-          <>
-            <Text size="1" color="gray">
-              {accounts.length.toLocaleString()} users loaded
-              {normalizedQuery && " matching your search"}
-            </Text>
-            <Box
-              style={{ maxHeight: "min(60vh, 560px)", overflowY: "auto" }}
-              onScroll={(event) => {
-                const element = event.currentTarget;
-                if (
-                  element.scrollHeight -
-                    element.scrollTop -
-                    element.clientHeight <
-                  100
-                ) {
-                  void loadMore();
-                }
-              }}
+        {loadError && (
+          <p role="alert" className="archive-upload-error">
+            {loadError}
+          </p>
+        )}
+        <div className="people-results" aria-busy={busy}>
+          {savedMatches.length > 0 && (
+            <section aria-label="Already here">
+              <h3>Already here</h3>
+              {savedMatches.map((a) => (
+                <div className="person-row" key={a.accountId}>
+                  <button
+                    className="person-row-select"
+                    disabled={busy}
+                    aria-label={`Select @${a.username}`}
+                    aria-pressed={a.accountId === selectedAccountId}
+                    onClick={() => {
+                      setSelectedAccountId(a.accountId);
+                      setShowModal(false);
+                    }}
+                  >
+                    <Avatar
+                      src={
+                        profiles.find((p) => p.accountId === a.accountId)
+                          ?.avatarMediaUrl
+                      }
+                      size="2"
+                      radius="full"
+                      fallback={(a.accountDisplayName || a.username).slice(
+                        0,
+                        1,
+                      )}
+                    />
+                    <span>
+                      <strong>{a.accountDisplayName || a.username}</strong>
+                      <small>
+                        @{a.username} ·{" "}
+                        {(counts.get(a.accountId) ?? 0).toLocaleString()} loaded
+                        posts{a.fromArchive ? " · Your import" : ""}
+                      </small>
+                    </span>
+                    <span aria-hidden="true">
+                      {a.accountId === selectedAccountId ? "✓" : "↗"}
+                    </span>
+                  </button>
+                  <DropdownMenu.Root>
+                    <DropdownMenu.Trigger>
+                      <button
+                        className="plain-button person-menu"
+                        disabled={busy}
+                        aria-label={`Manage @${a.username} archive`}
+                      >
+                        •••
+                      </button>
+                    </DropdownMenu.Trigger>
+                    <DropdownMenu.Content>
+                      <DropdownMenu.Item asChild>
+                        <Link
+                          to={`/all-tweets?account_id=${encodeURIComponent(a.accountId)}`}
+                          onClick={() => setShowModal(false)}
+                        >
+                          Browse posts
+                        </Link>
+                      </DropdownMenu.Item>
+                      {!a.fromArchive && (
+                        <DropdownMenu.Item
+                          onSelect={() =>
+                            void loadPerson(a.accountId, a.username)
+                          }
+                        >
+                          Refresh full archive
+                        </DropdownMenu.Item>
+                      )}
+                      <DropdownMenu.Item
+                        color="red"
+                        onSelect={() => void removePerson(a.accountId)}
+                      >
+                        Remove @{a.username} archive
+                      </DropdownMenu.Item>
+                    </DropdownMenu.Content>
+                  </DropdownMenu.Root>
+                </div>
+              ))}
+            </section>
+          )}
+          <div className="archive-load-choice">
+            <label htmlFor="archive-amount">When loading someone new</label>
+            <select
+              id="archive-amount"
+              value={fullHistory ? "full" : "recent"}
+              disabled={busy}
+              onChange={(e) => setFullHistory(e.target.value === "full")}
             >
-              <Grid columns="3" gap="2" align="center" pr="2">
-                {accounts.map((account) => {
-                  const isPinned = pinnedSet.has(
-                    (account.username || "").toLowerCase(),
-                  );
-                  return (
-                    <Fragment key={account.accountId}>
-                      <Flex align="center" gap="2" style={{ minWidth: 0 }}>
-                        {account.profile && account.profile.avatarMediaUrl ? (
+              <option value="recent">Latest 10,000 posts</option>
+              <option value="full">Full archive · takes longer</option>
+            </select>
+            <small>
+              This is what gets loaded, not how many posts each answer uses.
+            </small>
+          </div>
+          {isLoading || searchPending ? (
+            <p className="people-status" role="status">
+              <Spinner /> Finding people…
+            </p>
+          ) : (
+            sections.map(
+              (section) =>
+                section.people.length > 0 && (
+                  <section key={section.title} aria-label={section.title}>
+                    <h3>{section.title}</h3>
+                    {section.people.map((a) => (
+                      <div className="person-row" key={a.accountId}>
+                        <button
+                          className="person-row-select"
+                          disabled={busy}
+                          aria-label={`Load @${a.username}, ${fullHistory ? "full archive" : "latest 10,000 posts"}`}
+                          onClick={() =>
+                            void loadPerson(
+                              a.accountId,
+                              a.username,
+                              fullHistory ? undefined : 10000,
+                            )
+                          }
+                        >
                           <Avatar
-                            src={account.profile.avatarMediaUrl}
+                            src={a.profile?.avatarMediaUrl}
                             size="2"
                             radius="full"
-                            fallback="?"
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              target.src =
-                                "https://www.community-archive.org/_next/image?url=%2Fplaceholder.jpg&w=3840&q=75";
-                            }}
+                            fallback={a.username.slice(0, 1).toUpperCase()}
                           />
-                        ) : (
-                          <Avatar size="2" radius="full" fallback="?" />
+                          <span>
+                            <strong>@{a.username}</strong>
+                            <small>
+                              {a.numTweets == null
+                                ? "Post count unavailable"
+                                : `${a.numTweets.toLocaleString()} available posts`}
+                            </small>
+                          </span>
+                          <span aria-hidden="true">↗</span>
+                        </button>
+                        {loadingPerson === a.username && (
+                          <p className="person-loading" role="status">
+                            <Spinner /> Loading @{a.username}…{" "}
+                            {loadCommunityArchiveUserProgress &&
+                              getCommunityArchiveUserProgressLabel(
+                                loadCommunityArchiveUserProgress,
+                              )}
+                          </p>
                         )}
-                        <Text style={{ overflowWrap: "anywhere" }}>
-                          <HighlightedUsername
-                            username={account.username}
-                            query={query.trim()}
-                          />
-                        </Text>
-                      </Flex>
-                      <Text style={{ textAlign: "center" }}>
-                        {account.numTweets?.toLocaleString() ?? "—"} posts
-                      </Text>
-                      <Flex justify="end" align="center" gap="2">
-                        {isPinned && (
-                          <Text
-                            title="Pinned"
-                            aria-label="Pinned account"
-                            color="amber"
-                            size="2"
-                          >
-                            ★
-                          </Text>
-                        )}
-                        <Flex gap="0" style={{ position: "relative" }}>
-                          <Button
-                            size="2"
-                            disabled={!!loadCommunityArchiveUserProgress}
-                            aria-label={`Load @${account.username}, latest 10,000 posts`}
-                            onClick={() => {
-                              void selectArchive(account.accountId, 10000);
-                            }}
-                            style={{
-                              borderTopRightRadius: 0,
-                              borderBottomRightRadius: 0,
-                              borderRight: "1px solid var(--on-green)",
-                              height: 31,
-                            }}
-                          >
-                            Select
-                          </Button>
-                          <DropdownMenu.Root>
-                            <DropdownMenu.Trigger>
-                              <Button
-                                size="2"
-                                disabled={!!loadCommunityArchiveUserProgress}
-                                aria-label={`More options for @${account.username}`}
-                                style={{
-                                  borderTopLeftRadius: 0,
-                                  borderBottomLeftRadius: 0,
-                                  paddingLeft: "8px",
-                                  paddingRight: "8px",
-                                  minWidth: "28px",
-                                  height: 31,
-                                }}
-                              >
-                                <svg
-                                  width="12"
-                                  height="12"
-                                  viewBox="0 0 12 12"
-                                  fill="none"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                >
-                                  <path
-                                    d="M3 4.5L6 7.5L9 4.5"
-                                    stroke="currentColor"
-                                    strokeWidth="1.5"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                  />
-                                </svg>
-                              </Button>
-                            </DropdownMenu.Trigger>
-                            <DropdownMenu.Content>
-                              <DropdownMenu.Item
-                                onClick={() => {
-                                  void selectArchive(account.accountId);
-                                }}
-                              >
-                                Select full history
-                              </DropdownMenu.Item>
-                            </DropdownMenu.Content>
-                          </DropdownMenu.Root>
-                        </Flex>
-                      </Flex>
-                    </Fragment>
-                  );
-                })}
-              </Grid>
-              {hasMore && (
-                <Flex justify="center" py="3">
-                  <Button
-                    type="button"
-                    variant="soft"
-                    disabled={isLoadingMore}
-                    onClick={() => void loadMore()}
-                  >
-                    {isLoadingMore ? (
-                      <>
-                        <Spinner /> Loading…
-                      </>
-                    ) : (
-                      "Load more"
-                    )}
-                  </Button>
-                </Flex>
-              )}
-              {error && (
-                <Text
-                  as="p"
-                  size="1"
-                  color="red"
-                  align="center"
-                  style={{ padding: "8px 0" }}
-                >
-                  {error}
-                </Text>
-              )}
-            </Box>
-          </>
-        )}
-      </Flex>
+                      </div>
+                    ))}
+                  </section>
+                ),
+            )
+          )}
+          {!isLoading &&
+            !searchPending &&
+            !newAccounts.length &&
+            !savedMatches.length && (
+              <p className="quiet-note">
+                {error ||
+                  (query
+                    ? `No people match “${query.trim()}”.`
+                    : "No public archives found. You can still import your own.")}
+              </p>
+            )}
+          {error && (newAccounts.length > 0 || savedMatches.length > 0) && (
+            <p role="alert" className="archive-upload-error">
+              {error}
+            </p>
+          )}
+          {(hasMore || error) && (
+            <button
+              className="plain-button"
+              disabled={isLoadingMore || busy}
+              onClick={() => (error ? retry() : void loadMore())}
+            >
+              {isLoadingMore
+                ? "Finding more…"
+                : error
+                  ? "Try again"
+                  : "More people ↓"}
+            </button>
+          )}
+          {loadingPerson &&
+            !newAccounts.some((a) => a.username === loadingPerson) && (
+              <p role="status">Refreshing @{loadingPerson}…</p>
+            )}
+        </div>
+        <div className="people-import">
+          <span>Or use your own Twitter/X .zip</span>
+          <ArchiveDropZone onImported={() => setShowModal(false)} />
+        </div>
+      </div>
     </Modal>
   );
-};
+}
