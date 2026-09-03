@@ -869,6 +869,9 @@ svg {
   }
 }
 @media (pointer: coarse) {
+  .shortcut-hint {
+    display: none;
+  }
   .icon-button,
   .plain-button,
   .question-suggestions button {

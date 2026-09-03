@@ -29,7 +29,7 @@ export function RunQueryButton({
     >
       Ask Distill <span aria-hidden="true">↗</span>
       {showShortcut && isMacPlatform && (
-        <Text size="1" style={{ opacity: 0.8 }}>
+        <Text className="shortcut-hint" size="1" style={{ opacity: 0.8 }}>
           ⌘⏎
         </Text>
       )}
