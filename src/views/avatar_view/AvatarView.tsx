@@ -1,10 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import {
   Box,
   Button,
   Callout,
-  Card,
   Flex,
   Heading,
   Select,
@@ -15,15 +14,18 @@ import {
 } from "@radix-ui/themes";
 import { useStore } from "../../state/store";
 import { db } from "../../db";
-import { Header } from "../../components/Header";
+import { FaceIcon } from "@radix-ui/react-icons";
+import { AccountContextLine } from "../../components/AccountContextLine";
+import { ChooseArchive } from "../../components/ChooseArchive";
+import { useSelectedAccount } from "../../hooks/useSelectedAccount";
 import { PageContent } from "../../components/PageContent";
 import { LoadingView } from "../LoadingView";
-import { SelectUser } from "../SelectUser";
 import { IMAGE_GEN_MODELS } from "../../constants";
-import { AVAILABLE_LLM_CONFIGS, getLlmConfigLabel } from "../../state/llm_query";
+import {
+  AVAILABLE_LLM_CONFIGS,
+  getLlmConfigLabel,
+} from "../../state/llm_query";
 import type { GeneratedAvatar } from "../../state/avatar";
-
-const ACCOUNT_STORAGE_KEY = "llm:lastSelectedAccountId";
 
 function AvatarCard({
   avatar,
@@ -41,7 +43,7 @@ function AvatarCard({
   const created = new Date(avatar.createdAt);
   const [showPrompt, setShowPrompt] = useState(false);
   return (
-    <Card size="2" style={{ width: "100%" }}>
+    <article className={`avatar-card${isLatest ? " is-latest" : ""}`}>
       <Flex gap="4" wrap="wrap">
         <Flex direction="column" align="center" gap="2">
           <img
@@ -63,7 +65,7 @@ function AvatarCard({
             Download
           </a>
         </Flex>
-        <Flex direction="column" gap="2" style={{ flex: 1, minWidth: 240 }}>
+        <Flex direction="column" gap="2" className="avatar-card-body">
           <Text size="1" color="gray">
             {created.toLocaleString()} · {avatar.imageModel} · brief by{" "}
             {avatar.textModel} from {avatar.numTweets} tweets
@@ -76,7 +78,7 @@ function AvatarCard({
               {avatar.description}
             </Text>
           )}
-          <Flex gap="2" mt="1">
+          <Flex gap="2" mt="1" className="avatar-card-actions">
             <Button
               size="1"
               variant="soft"
@@ -94,20 +96,25 @@ function AvatarCard({
             >
               Re-render image
             </Button>
-            <Button size="1" variant="soft" color="red" disabled={disabled} onClick={onDelete}>
+            <Button
+              size="1"
+              variant="soft"
+              color="red"
+              disabled={disabled}
+              onClick={onDelete}
+            >
               Delete
             </Button>
           </Flex>
         </Flex>
       </Flex>
-    </Card>
+    </article>
   );
 }
 
 export function AvatarView() {
   const {
     appIsReady,
-    accounts,
     allTweets,
     generateAvatar,
     clearCachedPrompt,
@@ -124,36 +131,14 @@ export function AvatarView() {
     setSelectedConfigIndex,
   } = useStore();
 
-  const [selectedAccountId, setSelectedAccountId] = useState<string | null>(
-    () => {
-      try {
-        return localStorage.getItem(ACCOUNT_STORAGE_KEY);
-      } catch {
-        return null;
-      }
-    },
-  );
-  useEffect(() => {
-    if (!selectedAccountId) return;
-    try {
-      localStorage.setItem(ACCOUNT_STORAGE_KEY, selectedAccountId);
-    } catch {
-      // ignore
-    }
-  }, [selectedAccountId]);
-
-  const account = useMemo(
-    () => accounts.find((a) => a.accountId === selectedAccountId) || null,
-    [accounts, selectedAccountId],
-  );
+  const { selectedAccountId, account } = useSelectedAccount();
   const accountTweets = useMemo(
     () => (allTweets || []).filter((t) => t.account_id === selectedAccountId),
     [allTweets, selectedAccountId],
   );
 
-  const selectedTextModel = (
-    AVAILABLE_LLM_CONFIGS[selectedConfigIndex] || AVAILABLE_LLM_CONFIGS[0]
-  )[0];
+  const selectedTextModel = (AVAILABLE_LLM_CONFIGS[selectedConfigIndex] ||
+    AVAILABLE_LLM_CONFIGS[0])[0];
   const cachedPrompt = useLiveQuery(
     async () =>
       selectedAccountId
@@ -165,12 +150,24 @@ export function AvatarView() {
   const history = useLiveQuery(
     () =>
       selectedAccountId
-        ? db.avatars.where("accountId").equals(selectedAccountId).reverse().sortBy("createdAt")
+        ? db.avatars
+            .where("accountId")
+            .equals(selectedAccountId)
+            .reverse()
+            .sortBy("createdAt")
         : Promise.resolve([] as GeneratedAvatar[]),
     [selectedAccountId],
     [] as GeneratedAvatar[],
   );
-  const pastAvatars = history.filter((a) => a.id !== latestAvatar?.id);
+  // A live query can briefly retain the previous person's rows while it reloads.
+  const accountHistory = history.filter(
+    (avatar) => avatar.accountId === selectedAccountId,
+  );
+  const currentAvatar =
+    latestAvatar?.accountId === selectedAccountId
+      ? latestAvatar
+      : accountHistory[0];
+  const pastAvatars = accountHistory.filter((a) => a.id !== currentAvatar?.id);
 
   const busy = avatarStage !== null;
 
@@ -183,148 +180,160 @@ export function AvatarView() {
   }
 
   return (
-    <Box style={{ width: "100%" }}>
-      <Header title="Avatar Generator" />
-      <PageContent>
-        <Flex direction="column" gap="4" pb="6">
-          <Box mt="6">
-            <SelectUser
-              selectedAccountId={selectedAccountId}
-              setSelectedAccountId={setSelectedAccountId}
+    <PageContent>
+      <AccountContextLine />
+      <div className="page-intro">
+        <h1>Put a face to the vibe.</h1>
+        <p className="intro-copy">
+          Something inspired by their tweets. It doesn’t have to look like them.
+        </p>
+      </div>
+      {!account && <ChooseArchive />}
+      <div className="avatar-layout">
+        <div>
+          {currentAvatar ? (
+            <AvatarCard
+              avatar={currentAvatar}
+              isLatest
+              disabled={busy}
+              onRerender={() => regenerateAvatarImage(currentAvatar)}
+              onDelete={() => deleteAvatar(currentAvatar.id)}
             />
-          </Box>
-
-          <Text size="2" color="gray">
-            Generates a profile avatar from this account's tweets, bio, and current
-            avatar.
-          </Text>
-
-          <Flex align="center" gap="3" wrap="wrap">
-            <Button
-              size="3"
-              disabled={busy || !account || accountTweets.length === 0}
-              onClick={() => account && generateAvatar(account, accountTweets)}
-            >
-              {avatarStage === "analysing" ? (
-                <>
-                  <Spinner /> Reading tweets…
-                </>
-              ) : avatarStage === "rendering" ? (
-                <>
-                  <Spinner /> Rendering image…
-                </>
-              ) : (
-                "Generate avatar"
-              )}
-            </Button>
-            <Box style={{ flex: 1 }} />
-            <Flex direction="column" gap="1">
-              <Text size="1" color="gray">
-                Text model
-              </Text>
-              <Select.Root
-                value={String(selectedConfigIndex)}
-                onValueChange={(v) => setSelectedConfigIndex(Number(v))}
-                disabled={busy}
-              >
-                <Select.Trigger style={{ maxWidth: 260 }} />
-                <Select.Content>
-                  {AVAILABLE_LLM_CONFIGS.map((config, idx) => (
-                    <Select.Item
-                      key={`${config[0]}-${config[1]}-${config[2] || ""}`}
-                      value={String(idx)}
-                    >
-                      {config[3] && "️⭐️ "}
-                      {getLlmConfigLabel(config)}
-                    </Select.Item>
-                  ))}
-                </Select.Content>
-              </Select.Root>
-            </Flex>
-            <Flex direction="column" gap="1">
-              <Text size="1" color="gray">
-                Image model
-              </Text>
-              <Select.Root
-                value={selectedImageModel}
-                onValueChange={setSelectedImageModel}
-                disabled={busy}
-              >
-                <Select.Trigger style={{ maxWidth: 220 }} />
-                <Select.Content>
-                  {IMAGE_GEN_MODELS.map((m) => (
-                    <Select.Item key={m.id} value={m.id}>
-                      {m.label}
-                    </Select.Item>
-                  ))}
-                </Select.Content>
-              </Select.Root>
-            </Flex>
-          </Flex>
-
-          {cachedPrompt && (
-            <Text size="1" color="gray">
-              Reusing the prompt generated on{" "}
-              {new Date(cachedPrompt.createdAt).toLocaleString()} for this
-              account and text model; generation will skip straight to the
-              image.{" "}
-              <a
-                style={{ cursor: "pointer", textDecoration: "underline" }}
-                onClick={() => {
-                  if (busy || !selectedAccountId) return;
-                  clearCachedPrompt(selectedAccountId, selectedTextModel);
-                }}
-              >
-                Build a fresh prompt
-              </a>
-            </Text>
+          ) : (
+            <div className="avatar-empty">
+              <FaceIcon aria-hidden="true" />
+              <span>
+                {account
+                  ? "Their next avatar could go here."
+                  : "Choose someone to get started."}
+              </span>
+              <small>Nothing generated yet.</small>
+            </div>
           )}
-
+        </div>
+        <div className="avatar-options">
+          <Button
+            className="avatar-generate"
+            size="3"
+            disabled={busy || !account || accountTweets.length === 0}
+            onClick={() => account && generateAvatar(account, accountTweets)}
+          >
+            {avatarStage === "analysing" ? (
+              <>
+                <Spinner /> Looking through tweets…
+              </>
+            ) : avatarStage === "rendering" ? (
+              <>
+                <Spinner /> Making the image…
+              </>
+            ) : (
+              "Generate avatar ↗"
+            )}
+          </Button>
+          <Flex direction="column" gap="2">
+            <Text size="2" id="avatar-text-model-label">
+              Text model
+            </Text>
+            <Select.Root
+              value={String(selectedConfigIndex)}
+              onValueChange={(value) => setSelectedConfigIndex(Number(value))}
+              disabled={busy}
+            >
+              <Select.Trigger aria-labelledby="avatar-text-model-label" />
+              <Select.Content>
+                {AVAILABLE_LLM_CONFIGS.map((config, index) => (
+                  <Select.Item
+                    key={`${config[0]}-${config[1]}-${config[2] || ""}`}
+                    value={String(index)}
+                  >
+                    {getLlmConfigLabel(config)}
+                    {config[3] ? " · recommended" : ""}
+                  </Select.Item>
+                ))}
+              </Select.Content>
+            </Select.Root>
+          </Flex>
+          <Flex direction="column" gap="2">
+            <Text size="2" id="avatar-image-model-label">
+              Image model
+            </Text>
+            <Select.Root
+              value={selectedImageModel}
+              onValueChange={setSelectedImageModel}
+              disabled={busy}
+            >
+              <Select.Trigger aria-labelledby="avatar-image-model-label" />
+              <Select.Content>
+                {IMAGE_GEN_MODELS.map((model) => (
+                  <Select.Item key={model.id} value={model.id}>
+                    {model.label}
+                  </Select.Item>
+                ))}
+              </Select.Content>
+            </Select.Root>
+          </Flex>
           <Text size="2" as="label">
-            <Flex align="center" gap="2">
+            <Flex align="start" gap="2">
               <Checkbox
                 checked={useCurrentAvatarAsReference}
                 disabled={busy}
-                onCheckedChange={(c) => setUseCurrentAvatarAsReference(c === true)}
+                onCheckedChange={(checked) =>
+                  setUseCurrentAvatarAsReference(checked === true)
+                }
               />
-              Send the current avatar to the image model as a reference (its look
-              can influence the result)
+              Use the current avatar as a reference
             </Flex>
           </Text>
-
+          <p className="quiet-note">
+            The AI providers receive tweets and profile details, plus the
+            current avatar if you include it. Image generation may incur
+            provider charges.
+          </p>
+          {cachedPrompt && (
+            <div className="quiet-note">
+              Reusing the prompt from{" "}
+              {new Date(cachedPrompt.createdAt).toLocaleDateString()}. This
+              skips straight to making the image.
+              <button
+                className="plain-button"
+                disabled={busy}
+                onClick={() => {
+                  if (selectedAccountId)
+                    clearCachedPrompt(selectedAccountId, selectedTextModel);
+                }}
+              >
+                Build a fresh prompt ↗
+              </button>
+            </div>
+          )}
+          {busy && (
+            <span className="quiet-note" role="status">
+              Generation is in progress. You can keep this page open while it
+              finishes.
+            </span>
+          )}
           {avatarError && (
-            <Callout.Root color="red">
+            <Callout.Root color="red" role="alert">
               <Callout.Text>{avatarError}</Callout.Text>
             </Callout.Root>
           )}
-
-          {latestAvatar && (
+        </div>
+      </div>
+      {pastAvatars.length > 0 && (
+        <Flex direction="column" gap="4" pb="6">
+          <Separator style={{ width: "100%" }} />
+          <Heading size="4">Previous avatars</Heading>
+          {pastAvatars.map((avatar) => (
             <AvatarCard
-              avatar={latestAvatar}
-              isLatest
+              key={avatar.id}
+              avatar={avatar}
               disabled={busy}
-              onRerender={() => regenerateAvatarImage(latestAvatar)}
-              onDelete={() => deleteAvatar(latestAvatar.id)}
+              onRerender={() => regenerateAvatarImage(avatar)}
+              onDelete={() => deleteAvatar(avatar.id)}
             />
-          )}
-
-          {pastAvatars.length > 0 && (
-            <>
-              <Separator style={{ width: "100%" }} />
-              <Heading size="3">Previous avatars</Heading>
-              {pastAvatars.map((a) => (
-                <AvatarCard
-                  key={a.id}
-                  avatar={a}
-                  disabled={busy}
-                  onRerender={() => regenerateAvatarImage(a)}
-                  onDelete={() => deleteAvatar(a.id)}
-                />
-              ))}
-            </>
-          )}
+          ))}
         </Flex>
-      </PageContent>
-    </Box>
+      )}
+    </PageContent>
   );
 }

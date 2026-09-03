@@ -1,4 +1,5 @@
 export const EXAMPLE_QUERIES_SINGULAR = [
+  "What are {account}'s best, worst, and funniest tweets? Provide the results as bullet points.",
   "What kinds of topics does {account} post about?",
   "Based on these tweets, what Enneagram type is {account}? If you're unsure, list multiple options.",
   "Based on these tweets, what MBTI is {account}? If you're unsure, list multiple options.",
@@ -99,16 +100,20 @@ export type FeaturedQuery = {
 
 export const FEATURED_QUERIES_SINGULAR: FeaturedQuery[] = [
   {
-    title: "What kids of topics does this user post about?",
-    text: "Tell me about this user. First summarize any identifying clues about who they are. Then cover: What kinds of topics does this user post about? What kinds of projects or interests do they have?",
+    title: "What are they like?",
+    text: "What are they like? Give me an impression of their personality and what they enjoy, based on these tweets.",
   },
   {
-    title: "What were the main eras or turning points in {account}'s life?",
-    text: null,
+    title: "Strengths & weak spots",
+    text: "Based on these tweets, what are {account}'s strengths and weak spots? Treat this as a tentative impression, not a verdict.",
   },
   {
-    title: "What are {account}'s best, worst, and funniest tweets?",
-    text: "What are this account's best, worst, and funniest tweets? Provide the results as bullet points.",
+    title: "What would they enjoy?",
+    text: "Based on these tweets, what activities, ideas, or experiences might {account} enjoy? Explain what gives you that impression.",
+  },
+  {
+    title: "MBTI, for fun",
+    text: "Based on these tweets, what MBTI is {account}? If you're unsure, list multiple options.",
   },
 ];
 

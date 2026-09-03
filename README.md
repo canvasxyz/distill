@@ -1,17 +1,15 @@
-# Twitter Archive Explorer
+# Distill
 
-A browser-based application for analyzing tweets from your `.zip` export, which you can download from Twitter/X.
+A browser-based way to get an impression of yourself, a friend, or someone you’re curious about from their tweets. Start with an archive contributed to [Community Archive](https://www.community-archive.org/), or import your own Twitter/X `.zip` export. An impression, not the whole person.
 
 ## Features
 
-* Upload your archive .zip file for analysis; all archive contents
-  remain in your browser.
-* Create a filtered export of your archive, for uploading to public
-  databases. Scan for NSFW tweets or offensive tweets using AI.
-* Query your archive with arbitrary AI queries. (This will send your
-  tweets to an LLM provider. We do not log or retain your tweets.)
-* Data is stored in IndexedDB and can be wiped at any time by
-  selecting **Close Archive** in the archive view.
+- Ask your own questions, or start with a suggested question about interests, personality, strengths, or weak spots.
+- Choose posts, months, replies/reposts, and an AI model. Asking sends the selected posts and profile context to the provider.
+- Revisit answers saved in this browser, copy them, inspect their source tweets, or delete them.
+- Generate an avatar from tweets and profile details, optionally using the current avatar as a reference. Inspect the generated prompt, re-render, download, or delete an image.
+- Switch between charcoal and pale-violet themes, both with fluorescent green accents. Fraunces is bundled locally; no Google Fonts request is needed.
+- Archives and history are stored in IndexedDB. Importing an archive here does not contribute it to Community Archive. Use the person picker to remove a local archive.
 
 ## Usage
 
@@ -27,3 +25,16 @@ To build for production:
 ```
 pnpm build
 ```
+
+## Interface checks
+
+```sh
+pnpm test:unit
+pnpm exec eslint src e2e playwright.config.ts
+pnpm exec playwright install chromium
+pnpm test:e2e
+```
+
+The browser suite runs on desktop and mobile-sized Chromium, starts its own local server, and uses isolated storage, fictional archive imports, and intercepted network responses. No real AI or Community Archive requests are made. If Chrome is already installed, `DISTILL_BROWSER_CHANNEL=chrome pnpm test:e2e` can use it instead of downloading Chromium.
+
+Screenshots and traces are written to the ignored `test-results/` directory. The suite covers theme persistence, archive selection/import/removal, questions, filters, saved answers, source dialogs, clipboard feedback, avatar generation/re-rendering, and error recovery.

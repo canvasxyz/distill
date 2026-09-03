@@ -1,184 +1,162 @@
-import { useState, useEffect } from "react";
-import { Box, Link, IconButton, Text } from "@radix-ui/themes";
-import * as Dialog from "@radix-ui/react-dialog";
-import * as NavigationMenu from "@radix-ui/react-navigation-menu";
-import { useNavigate, useLocation } from "react-router";
+import { useState } from "react";
+import { NavLink } from "react-router";
+import { Dialog } from "@radix-ui/themes";
+import {
+  ChatBubbleIcon,
+  FaceIcon,
+  CounterClockwiseClockIcon,
+  PersonIcon,
+  GearIcon,
+  HamburgerMenuIcon,
+  Cross2Icon,
+} from "@radix-ui/react-icons";
 import { PastQueries } from "../views/query_view/SidebarQueries";
-import { Header } from "./Header";
-import { useTheme } from "./ThemeContext";
+import { useSelectedAccount } from "../hooks/useSelectedAccount";
+import { useStore } from "../state/store";
+import { SelectUser } from "../views/SelectUser";
+import { ArchiveDropZone } from "./ArchiveDropZone";
+import { CommunityArchiveUserModal } from "./CommunityArchiveUserModal";
+import { getCommunityArchiveUserProgressLabel } from "./CommunityArchiveUserProgress";
 import "./ResponsiveSidebar.css";
 
-function AttributionFooter() {
-  return (
-    <Box className="sidebar-attribution" aria-label="Creator attribution">
-      <Text as="p" size="1" color="gray" m="0">
-        Built by{" "}
-        <Link
-          href="https://github.com/raykyri"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          raykyri
-        </Link>{" "}
-        and{" "}
-        <Link
-          href="https://github.com/rjwebb"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          rjwebb
-        </Link>{" "}
-        <span aria-hidden="true">·</span>{" "}
-        <Link
-          href="http://canvas.xyz"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Canvas Technologies Inc
-        </Link>
-      </Text>
-    </Box>
-  );
-}
-
 export function ResponsiveSidebar() {
-  const navigate = useNavigate();
-  const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { appearance } = useTheme();
-
-  const boxShadowColor =
-    appearance === "dark" ? "rgba(255, 255, 255, 0.04)" : "rgba(0, 0, 0, 0.04)";
-
-  // Close mobile sidebar when location changes
-  useEffect(() => {
-    setMobileOpen(false);
-  }, [location.pathname]);
+  const [peopleOpen, setPeopleOpen] = useState(false);
+  const { selectedAccountId, setSelectedAccountId } = useSelectedAccount();
+  const { appIsReady, loadCommunityArchiveUserProgress } = useStore();
 
   const sidebarContent = (
-    <NavigationMenu.Root
-      orientation="vertical"
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        height: "100%",
-        width: "100%",
-      }}
-    >
-      <Header
-        leftContent={
-          <Link
-            onClick={() => {
-              navigate("/");
-              setMobileOpen(false);
-            }}
-            style={{
-              cursor: "pointer",
-              fontSize: 24,
-              textDecoration: "none",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              lineHeight: 1,
-            }}
-          >
-            🔎
-          </Link>
-        }
-        justifyContent="flex-start"
-        reserveFloatingNavSpace={false}
-      />
-      <NavigationMenu.List
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          flex: 1,
-          minHeight: 0,
-          overflowY: "auto",
-          overflowX: "hidden",
-          listStyle: "none",
-          margin: 0,
-          padding: 0,
+    <div className="sidebar-inner">
+      <div>
+        <p className="sidebar-label">Currently curious about</p>
+        <SelectUser
+          selectedAccountId={selectedAccountId}
+          setSelectedAccountId={setSelectedAccountId}
+        />
+      </div>
+      <nav
+        className="primary-nav"
+        aria-label="Main navigation"
+        onClick={(event) => {
+          if ((event.target as HTMLElement).closest("a")) setMobileOpen(false);
         }}
       >
-        <Box style={{ flex: 1, overflow: "visible" }}>
-          <PastQueries />
-        </Box>
-      </NavigationMenu.List>
-      <AttributionFooter />
-    </NavigationMenu.Root>
+        <NavLink to="/" end>
+          <ChatBubbleIcon />
+          Ask something
+        </NavLink>
+        <NavLink to="/avatar">
+          <FaceIcon />
+          Make an avatar
+        </NavLink>
+        <NavLink to="/history">
+          <CounterClockwiseClockIcon />
+          Past questions
+        </NavLink>
+        <button
+          disabled={!appIsReady || !!loadCommunityArchiveUserProgress}
+          onClick={() => {
+            setMobileOpen(false);
+            setPeopleOpen(true);
+          }}
+        >
+          <PersonIcon />
+          Someone else
+        </button>
+      </nav>
+      {loadCommunityArchiveUserProgress && (
+        <p className="sidebar-label" role="status">
+          {getCommunityArchiveUserProgressLabel(
+            loadCommunityArchiveUserProgress,
+          )}
+        </p>
+      )}
+      <section className="sidebar-recents" aria-label="Recent questions">
+        <p className="sidebar-label">Last time you asked</p>
+        <PastQueries onNavigate={() => setMobileOpen(false)} />
+      </section>
+      <div className="sidebar-bottom">
+        <ArchiveDropZone />
+        <NavLink
+          className="settings-link"
+          to="/settings"
+          onClick={() => setMobileOpen(false)}
+        >
+          <GearIcon />
+          Settings
+        </NavLink>
+        <footer className="sidebar-attribution">
+          <a
+            href="https://www.community-archive.org/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Made possible by
+            <br />
+            Community Archive ↗
+          </a>
+          <p>
+            Built by{" "}
+            <a
+              href="https://github.com/raykyri"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              raykyri
+            </a>{" "}
+            and{" "}
+            <a
+              href="https://github.com/rjwebb"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              rjwebb
+            </a>
+            <br />
+            <a
+              href="http://canvas.xyz"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Canvas Technologies Inc
+            </a>
+          </p>
+        </footer>
+      </div>
+    </div>
   );
 
   return (
     <>
-      {/* Desktop Sidebar - visible on larger screens */}
-      <Box
-        className="responsive-sidebar-desktop"
-        style={{
-          minWidth: 220,
-          maxWidth: 220,
-          position: "sticky",
-          top: 0,
-          height: "100vh",
-          display: "flex",
-          flexDirection: "column",
-          overflow: "hidden",
-          boxShadow: `2px 0 1px ${boxShadowColor}`,
-        }}
-      >
-        {sidebarContent}
-      </Box>
-
-      {/* Mobile Hamburger Button - fixed at bottom left */}
-      <IconButton
-        className="mobile-sidebar-toggle"
-        onClick={() => setMobileOpen(true)}
-        aria-label="Open sidebar"
-        variant="soft"
-        size="3"
-        style={{
-          position: "fixed",
-          bottom: "24px",
-          left: "24px",
-          width: "56px",
-          height: "56px",
-          borderRadius: "50%",
-        }}
-      >
-        <svg
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <line x1="3" y1="6" x2="21" y2="6"></line>
-          <line x1="3" y1="12" x2="21" y2="12"></line>
-          <line x1="3" y1="18" x2="21" y2="18"></line>
-        </svg>
-      </IconButton>
-
-      {/* Mobile Sidebar Overlay - using Radix Dialog */}
+      <aside className="responsive-sidebar-desktop">{sidebarContent}</aside>
       <Dialog.Root open={mobileOpen} onOpenChange={setMobileOpen}>
-        <Dialog.Portal>
-          <Dialog.Overlay className="mobile-sidebar-overlay" />
-          <Dialog.Content className="mobile-sidebar-content">
-            <Box
-              style={{
-                width: "100%",
-                height: "100%",
-                overflow: "hidden",
-                borderRight: "1px solid var(--gray-6)",
-              }}
-            >
-              {sidebarContent}
-            </Box>
-          </Dialog.Content>
-        </Dialog.Portal>
+        <Dialog.Trigger>
+          <button
+            className="mobile-sidebar-toggle icon-button"
+            aria-label="Open navigation"
+          >
+            <HamburgerMenuIcon />
+          </button>
+        </Dialog.Trigger>
+        <Dialog.Content
+          className="mobile-sidebar-content"
+          aria-describedby={undefined}
+        >
+          <div className="mobile-sidebar-heading">
+            <Dialog.Title>Distill</Dialog.Title>
+            <Dialog.Close>
+              <button className="icon-button" aria-label="Close navigation">
+                <Cross2Icon />
+              </button>
+            </Dialog.Close>
+          </div>
+          {sidebarContent}
+        </Dialog.Content>
       </Dialog.Root>
+      <CommunityArchiveUserModal
+        showModal={peopleOpen}
+        setShowModal={setPeopleOpen}
+      />
     </>
   );
 }

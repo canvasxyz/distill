@@ -28,18 +28,21 @@ export const UserSelectEntry = ({
   return (
     <Box
       key={acc.accountId}
-      onClick={onClick}
       p="2"
       style={{
-        cursor: isActive ? "default" : "pointer",
         flexGrow: "1",
-        backgroundColor: isActive ? "var(--sky-3)" : "var(--gray-3)",
-        border: isActive ? "1px solid var(--sky-7)" : "1px solid var(--gray-6)",
-        borderRadius: "9px",
+        backgroundColor: isActive ? "var(--soft)" : "var(--paper)",
+        border: isActive ? "1px solid var(--muted)" : "1px solid var(--line)",
+        borderRadius: "4px",
       }}
     >
       <Flex align="center" justify="between" gap="3">
-        <Flex align="center" gap="3" style={{ minWidth: 0, flex: 1 }}>
+        <button
+          className="person-option"
+          onClick={onClick}
+          aria-pressed={isActive}
+          aria-label={`Select @${acc.username}`}
+        >
           {profile && profile.avatarMediaUrl ? (
             <Avatar
               src={profile.avatarMediaUrl}
@@ -81,11 +84,12 @@ export const UserSelectEntry = ({
               {acc.fromArchive && " · My archive"}
             </Text>
           </Flex>
-        </Flex>
+        </button>
         <Flex align="center" gap="3" pr="1" style={{ flexShrink: 0 }}>
           <IconButton
             type="button"
             title="Remove archive"
+            aria-label={`Remove @${acc.username} archive`}
             onClick={async (e) => {
               e.stopPropagation();
               onClickRemove();

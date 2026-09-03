@@ -1,4 +1,9 @@
-import { useMemo, useState, type ComponentPropsWithoutRef, type ReactNode } from "react";
+import {
+  useMemo,
+  useState,
+  type ComponentPropsWithoutRef,
+  type ReactNode,
+} from "react";
 import Markdown from "react-markdown";
 import type { ExtraProps } from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -42,7 +47,7 @@ const linkifyText = (text: string): ReactNode => {
 
     const matchedText = match[0];
 
-    if (matchedText.startsWith('http')) {
+    if (matchedText.startsWith("http")) {
       // It's a URL
       parts.push(
         <a
@@ -53,9 +58,9 @@ const linkifyText = (text: string): ReactNode => {
           onClick={(e) => e.stopPropagation()}
         >
           {matchedText}
-        </a>
+        </a>,
       );
-    } else if (matchedText.startsWith('@')) {
+    } else if (matchedText.startsWith("@")) {
       // It's a mention
       const username = matchedText.slice(1); // Remove the @
       parts.push(
@@ -67,7 +72,7 @@ const linkifyText = (text: string): ReactNode => {
           onClick={(e) => e.stopPropagation()}
         >
           {matchedText}
-        </a>
+        </a>,
       );
     }
 
@@ -199,16 +204,18 @@ export function QueryResultMarkdown({
   accountIdToUsername,
 }: Props) {
   const segments = useMemo(() => splitThinkingSegments(content), [content]);
-  const [collapsedThinking, setCollapsedThinking] = useState<Set<number>>(() => {
-    // Start with all thinking traces collapsed
-    const thinkingIndices = new Set<number>();
-    segments.forEach((segment, idx) => {
-      if (segment.type === "think") {
-        thinkingIndices.add(idx);
-      }
-    });
-    return thinkingIndices;
-  });
+  const [collapsedThinking, setCollapsedThinking] = useState<Set<number>>(
+    () => {
+      // Start with all thinking traces collapsed
+      const thinkingIndices = new Set<number>();
+      segments.forEach((segment, idx) => {
+        if (segment.type === "think") {
+          thinkingIndices.add(idx);
+        }
+      });
+      return thinkingIndices;
+    },
+  );
 
   const toggleThinking = (idx: number) => {
     setCollapsedThinking((prev) => {
@@ -289,30 +296,43 @@ export function QueryResultMarkdown({
           <div
             className={`thinking-trace ${collapsedThinking.has(idx) ? "collapsed" : ""}`}
             key={`think-${idx}`}
-            onClick={() => toggleThinking(idx)}
           >
-            <div className="thinking-trace-header">
+            <button
+              className="thinking-trace-header plain-button"
+              onClick={() => toggleThinking(idx)}
+              aria-expanded={!collapsedThinking.has(idx)}
+            >
               <span className="thinking-trace-toggle">
                 {collapsedThinking.has(idx) ? "▶" : "▼"}
               </span>
               <span className="thinking-trace-label">Thinking</span>
-            </div>
+            </button>
             {!collapsedThinking.has(idx) && (
               <div className="thinking-trace-content">
-                <Markdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                <Markdown
+                  remarkPlugins={[remarkGfm]}
+                  components={markdownComponents}
+                >
                   {segment.text}
                 </Markdown>
               </div>
             )}
           </div>
         ) : (
-          <Markdown
+          <div
             key={`content-${idx}`}
-            remarkPlugins={[remarkGfm]}
-            components={markdownComponents}
+            className="answer-content"
+            data-lead={
+              idx === segments.findIndex((item) => item.type === "content")
+            }
           >
-            {segment.text}
-          </Markdown>
+            <Markdown
+              remarkPlugins={[remarkGfm]}
+              components={markdownComponents}
+            >
+              {segment.text}
+            </Markdown>
+          </div>
         ),
       )}
     </div>

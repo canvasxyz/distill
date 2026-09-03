@@ -33,11 +33,7 @@ export function UserSelectList({
           acc={acc}
           profile={profilesById[acc.accountId]}
           onClick={() => {
-            if (selectedAccountId === acc.accountId) {
-              setSelectedAccountId(null);
-            } else {
-              setSelectedAccountId(acc.accountId);
-            }
+            setSelectedAccountId(acc.accountId);
             onSelect?.();
           }}
           onClickRemove={async () => {

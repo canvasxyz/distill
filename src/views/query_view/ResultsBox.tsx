@@ -1,28 +1,30 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { Button, Flex, Text, Progress, Box, Card, Heading } from "@radix-ui/themes";
+import { Flex, Text, Progress } from "@radix-ui/themes";
 
 export const CopyButton = ({ text }: { text: string }) => {
   const [copied, setCopied] = useState(false);
+  const [failed, setFailed] = useState(false);
 
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(text);
+      setFailed(false);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
+      setFailed(true);
       console.error("Failed to copy text: ", err);
     }
   };
 
   return (
-    <Button
-      onClick={handleCopy}
-      variant={copied ? "solid" : "soft"}
-      color={copied ? "green" : "gray"}
-      size="1"
-    >
-      {copied ? "Copied!" : "Copy"}
-    </Button>
+    <button onClick={handleCopy} className="plain-button" aria-live="polite">
+      {copied
+        ? "Copied!"
+        : failed
+          ? "Couldn’t copy. Try again?"
+          : "Copy answer"}
+    </button>
   );
 };
 
@@ -40,8 +42,8 @@ export const ProgressLabel = ({
     <Flex justify="between" align="center" mb="2">
       <Text size="2" color="gray">
         {allBatchesComplete
-          ? "Summarizing results..."
-          : "Processing query..."}
+          ? "Putting the answer together…"
+          : "Looking through the tweets…"}
       </Text>
       <Text size="2" color="gray">
         {currentProgress} / {totalProgress}
@@ -103,44 +105,42 @@ export function ProgressBar({
 
 export function ResultsBox({ children }: { children: ReactNode }) {
   return (
-    <Card>
-      <Box px="3">{children}</Box>
-    </Card>
+    <section className="result-box" aria-label="Answer">
+      {children}
+    </section>
   );
 }
 
 export function QueryResultHeader({
   query,
   subtitle,
-  resultText,
-  onShowEvidence,
 }: {
   query: string;
   subtitle?: string;
+}) {
+  return (
+    <header className="result-header">
+      <span className="result-kicker">You asked</span>
+      <p className="result-question">{query}</p>
+      {subtitle && <span className="result-subtitle">{subtitle}</span>}
+      <p className="result-caveat">A guess, not a verdict.</p>
+    </header>
+  );
+}
+
+export function QueryResultActions({
+  resultText,
+  onShowEvidence,
+}: {
   resultText: string;
   onShowEvidence: () => void;
 }) {
   return (
-    <Flex direction="row" gap="3" py="2">
-      <Flex direction="column" gap="1" style={{ flex: 1 }}>
-        <Heading size="4">{query}</Heading>
-        {subtitle && (
-          <Text size="1" style={{ fontStyle: "italic" }}>
-            {subtitle}
-          </Text>
-        )}
-      </Flex>
-      <Flex gap="2" align="start">
-        <Button
-          size="1"
-          variant="soft"
-          color="green"
-          onClick={onShowEvidence}
-        >
-          Evidence
-        </Button>
-        <CopyButton text={resultText} />
-      </Flex>
-    </Flex>
+    <div className="result-actions">
+      <button className="plain-button" onClick={onShowEvidence}>
+        The tweets behind this ↗
+      </button>
+      <CopyButton text={resultText} />
+    </div>
   );
 }

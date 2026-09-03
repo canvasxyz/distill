@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { type QueryResult } from "./ai_utils";
 import { useStore } from "../../state/store";
-import { Heading, IconButton, Button } from "@radix-ui/themes";
+import { Dialog, IconButton, Button } from "@radix-ui/themes";
 
 function formatDate(dateString: string) {
   if (!dateString) return "";
@@ -26,6 +26,7 @@ export function BatchTweetsModal({
   onClose: () => void;
 }) {
   const { accounts } = useStore();
+  const returnFocus = useRef<HTMLElement | null>(null);
 
   const accountIdToUsername = useMemo(
     () =>
@@ -34,16 +35,6 @@ export function BatchTweetsModal({
       ),
     [accounts],
   );
-
-  // Prevent scroll on the underlying page when modal is open
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-      return () => {
-        document.body.style.overflow = "";
-      };
-    }
-  }, [isOpen]);
 
   const batchesByKey = useMemo(() => {
     if (!queryResult) return [];
@@ -78,35 +69,22 @@ export function BatchTweetsModal({
   if (!isOpen) return null;
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        zIndex: 1000,
-        left: 0,
-        top: 0,
-        width: "100vw",
-        height: "100vh",
-        background: "rgba(0,0,0,0.4)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
+    <Dialog.Root
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) onClose();
       }}
-      onClick={onClose}
     >
-      <div
-        style={{
-          width: "90%",
-          maxWidth: 768,
-          maxHeight: "80vh",
-          background: "var(--color-background)",
-          borderRadius: "12px",
-          boxShadow: "0 2px 16px rgba(0,0,0,0.18)",
-          padding: "32px 24px 24px 24px",
-          position: "relative",
-          display: "flex",
-          flexDirection: "column",
+      <Dialog.Content
+        className="sources-dialog"
+        aria-describedby="source-description"
+        onOpenAutoFocus={() => {
+          returnFocus.current = document.activeElement as HTMLElement;
         }}
-        onClick={(e) => e.stopPropagation()}
+        onCloseAutoFocus={(event) => {
+          event.preventDefault();
+          returnFocus.current?.focus();
+        }}
       >
         <div
           style={{
@@ -116,9 +94,9 @@ export function BatchTweetsModal({
             paddingBottom: 12,
           }}
         >
-          <Heading size="6" style={{ flex: 1, margin: 0 }}>
-            Evidence
-          </Heading>
+          <Dialog.Title style={{ flex: 1, margin: 0 }}>
+            The tweets behind this
+          </Dialog.Title>
 
           <IconButton
             variant="ghost"
@@ -130,14 +108,23 @@ export function BatchTweetsModal({
             &times;
           </IconButton>
         </div>
-        <p>
-          The tweets below were loaded directly into the model alongside your
-          question to produce the result shown.
+        <p id="source-description" className="quiet-note">
+          These posts were sent to the model with your question. They’re the
+          context for its answer, not proof that it got the person right.
         </p>
         <p>
           Model: {queryResult?.model} on {queryResult?.provider}
         </p>
 
+        {batchesByKey.every(
+          ({ batchStatus }) =>
+            !batchStatus.groundedTweets.genuine.length &&
+            !batchStatus.groundedTweets.hallucinated.length,
+        ) && (
+          <p className="quiet-note">
+            No source tweets were saved with this answer.
+          </p>
+        )}
         <div
           style={{
             flex: 1,
@@ -167,6 +154,7 @@ export function BatchTweetsModal({
               >
                 <Button
                   onClick={() => toggleBatch(batchId)}
+                  aria-expanded={isExpanded}
                   variant="ghost"
                   size="3"
                   style={{
@@ -186,7 +174,7 @@ export function BatchTweetsModal({
                         color: "var(--gray-12)",
                       }}
                     >
-                      Batch {parseInt(batchId) + 1}
+                      Posts sent · {parseInt(batchId) + 1}
                     </span>
                     <span
                       style={{
@@ -196,9 +184,9 @@ export function BatchTweetsModal({
                         marginLeft: "12px",
                       }}
                     >
-                      {tweets.length} evidence
+                      {tweets.length} tweets
                       {hallucinatedIds.length > 0 &&
-                        `, ${hallucinatedIds.length} hallucinations`}
+                        `, ${hallucinatedIds.length} unavailable citations`}
                       {" · "}
                       {Math.round(batchStatus.runTime)}ms {batchStatus.provider}{" "}
                       {batchStatus.model}
@@ -236,7 +224,7 @@ export function BatchTweetsModal({
                             color: "var(--gray-12)",
                           }}
                         >
-                          Evidence ({tweets.length})
+                          Tweets ({tweets.length})
                         </h4>
                         <ul
                           style={{
@@ -391,7 +379,7 @@ export function BatchTweetsModal({
             );
           })}
         </div>
-      </div>
-    </div>
+      </Dialog.Content>
+    </Dialog.Root>
   );
 }

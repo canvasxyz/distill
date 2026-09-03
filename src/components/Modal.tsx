@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
 import { Flex, Box, IconButton, Dialog } from "@radix-ui/themes";
 
 export function Modal({
@@ -12,10 +12,19 @@ export function Modal({
   title: string;
   children: ReactNode;
 }) {
+  const returnFocus = useRef<HTMLElement | null>(null);
   return (
     <Dialog.Root open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <Dialog.Content
         style={{ maxWidth: 600, maxHeight: "calc(100vh - 80px)" }}
+        aria-describedby={undefined}
+        onOpenAutoFocus={() => {
+          returnFocus.current = document.activeElement as HTMLElement;
+        }}
+        onCloseAutoFocus={(event) => {
+          event.preventDefault();
+          returnFocus.current?.focus();
+        }}
       >
         <Flex direction="column" gap="4">
           <Flex justify="between" align="center" mb="4">

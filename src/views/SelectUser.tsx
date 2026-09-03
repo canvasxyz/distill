@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState, useRef } from "react";
+import { useMemo, useState } from "react";
+import { useLiveQuery } from "dexie-react-hooks";
 import { useStore } from "../state/store";
 import { db } from "../db";
 import type { ProfileWithId } from "../types";
@@ -19,28 +20,16 @@ export function SelectUser({
     removeArchive,
     loadCommunityArchiveUser,
     loadCommunityArchiveUserProgress,
-    lastLoadedAccountId,
   } = useStore();
 
-  const [profilesById, setProfilesById] = useState<
-    Record<string, ProfileWithId>
-  >({});
-
-  useEffect(() => {
-    let cancelled = false;
-    const loadProfiles = async () => {
-      const profiles = await db.profiles.toArray();
-      if (!cancelled) {
-        const map: Record<string, ProfileWithId> = {};
-        for (const p of profiles) map[p.accountId] = p;
-        setProfilesById(map);
-      }
-    };
-    loadProfiles();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const profiles = useLiveQuery(() => db.profiles.toArray(), [], []);
+  const profilesById = useMemo(
+    () =>
+      Object.fromEntries(
+        profiles.map((profile) => [profile.accountId, profile]),
+      ) as Record<string, ProfileWithId>,
+    [profiles],
+  );
 
   const countsByAccount = useMemo(() => {
     const map = new Map<string, { tweets: number; retweets: number }>();
@@ -64,20 +53,12 @@ export function SelectUser({
     ? profilesById[selectedAccount.accountId]
     : undefined;
 
-  const selectedCounts = selectedAccount
-    ? countsByAccount.get(selectedAccount.accountId) || {
-        tweets: 0,
-        retweets: 0,
-      }
-    : { tweets: 0, retweets: 0 };
-
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [showCommunityArchiveModal, setShowCommunityArchiveModal] =
     useState(false);
   const [refreshingAccountId, setRefreshingAccountId] = useState<string | null>(
     null,
   );
-  const lastAutoSelectedAccountIdRef = useRef<string | null>(null);
 
   const hasAccounts = accounts.length > 0;
 
@@ -89,25 +70,20 @@ export function SelectUser({
       console.error("Failed to refresh community archive", error);
       window.alert("Failed to refresh this archive from Community Archive.");
     } finally {
+      useStore.setState({ loadCommunityArchiveUserProgress: null });
       setRefreshingAccountId(null);
     }
   };
 
-  // Auto-select account after loading from community archive
-  useEffect(() => {
-    if (
-      lastLoadedAccountId &&
-      lastLoadedAccountId !== lastAutoSelectedAccountIdRef.current &&
-      accounts.some((a) => a.accountId === lastLoadedAccountId)
-    ) {
-      setSelectedAccountId(lastLoadedAccountId);
-      lastAutoSelectedAccountIdRef.current = lastLoadedAccountId;
-    }
-  }, [lastLoadedAccountId, accounts, setSelectedAccountId]);
-
   const buttonContent = (
     <Button
-      variant={hasAccounts && selectedAccount ? "soft" : "outline"}
+      className="selected-person"
+      variant="ghost"
+      aria-label={
+        selectedAccount
+          ? `Change person: @${selectedAccount.username}`
+          : "Choose a person"
+      }
       onClick={
         !hasAccounts
           ? () => {
@@ -115,18 +91,6 @@ export function SelectUser({
             }
           : undefined
       }
-      style={{
-        width: "100%",
-        justifyContent: "space-between",
-        minHeight: "60px",
-        border:
-          hasAccounts && selectedAccount
-            ? "1px solid var(--sky-7)"
-            : "1px solid var(--gray-6)",
-        borderRadius: "9px",
-        backgroundColor:
-          hasAccounts && selectedAccount ? "var(--sky-3)" : undefined,
-      }}
     >
       <Flex align="center" gap="3" style={{ minWidth: 0, flex: 1 }}>
         {selectedAccount ? (
@@ -164,7 +128,7 @@ export function SelectUser({
               style={{ minWidth: 0, flex: 1 }}
             >
               <Text
-                weight="bold"
+                className="person-name"
                 style={{
                   overflow: "hidden",
                   textOverflow: "ellipsis",
@@ -173,19 +137,15 @@ export function SelectUser({
                   textAlign: "left",
                 }}
               >
-                {selectedAccount.username ||
-                  selectedAccount.accountDisplayName ||
+                {selectedAccount.accountDisplayName ||
+                  selectedAccount.username ||
                   selectedAccount.accountId}
               </Text>
-              <Text size="2" color="gray">
-                {selectedCounts.tweets} tweets · {selectedCounts.retweets}{" "}
-                retweets
-                {selectedAccount.fromArchive && " · My archive"}
-              </Text>
+              <Text className="person-handle">@{selectedAccount.username}</Text>
             </Flex>
           </>
         ) : (
-          <Text>Select a user...</Text>
+          <Text size="2">Choose someone ↗</Text>
         )}
       </Flex>
       <svg
@@ -208,20 +168,20 @@ export function SelectUser({
   );
 
   return (
-    <Box style={{ margin: "18px 0 24px" }}>
+    <Box>
       {hasAccounts ? (
         <Popover.Root open={dropdownOpen} onOpenChange={setDropdownOpen}>
           <Popover.Trigger>{buttonContent}</Popover.Trigger>
           <Popover.Content
             style={{
-              width: "var(--radix-popover-trigger-width)",
+              width: "min(380px, calc(100vw - 32px))",
               maxHeight: "400px",
               overflowY: "auto",
-              border: "none",
+              border: "1px solid var(--line)",
               boxShadow: "none",
-              padding: "3px",
-              borderRadius: "10px",
-              background: "var(--gray-4)",
+              padding: "8px",
+              borderRadius: "5px",
+              background: "var(--paper)",
               marginTop: "-6px",
             }}
           >

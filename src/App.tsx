@@ -1,13 +1,18 @@
-import { Outlet } from "react-router";
+import { Outlet, useLocation } from "react-router";
 import "./App.css";
 import { useEffect } from "react";
 import { useStore } from "./state/store";
-import { Box, Flex } from "@radix-ui/themes";
 import { ResponsiveSidebar } from "./components/ResponsiveSidebar";
 import { ArchiveNav } from "./components/ArchiveNav";
+import { SelectedAccountProvider } from "./components/SelectedAccountProvider";
 
 function App() {
   const { init, subscribe, unsubscribe } = useStore();
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
 
   useEffect(() => {
     init();
@@ -19,25 +24,25 @@ function App() {
   }, [init, subscribe, unsubscribe]);
 
   return (
-    <>
-      <Flex style={{ minHeight: "100vh", overflowX: "hidden", width: "100%" }}>
+    <SelectedAccountProvider>
+      <a
+        href="#main-content"
+        className="skip-link"
+        onClick={(event) => {
+          event.preventDefault();
+          document.getElementById("main-content")?.focus();
+        }}
+      >
+        Skip to content
+      </a>
+      <ArchiveNav />
+      <div className="app-shell">
         <ResponsiveSidebar />
-        <Box
-          className="app-content"
-          style={{
-            flex: 1,
-            minWidth: 0,
-            height: "100vh",
-            overflowY: "auto",
-            overflowX: "hidden",
-            maxWidth: "100%",
-          }}
-        >
-          <ArchiveNav />
+        <main id="main-content" className="app-content" tabIndex={-1}>
           <Outlet />
-        </Box>
-      </Flex>
-    </>
+        </main>
+      </div>
+    </SelectedAccountProvider>
   );
 }
 

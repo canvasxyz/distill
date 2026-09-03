@@ -5,6 +5,7 @@ import {
 } from "../hooks/useUsers";
 import { useStore } from "../state/store";
 import { Modal } from "./Modal";
+import { getCommunityArchiveUserProgressLabel } from "./CommunityArchiveUserProgress";
 import {
   Avatar,
   Box,
@@ -35,8 +36,8 @@ function HighlightedUsername({
       {username.slice(0, matchStart)}
       <mark
         style={{
-          background: "var(--amber-5)",
-          color: "inherit",
+          background: "var(--fluorescent)",
+          color: "var(--on-green)",
           borderRadius: 2,
           padding: 0,
         }}
@@ -57,6 +58,7 @@ export const CommunityArchiveUserModal = ({
 }) => {
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [loadError, setLoadError] = useState("");
 
   useEffect(() => {
     const timeout = window.setTimeout(
@@ -73,7 +75,19 @@ export const CommunityArchiveUserModal = ({
     () => new Set(PINNED_USERNAMES.map((u) => u.toLowerCase())),
     [],
   );
-  const { loadCommunityArchiveUser } = useStore();
+  const { loadCommunityArchiveUser, loadCommunityArchiveUserProgress } =
+    useStore();
+  const selectArchive = async (accountId: string, maxTweets?: number) => {
+    if (loadCommunityArchiveUserProgress) return;
+    setLoadError("");
+    try {
+      await loadCommunityArchiveUser(accountId, maxTweets);
+      setShowModal(false);
+    } catch {
+      useStore.setState({ loadCommunityArchiveUserProgress: null });
+      setLoadError("That archive couldn’t be loaded. Please try again.");
+    }
+  };
   const normalizedQuery = query.trim().toLowerCase();
   const isSearchPending = normalizedQuery !== debouncedQuery.toLowerCase();
 
@@ -81,9 +95,32 @@ export const CommunityArchiveUserModal = ({
     <Modal
       open={showModal}
       onClose={() => setShowModal(false)}
-      title="Select a user from Community Archive"
+      title="Who are you curious about?"
     >
       <Flex direction="column" gap="3">
+        {loadError && (
+          <Text color="red" size="2" role="alert">
+            {loadError}
+          </Text>
+        )}
+        {loadCommunityArchiveUserProgress && (
+          <Text size="2" role="status">
+            {getCommunityArchiveUserProgressLabel(
+              loadCommunityArchiveUserProgress,
+            )}
+          </Text>
+        )}
+        <Text size="2" color="gray">
+          Choose an archive someone has shared with{" "}
+          <a
+            href="https://www.community-archive.org/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Community Archive
+          </a>
+          .
+        </Text>
         <TextField.Root
           aria-label="Search Community Archive users"
           placeholder="Search by username…"
@@ -159,7 +196,7 @@ export const CommunityArchiveUserModal = ({
                         </Text>
                       </Flex>
                       <Text style={{ textAlign: "center" }}>
-                        {account.numTweets?.toLocaleString() ?? "—"}
+                        {account.numTweets?.toLocaleString() ?? "—"} posts
                       </Text>
                       <Flex justify="end" align="center" gap="2">
                         {isPinned && (
@@ -175,18 +212,15 @@ export const CommunityArchiveUserModal = ({
                         <Flex gap="0" style={{ position: "relative" }}>
                           <Button
                             size="2"
-                            color="blue"
+                            disabled={!!loadCommunityArchiveUserProgress}
+                            aria-label={`Load @${account.username}, latest 10,000 posts`}
                             onClick={() => {
-                              loadCommunityArchiveUser(
-                                account.accountId,
-                                10000,
-                              );
-                              setShowModal(false);
+                              void selectArchive(account.accountId, 10000);
                             }}
                             style={{
                               borderTopRightRadius: 0,
                               borderBottomRightRadius: 0,
-                              borderRight: "1px solid var(--blue-8)",
+                              borderRight: "1px solid var(--on-green)",
                               height: 31,
                             }}
                           >
@@ -196,7 +230,8 @@ export const CommunityArchiveUserModal = ({
                             <DropdownMenu.Trigger>
                               <Button
                                 size="2"
-                                color="blue"
+                                disabled={!!loadCommunityArchiveUserProgress}
+                                aria-label={`More options for @${account.username}`}
                                 style={{
                                   borderTopLeftRadius: 0,
                                   borderBottomLeftRadius: 0,
@@ -226,8 +261,7 @@ export const CommunityArchiveUserModal = ({
                             <DropdownMenu.Content>
                               <DropdownMenu.Item
                                 onClick={() => {
-                                  loadCommunityArchiveUser(account.accountId);
-                                  setShowModal(false);
+                                  void selectArchive(account.accountId);
                                 }}
                               >
                                 Select full history
