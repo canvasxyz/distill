@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Heading, Flex, Box, IconButton, Dialog } from "@radix-ui/themes";
+import { Flex, Box, IconButton, Dialog } from "@radix-ui/themes";
 
 export function Modal({
   open,
@@ -19,9 +19,7 @@ export function Modal({
       >
         <Flex direction="column" gap="4">
           <Flex justify="between" align="center" mb="4">
-            <Dialog.Title>
-              <Heading size="4">{title}</Heading>
-            </Dialog.Title>
+            <Dialog.Title size="4">{title}</Dialog.Title>
             <Dialog.Close>
               <IconButton variant="ghost" size="2" aria-label="Close">
                 ×

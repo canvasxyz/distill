@@ -16,6 +16,7 @@ import {
 import { useStore } from "../../state/store";
 import { db } from "../../db";
 import { Header } from "../../components/Header";
+import { PageContent } from "../../components/PageContent";
 import { LoadingView } from "../LoadingView";
 import { SelectUser } from "../SelectUser";
 import { IMAGE_GEN_MODELS } from "../../constants";
@@ -184,7 +185,7 @@ export function AvatarView() {
   return (
     <Box style={{ width: "100%" }}>
       <Header title="Avatar Generator" />
-      <Box style={{ maxWidth: "800px", margin: "auto", width: "100%", boxSizing: "border-box", padding: "0 16px" }}>
+      <PageContent>
         <Flex direction="column" gap="4" pb="6">
           <Box mt="6">
             <SelectUser
@@ -323,7 +324,7 @@ export function AvatarView() {
             </>
           )}
         </Flex>
-      </Box>
+      </PageContent>
     </Box>
   );
 }
