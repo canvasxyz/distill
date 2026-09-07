@@ -9,6 +9,7 @@ import type { ExtraProps } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { answerLead } from "./answer_lead";
 import { HoverCard, Text, Flex } from "@radix-ui/themes";
+import { ChevronDownIcon, ChevronRightIcon } from "@radix-ui/react-icons";
 import type { Tweet } from "../../types";
 import {
   extractTweetIdFromUrl,
@@ -305,8 +306,12 @@ export function QueryResultMarkdown({
               onClick={() => toggleThinking(idx)}
               aria-expanded={!collapsedThinking.has(idx)}
             >
-              <span className="thinking-trace-toggle">
-                {collapsedThinking.has(idx) ? "▶" : "▼"}
+              <span className="thinking-trace-toggle" aria-hidden="true">
+                {collapsedThinking.has(idx) ? (
+                  <ChevronRightIcon />
+                ) : (
+                  <ChevronDownIcon />
+                )}
               </span>
               <span className="thinking-trace-label">Thinking</span>
             </button>

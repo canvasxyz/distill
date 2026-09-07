@@ -1326,28 +1326,41 @@ select:not(.rt-SelectNative),
   margin: 0.6em 0;
   background: var(--gray-5);
   border-radius: 6px;
-  padding: 8px 12px;
-  cursor: pointer;
-  user-select: none;
-  transition: background-color 0.15s ease;
+  padding: 0 12px 8px;
 }
 
-.query-result-markdown .thinking-trace:hover {
+/* The whole header row toggles the trace; only the header reacts to hover. */
+.query-result-markdown .thinking-trace-header {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 6px;
+  margin: 0 -12px;
+  padding: 8px 12px;
+  width: calc(100% + 24px);
+  font-weight: 500;
+  font-size: inherit;
+  cursor: pointer;
+  user-select: none;
+  text-align: left;
+  border-radius: 6px 6px 0 0;
+}
+.query-result-markdown .thinking-trace.collapsed .thinking-trace-header {
+  border-radius: 6px;
+  margin-bottom: -8px;
+}
+.query-result-markdown .thinking-trace-header:hover {
+  text-decoration: none;
   background-color: var(--gray-4);
 }
 
-.query-result-markdown .thinking-trace-header {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-weight: 500;
-}
-
 .query-result-markdown .thinking-trace-toggle {
-  font-size: 0.75em;
+  display: inline-flex;
   opacity: 0.7;
-  display: inline-block;
-  min-width: 12px;
+}
+.query-result-markdown .thinking-trace-toggle svg {
+  width: 12px;
+  height: 12px;
 }
 
 .query-result-markdown .thinking-trace-label {
