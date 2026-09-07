@@ -348,6 +348,15 @@ export async function submitQuery(params: {
   const endTime = performance.now();
   const runTime = endTime - startTime;
 
+  // Providers can return an error body with a 200 status.
+  const upstreamError = (data as { error?: { message?: string } }).error;
+  if (upstreamError || !data.choices?.length) {
+    throw new Error(
+      upstreamError?.message ||
+        "The AI provider returned no answer. Please try again.",
+    );
+  }
+
   // Extract content and reasoning from response
   const message = data.choices[0].message;
   const content = message.content as string;
