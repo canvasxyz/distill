@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { answerLead } from "./answer_lead";
 
 describe("answer lead presentation", () => {
-  it("wraps the existing heading and paragraph, leaving the rest and reference definitions untouched", () => {
+  it("wraps the whole answer, keeping blocks and reference definitions in order", () => {
     const heading = {
       type: "heading",
       depth: 2,
@@ -26,13 +26,15 @@ describe("answer lead presentation", () => {
     };
     const tree = { children: [heading, paragraph, list, definition] };
     answerLead("@example")()(tree);
-    expect(tree.children.slice(1)).toEqual([list, definition]);
+    expect(tree.children).toHaveLength(1);
     expect(tree.children[0]).toMatchObject({
       data: { hName: "section" },
       children: [
         { children: [{ value: "@example" }] },
         heading,
         paragraph,
+        list,
+        definition,
         {
           children: [
             { value: expect.stringContaining("A guess, not a verdict.") },
@@ -52,14 +54,18 @@ describe("answer lead presentation", () => {
     };
     const tree = { children: [first, second] };
     answerLead()()(tree);
+    expect(tree.children).toHaveLength(1);
     expect(tree.children[0].children?.[1]).toBe(first);
-    expect(tree.children[1]).toBe(second);
+    expect(tree.children[0].children?.[2]).toBe(second);
   });
-  it("leaves list-first and empty answers unchanged", () => {
-    const tree = { children: [{ type: "list", children: [] }] };
-    const original = structuredClone(tree);
+  it("wraps list-first answers and leaves empty answers unchanged", () => {
+    const list = { type: "list", children: [] };
+    const tree = { children: [list] };
     answerLead()()(tree);
-    expect(tree).toEqual(original);
-    expect(() => answerLead()()({ children: [] })).not.toThrow();
+    expect(tree.children).toHaveLength(1);
+    expect(tree.children[0].children?.[1]).toBe(list);
+    const empty = { children: [] };
+    answerLead()()(empty);
+    expect(empty.children).toEqual([]);
   });
 });

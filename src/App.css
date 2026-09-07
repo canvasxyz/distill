@@ -555,6 +555,8 @@ svg {
   font-weight: 500;
   line-height: 1.4;
 }
+/* The whole answer sits in the green box. The opening heading and paragraph
+   are the lead; later blocks read as body copy on the same ground. */
 .answer-lead {
   background: var(--fluorescent);
   color: var(--on-green);
@@ -562,21 +564,50 @@ svg {
   border-radius: 4px;
   padding: 23px 24px 19px;
   margin: 0 0 22px;
+  font-size: 14px;
+  line-height: 1.65;
 }
-.answer-lead > :is(h1, h2, h3) {
+.answer-lead > :is(h1, h2, h3, h4) {
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 1.4;
+  margin: 24px 0 8px;
+}
+.answer-lead > .answer-lead-person + :is(h1, h2, h3) {
   font-family: "Fraunces Variable", Georgia, serif;
   font-variation-settings:
     "SOFT" 50,
     "WONK" 1;
   font-size: 35px;
+  font-weight: 400;
   line-height: 1.15;
   letter-spacing: -1px;
   margin: 16px 0 13px;
 }
 .answer-lead > p {
-  font-size: 14px;
-  line-height: 1.65;
-  margin: 0;
+  margin: 0 0 12px;
+}
+.answer-lead > .answer-lead-person + p,
+.answer-lead > .answer-lead-person + :is(h1, h2, h3) + p {
+  font-size: 15px;
+}
+.answer-lead > :is(ul, ol) {
+  margin: 0 0 12px;
+  padding-left: 22px;
+}
+.answer-lead > :is(ul, ol) li {
+  margin: 4px 0;
+}
+.answer-lead > hr {
+  border: 0;
+  border-top: 1px solid #17200050;
+  margin: 18px 0;
+}
+.answer-lead strong {
+  text-decoration-color: #17200080;
+}
+.answer-lead a:not(.tweet-citation) {
+  color: inherit;
 }
 .answer-lead > .answer-lead-person {
   font-size: 11px;
@@ -1245,7 +1276,7 @@ select:not(.rt-SelectNative),
   .answer-lead {
     padding: 19px 18px 15px;
   }
-  .answer-lead > :is(h1, h2, h3) {
+  .answer-lead > .answer-lead-person + :is(h1, h2, h3) {
     font-size: 32px;
   }
   .avatar-empty {
