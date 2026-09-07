@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { ExternalLinkIcon } from "@radix-ui/react-icons";
 import { useStore } from "../../state/store";
 import type { QueryResult } from "./ai_utils";
 import { getAnswerPosts } from "./answer_sources";
@@ -57,7 +58,7 @@ export function SourceTweetsPanel({
                   rel="noopener noreferrer"
                   aria-label={`Open post ${tweet.id_str || tweet.id} on X`}
                 >
-                  ↗
+                  <ExternalLinkIcon aria-hidden="true" />
                 </a>
               </div>
               <p>{tweet.full_text}</p>
@@ -67,7 +68,7 @@ export function SourceTweetsPanel({
       </ol>
       {shown < posts.length && (
         <button className="plain-button" onClick={() => setShown(shown + 20)}>
-          Show 20 more · {posts.length - shown} remaining ↓
+          Show 20 more · {posts.length - shown} remaining
         </button>
       )}
       {unavailable.length > 0 && (

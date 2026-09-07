@@ -1,3 +1,4 @@
+import { ChevronDownIcon, ExternalLinkIcon } from "@radix-ui/react-icons";
 import { useSelectedAccount } from "../hooks/useSelectedAccount";
 
 export function AccountContextLine() {
@@ -11,7 +12,8 @@ export function AccountContextLine() {
             onClick={openPeople}
             aria-label={`Change person: @${account.username}`}
           >
-            @{account.username} <span aria-hidden="true">⌄</span>
+            @{account.username}
+            <ChevronDownIcon className="inline-icon" aria-hidden="true" />
           </button>
           <span aria-hidden="true">·</span>
           {account.fromArchive ? (
@@ -22,7 +24,8 @@ export function AccountContextLine() {
               target="_blank"
               rel="noopener noreferrer"
             >
-              Community Archive ↗
+              Community Archive
+              <ExternalLinkIcon className="inline-icon" aria-hidden="true" />
             </a>
           )}
         </>

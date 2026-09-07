@@ -1,4 +1,5 @@
 import { Link } from "react-router";
+import { ArrowRightIcon, ChevronRightIcon } from "@radix-ui/react-icons";
 import { useStore } from "../../state/store";
 import { PageContent } from "../../components/PageContent";
 import { extractTimestampFromUUIDv7 } from "../../utils";
@@ -28,7 +29,7 @@ export function HistoryView() {
                     ).toLocaleDateString(undefined, { dateStyle: "medium" })}
                   </small>
                 </span>
-                <span aria-hidden="true">↗</span>
+                <ChevronRightIcon aria-hidden="true" />
               </Link>
             </li>
           ))}
@@ -36,7 +37,10 @@ export function HistoryView() {
       ) : (
         <div className="empty-state">
           <p>No questions yet.</p>
-          <Link to="/">Ask your first question ↗</Link>
+          <Link to="/">
+            Ask your first question
+            <ArrowRightIcon className="inline-icon" aria-hidden="true" />
+          </Link>
         </div>
       )}
       <p className="quiet-note">

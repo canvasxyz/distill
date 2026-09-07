@@ -7,12 +7,13 @@ import {
   GearIcon,
   HamburgerMenuIcon,
   Cross2Icon,
+  ExternalLinkIcon,
 } from "@radix-ui/react-icons";
 import { PastQueries } from "../views/query_view/SidebarQueries";
 import { useSelectedAccount } from "../hooks/useSelectedAccount";
 import { useStore } from "../state/store";
 import { SelectUser } from "../views/SelectUser";
-import { getCommunityArchiveUserProgressLabel } from "./CommunityArchiveUserProgress";
+import { getFetchPostsProgressLabel } from "./CommunityArchiveUserProgress";
 import "./ResponsiveSidebar.css";
 
 export function ResponsiveSidebar() {
@@ -22,7 +23,7 @@ export function ResponsiveSidebar() {
     setMobileOpen(false);
     openPeople();
   };
-  const { loadCommunityArchiveUserProgress } = useStore();
+  const { fetchPostsProgress } = useStore();
 
   const sidebarContent = (
     <div className="sidebar-inner">
@@ -50,11 +51,9 @@ export function ResponsiveSidebar() {
           Past questions
         </NavLink>
       </nav>
-      {loadCommunityArchiveUserProgress && (
+      {fetchPostsProgress && (
         <p className="sidebar-label" role="status">
-          {getCommunityArchiveUserProgressLabel(
-            loadCommunityArchiveUserProgress,
-          )}
+          {getFetchPostsProgressLabel(fetchPostsProgress)}
         </p>
       )}
       <section className="sidebar-recents" aria-label="Recent questions">
@@ -78,7 +77,8 @@ export function ResponsiveSidebar() {
           >
             Made possible by
             <br />
-            Community Archive ↗
+            Community Archive
+            <ExternalLinkIcon className="inline-icon" aria-hidden="true" />
           </a>
         </footer>
       </div>

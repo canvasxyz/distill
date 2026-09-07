@@ -13,7 +13,7 @@ export function ChooseArchive() {
             Archive.
           </p>
           <button className="choose-person-button" onClick={openPeople}>
-            Choose someone ↗
+            Choose someone
           </button>
         </div>
         <div>
