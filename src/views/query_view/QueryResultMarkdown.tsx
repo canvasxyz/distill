@@ -13,6 +13,7 @@ import { ChevronDownIcon, ChevronRightIcon } from "@radix-ui/react-icons";
 import type { Tweet } from "../../types";
 import {
   extractTweetIdFromUrl,
+  formatTweetCitations,
   TWEET_STATUS_URL_REGEX,
   formatCompactNumber,
 } from "../../utils";
@@ -207,7 +208,12 @@ export function QueryResultMarkdown({
   accountIdToUsername,
   person,
 }: Props) {
-  const segments = useMemo(() => splitThinkingSegments(content), [content]);
+  // Older answers were saved before every citation shape was recognised;
+  // normalising again is harmless for ones that already are.
+  const segments = useMemo(
+    () => splitThinkingSegments(formatTweetCitations(content)),
+    [content],
+  );
   const [collapsedThinking, setCollapsedThinking] = useState<Set<number>>(
     () => {
       // Start with all thinking traces collapsed
