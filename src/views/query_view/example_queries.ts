@@ -112,8 +112,24 @@ export const FEATURED_QUERIES_SINGULAR: FeaturedQuery[] = [
     text: "What would they enjoy? What in their tweets makes you think so?",
   },
   {
+    title: "What do they post about?",
+    text: "What kinds of topics does {account} post about?",
+  },
+  {
+    title: "How do they see themselves?",
+    text: "How does {account} seem to perceive themselves based on their tweets?",
+  },
+  {
+    title: "Adjectives for them",
+    text: "What adjectives best capture {account}’s online personality?",
+  },
+  {
     title: "MBTI, for fun",
     text: "Based on these tweets, what MBTI is {account}? If you're unsure, list multiple options.",
+  },
+  {
+    title: "Enneagram, for fun",
+    text: "Based on these tweets, what Enneagram type is {account}? If you're unsure, list multiple options.",
   },
 ];
 
