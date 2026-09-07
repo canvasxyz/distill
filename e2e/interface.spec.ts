@@ -424,6 +424,19 @@ test("avatar generation, prompt reuse, rerender and per-person history", async (
     path: testInfo.outputPath("avatar-dark.png"),
     fullPage: true,
   });
+  // Avatars share the history page with questions and open in place.
+  await navigate(page, "Past questions");
+  const avatarEntries = page.locator(".history-list .history-avatar");
+  await expect(avatarEntries).toHaveCount(2);
+  await expect(avatarEntries.first()).toContainText("Avatar for @alexexample");
+  await avatarEntries.last().click();
+  await expect(page).toHaveURL(/#\/avatar$/);
+  await expect(
+    page.getByRole("img", { name: "Generated avatar for @alexexample" }),
+  ).toBeVisible();
+  await expect(
+    page.locator(".avatar-thumbnail[aria-pressed='true']"),
+  ).toHaveCount(1);
   await navigate(page, "Ask something");
   await importArchive(page, "samexample");
   await navigate(page, "Make an avatar");

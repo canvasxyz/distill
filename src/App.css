@@ -668,6 +668,18 @@ svg {
   font-size: 12px;
   margin-top: 6px;
 }
+.history-list a > span {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.history-list .history-avatar img {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid var(--line);
+}
 .empty-state {
   border: 1px dashed var(--line);
   border-radius: 4px;

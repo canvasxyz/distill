@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router";
 import { useLiveQuery } from "dexie-react-hooks";
 import {
   Box,
@@ -114,8 +115,28 @@ export function AvatarView() {
     setSelectedConfigIndex,
   } = useStore();
 
-  const { selectedAccountId, account } = useSelectedAccount();
+  const { selectedAccountId, account, setSelectedAccountId } =
+    useSelectedAccount();
   const [previewId, setPreviewId] = useState<string | null>(null);
+  // The history page links to a specific avatar with ?view=<id>. Show it,
+  // switching to its person if needed.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const viewId = searchParams.get("view");
+  useEffect(() => {
+    if (!viewId) return;
+    let cancelled = false;
+    void db.avatars.get(viewId).then((avatar) => {
+      if (cancelled) return;
+      if (avatar) {
+        setSelectedAccountId(avatar.accountId);
+        setPreviewId(avatar.id);
+      }
+      setSearchParams({}, { replace: true });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [viewId, setSelectedAccountId, setSearchParams]);
   const accountTweets = useMemo(
     () => (allTweets || []).filter((t) => t.account_id === selectedAccountId),
     [allTweets, selectedAccountId],
