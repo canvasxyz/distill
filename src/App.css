@@ -45,6 +45,7 @@ svg {
   --soft: #ded3ef;
   --fluorescent: #a8ff00;
   --on-green: #172000;
+  --color-overlay: rgba(238, 232, 248, 0.55);
   --default-font-family: Arial, Helvetica, sans-serif;
   --heading-font-family: Arial, Helvetica, sans-serif;
   --default-font-size: 15px;
@@ -79,8 +80,12 @@ svg {
   --gray-a11: var(--muted);
   --gray-a12: var(--ink);
   --focus-8: var(--ink);
-  background: var(--page);
   color: var(--ink);
+}
+/* Only the root theme paints the page. Radix portals (dialog overlays, popovers)
+   also carry .radix-themes and must stay transparent. */
+#root > .radix-themes {
+  background: var(--page);
   min-height: 100%;
 }
 .radix-themes.dark {
@@ -91,6 +96,12 @@ svg {
   --muted: #b2b4a8;
   --line: #42443a;
   --soft: #303e1c;
+  --color-overlay: rgba(27, 28, 25, 0.55);
+}
+/* Dialog backdrop: a translucent, blurred tint of the page instead of a grey dim. */
+.rt-BaseDialogOverlay::before {
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
 .radix-themes,
 [data-accent-color="lime"] {
