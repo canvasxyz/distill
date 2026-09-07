@@ -12,7 +12,7 @@ import {
 } from "@radix-ui/themes";
 import { useStore } from "../../state/store";
 import { db } from "../../db";
-import { FaceIcon } from "@radix-ui/react-icons";
+import { DownloadIcon, FaceIcon } from "@radix-ui/react-icons";
 import { AccountContextLine } from "../../components/AccountContextLine";
 import { ChooseArchive } from "../../components/ChooseArchive";
 import { useSelectedAccount } from "../../hooks/useSelectedAccount";
@@ -54,7 +54,8 @@ function AvatarCard({
           href={avatar.imageDataUrl}
           download={`${avatar.username}-avatar.png`}
         >
-          Download ↓
+          <DownloadIcon className="inline-icon" aria-hidden="true" />
+          Download
         </a>
         <button
           className="plain-button"
@@ -209,13 +210,21 @@ export function AvatarView() {
               <Button
                 className="avatar-generate"
                 size="3"
-                disabled={busy || !account || accountTweets.length === 0}
+                disabled={
+                  busy ||
+                  !account ||
+                  (account.fromArchive && accountTweets.length === 0)
+                }
                 onClick={() => {
                   setPreviewId(null);
-                  if (account) generateAvatar(account, accountTweets);
+                  if (account) generateAvatar(account);
                 }}
               >
-                {avatarStage === "analysing" ? (
+                {avatarStage === "fetching" ? (
+                  <>
+                    <Spinner /> Fetching their posts…
+                  </>
+                ) : avatarStage === "analysing" ? (
                   <>
                     <Spinner /> Looking through tweets…
                   </>
@@ -224,7 +233,7 @@ export function AvatarView() {
                     <Spinner /> Making the image…
                   </>
                 ) : (
-                  "Generate avatar ↗"
+                  "Generate avatar"
                 )}
               </Button>
               <details className="avatar-models">
@@ -304,7 +313,7 @@ export function AvatarView() {
                         clearCachedPrompt(selectedAccountId, selectedTextModel);
                     }}
                   >
-                    Build a fresh prompt ↗
+                    Build a fresh prompt
                   </button>
                 </div>
               )}

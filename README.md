@@ -4,12 +4,13 @@ A browser-based way to get an impression of yourself, a friend, or someone youâ€
 
 ## Features
 
-- Ask your own questions, or start with a suggested question about interests, personality, strengths, or weak spots.
-- Choose posts, months, replies/reposts, and an AI model. Asking sends the selected posts and profile context to the provider.
+- Ask your own questions, or start with a suggested question about interests, personality, strengths, weak spots, self-image, adjectives, MBTI, or Enneagram.
+- Choose how many recent posts a question reads, or pick months, replies/reposts, and an AI model. Asking sends the selected posts and profile context to the provider.
+- Choosing someone from Community Archive is instant. Their posts are fetched the first time a question or avatar needs them, then kept in this browser and reused.
 - Revisit answers saved in this browser, copy them, inspect their source tweets, or delete them.
 - Generate an avatar from tweets and profile details, optionally using the current avatar as a reference. Inspect the generated prompt, re-render, download, or delete an image.
 - Switch between charcoal and pale-violet themes, both with fluorescent green accents. Fraunces is bundled locally; no Google Fonts request is needed.
-- Browse and switch people on a dedicated page with normal page scrolling. Search sits directly above its results; loading options expand inline. Back or selecting someone returns to the previous screen without losing your draft question or post filters.
+- Browse and switch people on a dedicated page with normal page scrolling. Search sits directly above its results. Back or selecting someone returns to the previous screen without losing your draft question or post filters.
 - Archives and history are stored in IndexedDB. Importing an archive here does not contribute it to Community Archive. Use the people page to remove a local archive.
 
 ## Usage

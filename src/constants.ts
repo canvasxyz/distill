@@ -1,5 +1,8 @@
 export const DEFAULT_QUERY_BATCH_SIZE = 1500;
 export const GEMINI_FLASH_QUERY_BATCH_SIZE = 7500;
+// How many recent posts a question can read. Trimmed to the model's limit
+// and the person's total when offered.
+export const POST_COUNT_OPTIONS = [100, 250, 500, 1000, 1500, 2500, 5000, 7500];
 
 export type LLMQueryProvider =
   | "cerebras"
@@ -30,12 +33,36 @@ export type ImageGenModel = {
   modalities: ("image" | "text")[];
 };
 export const IMAGE_GEN_MODELS: ImageGenModel[] = [
-  { id: "google/gemini-3.1-flash-image", label: "Gemini 3.1 Flash Image", modalities: ["image", "text"] },
-  { id: "google/gemini-3-pro-image", label: "Gemini 3 Pro Image", modalities: ["image", "text"] },
-  { id: "google/gemini-2.5-flash-image", label: "Gemini 2.5 Flash Image", modalities: ["image", "text"] },
-  { id: "openai/gpt-5-image", label: "GPT-5 Image", modalities: ["image", "text"] },
-  { id: "openai/gpt-5-image-mini", label: "GPT-5 Image Mini", modalities: ["image", "text"] },
-  { id: "x-ai/grok-imagine-image-2.0", label: "Grok Imagine 2.0", modalities: ["image"] },
+  {
+    id: "google/gemini-3.1-flash-image",
+    label: "Gemini 3.1 Flash Image",
+    modalities: ["image", "text"],
+  },
+  {
+    id: "google/gemini-3-pro-image",
+    label: "Gemini 3 Pro Image",
+    modalities: ["image", "text"],
+  },
+  {
+    id: "google/gemini-2.5-flash-image",
+    label: "Gemini 2.5 Flash Image",
+    modalities: ["image", "text"],
+  },
+  {
+    id: "openai/gpt-5-image",
+    label: "GPT-5 Image",
+    modalities: ["image", "text"],
+  },
+  {
+    id: "openai/gpt-5-image-mini",
+    label: "GPT-5 Image Mini",
+    modalities: ["image", "text"],
+  },
+  {
+    id: "x-ai/grok-imagine-image-2.0",
+    label: "Grok Imagine 2.0",
+    modalities: ["image"],
+  },
 ];
 export const getImageGenModel = (id: string): ImageGenModel | undefined =>
   IMAGE_GEN_MODELS.find((m) => m.id === id);

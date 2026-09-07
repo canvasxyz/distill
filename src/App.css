@@ -371,10 +371,26 @@ svg {
   color: var(--muted);
   margin: 10px 0 18px;
 }
+/* Radix icons sit inline with text: external links, in-app navigation,
+   download and import affordances. Action buttons carry no decoration. */
+.inline-icon {
+  width: 13px;
+  height: 13px;
+  vertical-align: -0.15em;
+  flex-shrink: 0;
+  margin-left: 0.3em;
+}
+.inline-icon.leading {
+  margin-left: 0;
+  margin-right: 0.3em;
+}
+.plain-button svg {
+  flex-shrink: 0;
+}
 .plain-button {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   background: none;
   border: 0;
   padding: 6px 0;
@@ -387,6 +403,30 @@ svg {
 }
 .scope-row button {
   flex-shrink: 0;
+}
+.scope-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+  min-width: 0;
+}
+.post-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ink);
+  white-space: nowrap;
+}
+.scope-row select.post-count-select {
+  width: auto;
+  padding: 4px 6px;
+  font-size: 12px;
+  border-radius: 3px;
+  background-color: var(--paper);
+}
+.scope-detail {
+  color: var(--muted);
 }
 .post-filters,
 .info-panel {
@@ -940,26 +980,6 @@ select:not(.rt-SelectNative),
   gap: 16px;
   margin-bottom: 20px;
 }
-.people-tools {
-  margin: 20px 0;
-  border-block: 1px solid var(--line);
-}
-.people-options {
-  min-width: 0;
-  font-size: 12px;
-}
-.people-options summary {
-  min-height: 44px;
-  padding: 12px 0;
-}
-.people-options summary span {
-  color: var(--muted);
-}
-.people-options .archive-load-choice {
-  grid-template-columns: minmax(0, 1fr);
-  max-width: 480px;
-  margin: 8px 0 16px;
-}
 .people-results {
   margin-top: 16px;
 }
@@ -1058,19 +1078,6 @@ select:not(.rt-SelectNative),
 }
 .person-error {
   grid-column: 1 / -1;
-}
-.archive-load-choice {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px 12px;
-  align-items: center;
-  font-size: 12px;
-  margin: 18px 0 10px;
-}
-.archive-load-choice small {
-  grid-column: 1 / -1;
-  color: var(--muted);
-  font-size: 11px;
 }
 .people-status {
   display: flex;
@@ -1240,9 +1247,6 @@ select:not(.rt-SelectNative),
   }
   .answer-lead > :is(h1, h2, h3) {
     font-size: 32px;
-  }
-  .archive-load-choice {
-    grid-template-columns: 1fr;
   }
   .avatar-empty {
     max-width: 260px;

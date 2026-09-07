@@ -134,9 +134,8 @@ export function Settings() {
       <section className="settings-section" aria-labelledby="data-title">
         <h2 id="data-title">Your archives and answers</h2>
         <p>
-          Saved in this browser. Use the person picker to browse, refresh or
-          remove an archive; past questions and avatars have their own delete
-          controls.
+          Saved in this browser. Use the person picker to browse or remove an
+          archive; past questions and avatars have their own delete controls.
         </p>
         <p className="quiet-note">
           Asking sends the selected posts to the AI service. Avatar generation

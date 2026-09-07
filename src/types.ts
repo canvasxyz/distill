@@ -1,5 +1,8 @@
 export type Account = {
   fromArchive: boolean;
+  // Total posts on Community Archive, when known. Imported archives count
+  // their posts locally instead.
+  numTweets?: number | null;
   email: string;
   createdVia: string;
   username: string;

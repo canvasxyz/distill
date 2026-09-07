@@ -25,10 +25,11 @@ type ReasoningConfig = {
   effort: "minimal" | "low" | "medium" | "high";
 };
 
-type ChatCompletionParams = OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming & {
-  provider?: { only: string[] };
-  reasoning?: ReasoningConfig;
-};
+type ChatCompletionParams =
+  OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming & {
+    provider?: { only: string[] };
+    reasoning?: ReasoningConfig;
+  };
 
 export type RangeSelection =
   | { type: "last-tweets"; numTweets: number }
@@ -75,7 +76,7 @@ export type QueryResult = {
 };
 
 export const finalSystemPrompt =
-    "You will be given a user's profile (bio, and possibly their current avatar image), a list of their tweets, and a prompt. Review the tweets and provide an answer to the prompt. Provide citations for claims that you make when they are grounded in specific tweets that have been provided. Citations should be provided inline, as Markdown links to the tweets themselves on x.com. Always use the tweet_id for the Markdown link's text, and https://x.com/i/status/{tweet_id} for the link (example: https://x.com/i/status/1111). Do not create tables in your response.";
+  "You will be given a user's profile (bio, and possibly their current avatar image), a list of their tweets, and a prompt. Review the tweets and provide an answer to the prompt. Provide citations for claims that you make when they are grounded in specific tweets that have been provided. Citations should be provided inline, as Markdown links to the tweets themselves on x.com. Always use the tweet_id for the Markdown link's text, and https://x.com/i/status/{tweet_id} for the link (example: https://x.com/i/status/1111). Do not create tables in your response.";
 
 const REASONING_ENABLED_MODELS = new Set([
   "google/gemini-3-flash-preview",
@@ -116,10 +117,7 @@ export function getFullSizeAvatarUrl(url?: string | null) {
   return url.replace(/_(normal|bigger|mini)(\.[a-z]+)$/i, "_400x400$2");
 }
 
-export function formatProfileBlock(
-  account: Account,
-  profile?: Profile | null,
-) {
+export function formatProfileBlock(account: Account, profile?: Profile | null) {
   const { bio, website, location } = getProfileFields(profile);
   const parts = [
     `<Profile username="@${account.username}" display_name="${account.accountDisplayName}">`,
@@ -186,7 +184,8 @@ export function makePromptMessages(
   ];
 }
 
-export const serverUrl = "https://tweet-analysis-worker.raymond-a96.workers.dev";
+export const serverUrl =
+  "https://tweet-analysis-worker.raymond-a96.workers.dev";
 
 export async function submitQuery(params: {
   tweetsSample: {
@@ -262,7 +261,11 @@ export async function submitQuery(params: {
     reasoning?: string;
   };
   type ExtendedChatCompletion = Omit<ChatCompletion, "choices"> & {
-    choices: Array<Omit<ChatCompletion["choices"][0], "message"> & { message: ExtendedMessage }>;
+    choices: Array<
+      Omit<ChatCompletion["choices"][0], "message"> & {
+        message: ExtendedMessage;
+      }
+    >;
     provider?: string;
     model?: string;
   };
@@ -302,7 +305,13 @@ export async function submitQuery(params: {
     // put the selected model at the start of the llm configs list
     // i.e. if it's not available then fall back to the other models in the list
     const resolvedOpenrouterProvider = openrouterProvider ?? null;
-    type WorkerLLMConfig = [string, LLMQueryProvider, string | null, boolean, number];
+    type WorkerLLMConfig = [
+      string,
+      LLMQueryProvider,
+      string | null,
+      boolean,
+      number,
+    ];
     const llmConfigs: WorkerLLMConfig[] = [
       [model, provider, resolvedOpenrouterProvider, false, 1500], // Use default batch size
       ...AVAILABLE_LLM_CONFIGS.map<WorkerLLMConfig>(
@@ -359,6 +368,21 @@ export async function submitQuery(params: {
     model: data.model,
   };
 }
+
+export const filterPosts = <
+  T extends Pick<Tweet, "full_text" | "in_reply_to_user_id">,
+>(
+  tweets: T[],
+  {
+    includeReplies,
+    includeRetweets,
+  }: { includeReplies: boolean; includeRetweets: boolean },
+) =>
+  tweets.filter((tweet) => {
+    if (!includeReplies && tweet.in_reply_to_user_id) return false;
+    if (!includeRetweets && tweet.full_text.startsWith("RT ")) return false;
+    return true;
+  });
 
 export const selectSubset = (
   tweets: Tweet[],
