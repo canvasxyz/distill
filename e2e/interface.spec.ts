@@ -430,13 +430,22 @@ test("avatar generation, prompt reuse, rerender and per-person history", async (
   await expect(avatarEntries).toHaveCount(2);
   await expect(avatarEntries.first()).toContainText("Avatar for @alexexample");
   await avatarEntries.last().click();
-  await expect(page).toHaveURL(/#\/avatar$/);
+  await expect(page).toHaveURL(/#\/avatar\/[0-9a-f-]+$/);
+  const avatarUrl = page.url();
   await expect(
     page.getByRole("img", { name: "Generated avatar for @alexexample" }),
   ).toBeVisible();
   await expect(
     page.locator(".avatar-thumbnail[aria-pressed='true']"),
   ).toHaveCount(1);
+  // The address survives a reload and picking another thumbnail changes it.
+  await page.reload();
+  await expect(
+    page.getByRole("img", { name: "Generated avatar for @alexexample" }),
+  ).toBeVisible();
+  await page.locator(".avatar-thumbnail[aria-pressed='false']").click();
+  await expect(page).toHaveURL(/#\/avatar\/[0-9a-f-]+$/);
+  expect(page.url()).not.toBe(avatarUrl);
   await navigate(page, "Ask something");
   await importArchive(page, "samexample");
   await navigate(page, "Make an avatar");

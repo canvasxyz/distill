@@ -27,6 +27,7 @@ const router = createHashRouter([
       { path: "chat", Component: Chat },
       { path: "settings", Component: Settings },
       { path: "avatar", Component: AvatarView },
+      { path: "avatar/:avatarId", Component: AvatarView },
       { path: "about", Component: About },
       { path: "history", Component: HistoryView },
       { path: "people", Component: PeopleView },

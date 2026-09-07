@@ -60,7 +60,7 @@ export function HistoryView() {
             ) : (
               <li key={`avatar-${entry.avatar.id}`}>
                 <Link
-                  to={`/avatar?view=${encodeURIComponent(entry.avatar.id)}`}
+                  to={`/avatar/${encodeURIComponent(entry.avatar.id)}`}
                   className="history-avatar"
                 >
                   <img

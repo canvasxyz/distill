@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import { useLiveQuery } from "dexie-react-hooks";
 import {
   Box,
@@ -118,25 +118,31 @@ export function AvatarView() {
   const { selectedAccountId, account, setSelectedAccountId } =
     useSelectedAccount();
   const [previewId, setPreviewId] = useState<string | null>(null);
-  // The history page links to a specific avatar with ?view=<id>. Show it,
-  // switching to its person if needed.
-  const [searchParams, setSearchParams] = useSearchParams();
-  const viewId = searchParams.get("view");
+  // Each avatar has its own address, /avatar/<id>, like a past question.
+  // Opening one shows it and switches to its person if needed.
+  const { avatarId } = useParams();
+  const navigate = useNavigate();
   useEffect(() => {
-    if (!viewId) return;
+    if (!avatarId) {
+      setPreviewId(null);
+      return;
+    }
     let cancelled = false;
-    void db.avatars.get(viewId).then((avatar) => {
+    void db.avatars.get(avatarId).then((avatar) => {
       if (cancelled) return;
       if (avatar) {
         setSelectedAccountId(avatar.accountId);
         setPreviewId(avatar.id);
+      } else {
+        navigate("/avatar", { replace: true });
       }
-      setSearchParams({}, { replace: true });
     });
     return () => {
       cancelled = true;
     };
-  }, [viewId, setSelectedAccountId, setSearchParams]);
+  }, [avatarId, setSelectedAccountId, navigate]);
+  const showAvatar = (id: string | null) =>
+    navigate(id ? `/avatar/${encodeURIComponent(id)}` : "/avatar");
   const accountTweets = useMemo(
     () => (allTweets || []).filter((t) => t.account_id === selectedAccountId),
     [allTweets, selectedAccountId],
@@ -205,10 +211,13 @@ export function AvatarView() {
                   key={currentAvatar.id}
                   disabled={busy}
                   onRerender={() => {
-                    setPreviewId(null);
+                    showAvatar(null);
                     regenerateAvatarImage(currentAvatar);
                   }}
-                  onDelete={() => deleteAvatar(currentAvatar.id)}
+                  onDelete={() => {
+                    showAvatar(null);
+                    deleteAvatar(currentAvatar.id);
+                  }}
                 />
               ) : (
                 <div className="avatar-empty">
@@ -237,7 +246,7 @@ export function AvatarView() {
                   (account.fromArchive && accountTweets.length === 0)
                 }
                 onClick={() => {
-                  setPreviewId(null);
+                  showAvatar(null);
                   if (account) generateAvatar(account);
                 }}
               >
@@ -364,7 +373,7 @@ export function AvatarView() {
                     className="avatar-thumbnail"
                     aria-label={`View avatar from ${new Date(avatar.createdAt).toLocaleString()}`}
                     aria-pressed={currentAvatar?.id === avatar.id}
-                    onClick={() => setPreviewId(avatar.id)}
+                    onClick={() => showAvatar(avatar.id)}
                   >
                     <img src={avatar.imageDataUrl} alt="" />
                     <span>
