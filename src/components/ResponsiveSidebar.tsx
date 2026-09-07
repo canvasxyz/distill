@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { NavLink } from "react-router";
 import {
+  ArrowRightIcon,
   ChatBubbleIcon,
   FaceIcon,
-  CounterClockwiseClockIcon,
   GearIcon,
   HamburgerMenuIcon,
   Cross2Icon,
@@ -46,18 +46,29 @@ export function ResponsiveSidebar() {
           <FaceIcon />
           Make an avatar
         </NavLink>
-        <NavLink to="/history">
-          <CounterClockwiseClockIcon />
-          Past questions
-        </NavLink>
       </nav>
       {fetchPostsProgress && (
         <p className="sidebar-label" role="status">
           {getFetchPostsProgressLabel(fetchPostsProgress)}
         </p>
       )}
-      <section className="sidebar-recents" aria-label="Recent questions">
-        <p className="sidebar-label">Last time you asked</p>
+      <section
+        className="sidebar-recents"
+        aria-label="Recent questions and avatars"
+      >
+        <div className="sidebar-recents-heading">
+          <p className="sidebar-label">Recently</p>
+          <NavLink
+            to="/history"
+            className="sidebar-see-all"
+            aria-label="See all past questions and avatars"
+            onClick={() => setMobileOpen(false)}
+          >
+            <span className="see-all-short">See all</span>
+            <span className="see-all-long">Past questions & avatars</span>
+            <ArrowRightIcon aria-hidden="true" />
+          </NavLink>
+        </div>
         <PastQueries onNavigate={() => setMobileOpen(false)} />
       </section>
       <div className="sidebar-bottom">

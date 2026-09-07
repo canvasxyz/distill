@@ -23,10 +23,6 @@ export function answerLead(person?: string) {
       children: [
         label(person || "An impression", "answer-lead-person"),
         ...body,
-        label(
-          "A guess, not a verdict. Made from tweets, not the whole person.",
-          "answer-lead-caveat",
-        ),
       ],
     });
   };

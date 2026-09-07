@@ -54,13 +54,55 @@
   text-decoration: none;
   font-size: 12px;
   line-height: 1.6;
-  display: block;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
 }
 .recent-questions a > span {
+  min-width: 0;
+}
+.recent-questions a > span > span {
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+.recent-questions img {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid var(--line);
+}
+.sidebar-recents-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.sidebar-see-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--muted);
+  text-decoration: none;
+  margin-bottom: 12px;
+  white-space: nowrap;
+}
+.sidebar-see-all svg {
+  width: 12px;
+  height: 12px;
+}
+.see-all-long {
+  display: none;
+}
+.sidebar-see-all:hover,
+.sidebar-see-all.active {
+  color: var(--ink);
+  text-decoration: underline;
 }
 .recent-questions a:hover,
 .recent-questions a.active {
@@ -132,9 +174,24 @@
     padding: 18px;
     gap: 17px;
   }
-  .mobile-sidebar-content .sidebar-recents,
+  /* Phones skip the recent list but keep a way to reach the history page. */
+  .mobile-sidebar-content .recent-questions,
+  .mobile-sidebar-content .sidebar-recents .sidebar-label,
+  .mobile-sidebar-content .sidebar-recents .sidebar-empty,
+  .mobile-sidebar-content .see-all-short,
   .mobile-sidebar-content .sidebar-attribution {
     display: none;
+  }
+  .mobile-sidebar-content .see-all-long {
+    display: inline;
+  }
+  .mobile-sidebar-content .sidebar-see-all {
+    font-size: 13px;
+    color: var(--ink);
+    padding: 10px 8px;
+    min-height: 42px;
+    margin: 0;
+    gap: 9px;
   }
   .mobile-sidebar-content .sidebar-bottom {
     padding: 0;

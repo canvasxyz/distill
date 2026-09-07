@@ -13,7 +13,7 @@ import {
 } from "@radix-ui/themes";
 import { useStore } from "../../state/store";
 import { db } from "../../db";
-import { DownloadIcon, FaceIcon } from "@radix-ui/react-icons";
+import { DownloadIcon, FaceIcon, UpdateIcon } from "@radix-ui/react-icons";
 import { AccountContextLine } from "../../components/AccountContextLine";
 import { ChooseArchive } from "../../components/ChooseArchive";
 import { useSelectedAccount } from "../../hooks/useSelectedAccount";
@@ -37,7 +37,6 @@ function AvatarCard({
   onRerender: () => void;
   onDelete: () => void;
 }) {
-  const [showPrompt, setShowPrompt] = useState(false);
   return (
     <article className="avatar-card is-latest">
       <div className="avatar-image-stage">
@@ -59,10 +58,11 @@ function AvatarCard({
           Download
         </a>
         <button
-          className="plain-button"
+          className="action-button"
           disabled={disabled}
           onClick={onRerender}
         >
+          <UpdateIcon aria-hidden="true" />
           Re-render image
         </button>
       </div>
@@ -76,14 +76,7 @@ function AvatarCard({
             ? ` · $${avatar.cost.toFixed(3)}`
             : ""}
         </p>
-        <button
-          className="plain-button"
-          aria-expanded={showPrompt}
-          onClick={() => setShowPrompt(!showPrompt)}
-        >
-          {showPrompt ? "Hide generated prompt" : "Show generated prompt"}
-        </button>
-        {showPrompt && <p className="avatar-prompt">{avatar.description}</p>}
+        <p className="avatar-prompt">{avatar.description}</p>
         <button
           className="plain-button delete-avatar"
           disabled={disabled}
@@ -336,7 +329,7 @@ export function AvatarView() {
                   {new Date(cachedPrompt.createdAt).toLocaleDateString()}. This
                   skips straight to making the image.
                   <button
-                    className="plain-button"
+                    className="action-button"
                     disabled={busy}
                     onClick={() => {
                       if (selectedAccountId)

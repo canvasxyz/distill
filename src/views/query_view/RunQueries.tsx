@@ -41,6 +41,7 @@ import {
   Callout,
   Spinner,
 } from "@radix-ui/themes";
+import { ChevronDownIcon } from "@radix-ui/react-icons";
 import type { Tweet } from "../../types";
 import { QueryResultMarkdown } from "./QueryResultMarkdown";
 
@@ -404,14 +405,17 @@ export function RunQueries() {
             )}
           </div>
           <button
-            className="plain-button"
+            className="disclosure-button"
             type="button"
             aria-expanded={showFilters}
             aria-controls="post-filters"
             onClick={() => setShowFilters(!showFilters)}
           >
-            Which posts?{" "}
-            <span aria-hidden="true">{showFilters ? "−" : "+"}</span>
+            Which posts?
+            <ChevronDownIcon
+              className="disclosure-chevron"
+              aria-hidden="true"
+            />
           </button>
         </div>
       </form>

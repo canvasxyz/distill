@@ -124,11 +124,11 @@ export const FEATURED_QUERIES_SINGULAR: FeaturedQuery[] = [
     text: "What adjectives best capture {account}’s online personality?",
   },
   {
-    title: "MBTI, for fun",
+    title: "MBTI",
     text: "Based on these tweets, what MBTI is {account}? If you're unsure, list multiple options.",
   },
   {
-    title: "Enneagram, for fun",
+    title: "Enneagram",
     text: "Based on these tweets, what Enneagram type is {account}? If you're unsure, list multiple options.",
   },
 ];

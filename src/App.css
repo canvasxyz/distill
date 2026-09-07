@@ -20,6 +20,69 @@ summary {
   cursor: pointer;
   touch-action: manipulation;
 }
+/* Every expander looks like a control: bordered, with a chevron that turns
+   when open. <details> summaries and toggle buttons share the treatment. */
+summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  list-style: none;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 6px 10px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--ink);
+  user-select: none;
+}
+summary::-webkit-details-marker {
+  display: none;
+}
+summary::after {
+  content: "";
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  background: currentColor;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 15 15' fill='none'%3E%3Cpath d='M3.135 6.158a.5.5 0 0 1 .707-.023L7.5 9.565l3.658-3.43a.5.5 0 0 1 .684.73l-4 3.75a.5.5 0 0 1-.684 0l-4-3.75a.5.5 0 0 1-.023-.707Z' fill='currentColor'/%3E%3C/svg%3E")
+    center / contain no-repeat;
+  transition: transform 0.15s ease;
+}
+details[open] > summary::after {
+  transform: rotate(180deg);
+}
+summary:hover,
+.disclosure-button:hover,
+.action-button:hover {
+  background: var(--soft);
+  border-color: var(--muted);
+}
+.disclosure-button,
+.action-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: none;
+  padding: 6px 10px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--ink);
+  white-space: nowrap;
+}
+.disclosure-button:disabled,
+.action-button:disabled {
+  color: var(--muted);
+}
+.disclosure-chevron {
+  width: 12px;
+  height: 12px;
+  transition: transform 0.15s ease;
+}
+.disclosure-button[aria-expanded="true"] .disclosure-chevron {
+  transform: rotate(180deg);
+}
 button:disabled {
   cursor: not-allowed;
 }
@@ -404,6 +467,9 @@ svg {
 .scope-row button {
   flex-shrink: 0;
 }
+.scope-row .disclosure-button {
+  padding: 3px 8px;
+}
 .scope-summary {
   display: flex;
   flex-wrap: wrap;
@@ -451,6 +517,12 @@ svg {
   font-size: 13px;
 }
 .model-details summary {
+  margin-bottom: 12px;
+}
+.timeline-details summary,
+.avatar-image-details summary,
+.avatar-models summary,
+.connection-options summary {
   margin-bottom: 12px;
 }
 .month-range {
@@ -614,12 +686,6 @@ svg {
   letter-spacing: 0.7px;
   text-transform: uppercase;
   margin: 0 0 16px;
-}
-.answer-lead > .answer-lead-caveat {
-  font-size: 11px;
-  border-top: 1px solid #17200050;
-  padding-top: 17px;
-  margin-top: 20px;
 }
 .query-result-markdown .answer-lead a.tweet-citation {
   background: #17200018;

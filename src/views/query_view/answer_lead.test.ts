@@ -35,11 +35,6 @@ describe("answer lead presentation", () => {
         paragraph,
         list,
         definition,
-        {
-          children: [
-            { value: expect.stringContaining("A guess, not a verdict.") },
-          ],
-        },
       ],
     });
   });

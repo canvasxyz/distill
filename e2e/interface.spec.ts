@@ -190,7 +190,7 @@ test("empty state, theme persistence, and keyboard-accessible navigation", async
   await expect(page.locator(".people-picker")).toContainText("No people match");
   await page.getByRole("button", { name: "Back", exact: true }).click();
   await expect(page.getByRole("dialog")).toHaveCount(0);
-  await navigate(page, "Past questions");
+  await navigate(page, "See all past questions and avatars");
   await expect(
     page.getByText("No questions yet.", { exact: true }),
   ).toBeVisible();
@@ -309,14 +309,12 @@ test("questions, post filters, sources, saved answers and deletion", async ({
   await expect(page.locator(".source-posts")).toHaveCount(0);
   await expect(page.locator(".answer-context")).toContainText("1 post used");
   await expect(page.locator(".result-question")).toHaveCount(0);
-  await expect(page.locator(".answer-lead")).toContainText(
-    "A guess, not a verdict.",
-  );
   if (testInfo.project.name === "desktop") {
     const composer = await page.locator(".question-composer").boundingBox();
     const answer = await page.locator(".answer-lead").boundingBox();
     expect(composer!.height).toBeLessThan(190);
-    expect(answer!.y).toBeLessThan(610);
+    // The answer sits close under the composer, whatever the scroll position.
+    expect(answer!.y - composer!.y).toBeLessThan(380);
     expect(answer!.x).toBe(composer!.x);
     expect(answer!.width).toBe(composer!.width);
   }
@@ -349,7 +347,7 @@ test("questions, post filters, sources, saved answers and deletion", async ({
   await expect(
     page.getByRole("region", { name: "Answer", exact: true }),
   ).toHaveCount(0);
-  await navigate(page, "Past questions");
+  await navigate(page, "See all past questions and avatars");
   await page.locator(".history-list a").click();
   await expect(
     page.getByRole("heading", { name: "A practical dreamer." }),
@@ -404,7 +402,6 @@ test("avatar generation, prompt reuse, rerender and per-person history", async (
     page.getByRole("img", { name: "Generated avatar for @alexexample" }),
   ).toBeVisible();
   await page.getByText("Prompt & image details", { exact: true }).click();
-  await page.getByRole("button", { name: "Show generated prompt" }).click();
   await expect(
     page.getByText(
       "A playful green portrait inspired by walks and making things.",
@@ -425,7 +422,7 @@ test("avatar generation, prompt reuse, rerender and per-person history", async (
     fullPage: true,
   });
   // Avatars share the history page with questions and open in place.
-  await navigate(page, "Past questions");
+  await navigate(page, "See all past questions and avatars");
   const avatarEntries = page.locator(".history-list .history-avatar");
   await expect(avatarEntries).toHaveCount(2);
   await expect(avatarEntries.first()).toContainText("Avatar for @alexexample");
@@ -671,7 +668,7 @@ test("navigation stays single-line without an independently scrolling sidebar", 
     width: testInfo.project.name === "desktop" ? 760 : 320,
     height: 500,
   });
-  for (const name of ["Make an avatar", "Past questions", "Ask something"]) {
+  for (const name of ["Make an avatar", "Ask something"]) {
     await navigate(page, name);
     await openNavigation(page);
     const active = page
