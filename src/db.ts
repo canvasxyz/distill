@@ -1,10 +1,8 @@
 import Dexie from "dexie";
 import type { Tweet, Account, ProfileWithId } from "./types";
 import type { QueryResult } from "./views/query_view/ai_utils";
-import type {
-  GeneratedAvatar,
-  AvatarPromptCacheEntry,
-} from "./state/avatar";
+import type { GeneratedAvatar, AvatarPromptCacheEntry } from "./state/avatar";
+import type { PostCacheEntry } from "./state/init";
 
 class AppDatabase extends Dexie {
   accounts: Dexie.Table<Account, string>;
@@ -14,6 +12,8 @@ class AppDatabase extends Dexie {
   queryResults: Dexie.Table<QueryResult, string>;
   avatars: Dexie.Table<GeneratedAvatar, string>;
   avatarPromptCache: Dexie.Table<AvatarPromptCacheEntry, [string, string]>;
+  // Which Community Archive posts have already been fetched per account.
+  postCache: Dexie.Table<PostCacheEntry, string>;
 
   constructor() {
     super("TweetArchiveExplorerDB");
@@ -29,6 +29,9 @@ class AppDatabase extends Dexie {
     this.version(3).stores({
       avatarPromptCache: "[accountId+textModel]",
     });
+    this.version(4).stores({
+      postCache: "accountId",
+    });
 
     this.accounts = this.table("accounts");
     this.profiles = this.table("profiles");
@@ -36,6 +39,7 @@ class AppDatabase extends Dexie {
     this.queryResults = this.table("queryResults");
     this.avatars = this.table("avatars");
     this.avatarPromptCache = this.table("avatarPromptCache");
+    this.postCache = this.table("postCache");
   }
 }
 

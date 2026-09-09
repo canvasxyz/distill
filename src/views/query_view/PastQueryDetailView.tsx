@@ -1,4 +1,5 @@
 import { useNavigate, useParams } from "react-router";
+import { ArrowLeftIcon } from "@radix-ui/react-icons";
 import { useStore } from "../../state/store";
 import { useMemo, useState } from "react";
 import { extractTimestampFromUUIDv7 } from "../../utils";
@@ -79,7 +80,8 @@ export function PastQueryDetailView() {
     <PageContent>
       <div className="past-question-toolbar">
         <Button onClick={() => navigate("/history")} variant="outline">
-          ← Past questions
+          <ArrowLeftIcon aria-hidden="true" />
+          Past questions
         </Button>
         <Button
           aria-label="Delete this question"

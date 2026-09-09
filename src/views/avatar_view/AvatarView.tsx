@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useParams } from "react-router";
 import { useLiveQuery } from "dexie-react-hooks";
 import {
   Box,
@@ -12,7 +13,7 @@ import {
 } from "@radix-ui/themes";
 import { useStore } from "../../state/store";
 import { db } from "../../db";
-import { FaceIcon } from "@radix-ui/react-icons";
+import { DownloadIcon, FaceIcon, UpdateIcon } from "@radix-ui/react-icons";
 import { AccountContextLine } from "../../components/AccountContextLine";
 import { ChooseArchive } from "../../components/ChooseArchive";
 import { useSelectedAccount } from "../../hooks/useSelectedAccount";
@@ -36,7 +37,6 @@ function AvatarCard({
   onRerender: () => void;
   onDelete: () => void;
 }) {
-  const [showPrompt, setShowPrompt] = useState(false);
   return (
     <article className="avatar-card is-latest">
       <div className="avatar-image-stage">
@@ -54,13 +54,15 @@ function AvatarCard({
           href={avatar.imageDataUrl}
           download={`${avatar.username}-avatar.png`}
         >
-          Download ↓
+          <DownloadIcon className="inline-icon" aria-hidden="true" />
+          Download
         </a>
         <button
-          className="plain-button"
+          className="action-button"
           disabled={disabled}
           onClick={onRerender}
         >
+          <UpdateIcon aria-hidden="true" />
           Re-render image
         </button>
       </div>
@@ -74,14 +76,7 @@ function AvatarCard({
             ? ` · $${avatar.cost.toFixed(3)}`
             : ""}
         </p>
-        <button
-          className="plain-button"
-          aria-expanded={showPrompt}
-          onClick={() => setShowPrompt(!showPrompt)}
-        >
-          {showPrompt ? "Hide generated prompt" : "Show generated prompt"}
-        </button>
-        {showPrompt && <p className="avatar-prompt">{avatar.description}</p>}
+        <p className="avatar-prompt">{avatar.description}</p>
         <button
           className="plain-button delete-avatar"
           disabled={disabled}
@@ -113,8 +108,34 @@ export function AvatarView() {
     setSelectedConfigIndex,
   } = useStore();
 
-  const { selectedAccountId, account } = useSelectedAccount();
+  const { selectedAccountId, account, setSelectedAccountId } =
+    useSelectedAccount();
   const [previewId, setPreviewId] = useState<string | null>(null);
+  // Each avatar has its own address, /avatar/<id>, like a past question.
+  // Opening one shows it and switches to its person if needed.
+  const { avatarId } = useParams();
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (!avatarId) {
+      setPreviewId(null);
+      return;
+    }
+    let cancelled = false;
+    void db.avatars.get(avatarId).then((avatar) => {
+      if (cancelled) return;
+      if (avatar) {
+        setSelectedAccountId(avatar.accountId);
+        setPreviewId(avatar.id);
+      } else {
+        navigate("/avatar", { replace: true });
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [avatarId, setSelectedAccountId, navigate]);
+  const showAvatar = (id: string | null) =>
+    navigate(id ? `/avatar/${encodeURIComponent(id)}` : "/avatar");
   const accountTweets = useMemo(
     () => (allTweets || []).filter((t) => t.account_id === selectedAccountId),
     [allTweets, selectedAccountId],
@@ -183,10 +204,13 @@ export function AvatarView() {
                   key={currentAvatar.id}
                   disabled={busy}
                   onRerender={() => {
-                    setPreviewId(null);
+                    showAvatar(null);
                     regenerateAvatarImage(currentAvatar);
                   }}
-                  onDelete={() => deleteAvatar(currentAvatar.id)}
+                  onDelete={() => {
+                    showAvatar(null);
+                    deleteAvatar(currentAvatar.id);
+                  }}
                 />
               ) : (
                 <div className="avatar-empty">
@@ -209,13 +233,21 @@ export function AvatarView() {
               <Button
                 className="avatar-generate"
                 size="3"
-                disabled={busy || !account || accountTweets.length === 0}
+                disabled={
+                  busy ||
+                  !account ||
+                  (account.fromArchive && accountTweets.length === 0)
+                }
                 onClick={() => {
-                  setPreviewId(null);
-                  if (account) generateAvatar(account, accountTweets);
+                  showAvatar(null);
+                  if (account) generateAvatar(account);
                 }}
               >
-                {avatarStage === "analysing" ? (
+                {avatarStage === "fetching" ? (
+                  <>
+                    <Spinner /> Fetching their posts…
+                  </>
+                ) : avatarStage === "analysing" ? (
                   <>
                     <Spinner /> Looking through tweets…
                   </>
@@ -224,7 +256,7 @@ export function AvatarView() {
                     <Spinner /> Making the image…
                   </>
                 ) : (
-                  "Generate avatar ↗"
+                  "Generate avatar"
                 )}
               </Button>
               <details className="avatar-models">
@@ -297,14 +329,14 @@ export function AvatarView() {
                   {new Date(cachedPrompt.createdAt).toLocaleDateString()}. This
                   skips straight to making the image.
                   <button
-                    className="plain-button"
+                    className="action-button"
                     disabled={busy}
                     onClick={() => {
                       if (selectedAccountId)
                         clearCachedPrompt(selectedAccountId, selectedTextModel);
                     }}
                   >
-                    Build a fresh prompt ↗
+                    Build a fresh prompt
                   </button>
                 </div>
               )}
@@ -334,7 +366,7 @@ export function AvatarView() {
                     className="avatar-thumbnail"
                     aria-label={`View avatar from ${new Date(avatar.createdAt).toLocaleString()}`}
                     aria-pressed={currentAvatar?.id === avatar.id}
-                    onClick={() => setPreviewId(avatar.id)}
+                    onClick={() => showAvatar(avatar.id)}
                   >
                     <img src={avatar.imageDataUrl} alt="" />
                     <span>

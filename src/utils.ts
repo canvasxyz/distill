@@ -74,148 +74,107 @@ export const extractTweetIdFromUrl = (url: string) => {
   return match ? match[1] : null;
 };
 
-const normalizeTweetUrl = (_url: string, tweetId: string) => {
-  return `${DEFAULT_TWEET_STATUS_URL}${tweetId}`;
-};
+// Tweet ids are Twitter snowflakes: long runs of digits. Shorter numbers in an
+// answer (years, counts, footnote markers) are left alone.
+const TWEET_ID = "\\d{12,}";
+// A status URL as models write it: x.com or twitter.com, any handle or the
+// "i" shorthand, optional query string. The id is the first capture group.
+const STATUS_URL =
+  "https?:\\/\\/(?:www\\.)?(?:x|twitter)\\.com\\/(?:[^\\s/()\\[\\]]+\\/|i\\/(?:web\\/)?)status\\/(\\d+)(?:\\?[^\\s)\\]】>]*)?";
 
-type CitationMatch = {
-  tweetId: string;
-  url: string;
-};
-
-const buildCitationMarkdown = (
-  citations: CitationMatch[],
-  getCitationIndex: (tweetId: string) => number,
-) => {
-  if (citations.length === 0) return "";
-  return citations
-    .map(({ tweetId, url }) => {
-      const index = getCitationIndex(tweetId);
-      return `[${index}](${normalizeTweetUrl(url, tweetId)})`;
-    })
-    .join(" ");
-};
+// Placeholder for a citation whose number is assigned once every pattern
+// has been recognised, so numbers follow reading order.
+const MARK = "\u0000";
+const mark = (tweetId: string) => `${MARK}${tweetId}${MARK}`;
+const MARK_REGEX = new RegExp(`${MARK}(\\d+)${MARK}`, "g");
+const MARK_GROUP = `${MARK}\\d+${MARK}`;
 
 /**
- * Detects parenthetical tweet citations like `(1234567890123456789)`
- * or `([123](https://x.com/user/status/123))` and replaces them with
- * numbered Markdown links (e.g. `[1](https://x.com/...) [2](...)`).
- * It also renumbers inline tweet links so their text becomes the
- * citation number. These numbers are later rendered as superscripts.
+ * Rewrites every way a model refers to a tweet into a numbered Markdown
+ * citation, `[n](https://x.com/i/status/<id>)`, numbered in order of first
+ * appearance. The renderer turns those into hover-preview pills.
+ *
+ * Recognised, from real model output:
+ * - `[<id>](<status url>)`, the requested form, alone or in a parenthesised
+ *   group; `[daily digest](<status url>)` keeps its text and gains a citation
+ * - a bare status URL, also inside 【】, <>, [] or ()
+ * - `<Post id="<id>">` echoes of the prompt
+ * - `[<id>, <id>]`, `(<id>, <id>)`, `` `<id>` `` and ids loose in prose
+ *
+ * Running it on its own output changes nothing, so it can be applied when an
+ * answer is saved and again when an older answer is rendered.
  */
 export const formatTweetCitations = (text: string) => {
-  const citationOrder = new Map<string, number>();
-  const getCitationIndex = (tweetId: string) => {
-    if (!citationOrder.has(tweetId)) {
-      citationOrder.set(tweetId, citationOrder.size + 1);
-    }
-    return citationOrder.get(tweetId)!;
-  };
-
-  const createTweetLink = (tweetId: string) =>
-    `[${tweetId}](${DEFAULT_TWEET_STATUS_URL}${tweetId})`;
-
-  const postIdQuoteChars = `"'\u2018\u2019\u201c\u201d`;
-  const postIdValuePattern = `[${postIdQuoteChars}]?\\d{5,}[${postIdQuoteChars}]?`;
-  const postIdValueCapturePattern = `[${postIdQuoteChars}]?(\\d{5,})[${postIdQuoteChars}]?`;
-  const postIdAttributePattern = `Post\\s+id\\s*=\\s*${postIdValuePattern}`;
-  const postIdAttributeCapturePattern = `Post\\s+id\\s*=\\s*${postIdValueCapturePattern}`;
-
-  const extractPostIds = (input: string) => {
-    const ids: string[] = [];
-    const postIdRegex = new RegExp(postIdAttributeCapturePattern, "gi");
-    let match: RegExpExecArray | null;
-    while ((match = postIdRegex.exec(input)) !== null) {
-      ids.push(match[1]);
-    }
-    return ids;
-  };
-
-  const postIdGroupRegex = new RegExp(
-    `\\[\\s*(?:${postIdAttributePattern}\\s*(?:,\\s*)?)+\\s*\\]`,
+  const urlLink = new RegExp(
+    `\\[([^\\]]*)\\]\\(\\s*${STATUS_URL}[^)]*\\)`,
     "gi",
   );
-
-  let formattedText = text.replace(postIdGroupRegex, (match) => {
-    const ids = extractPostIds(match);
-    if (ids.length === 0) return match;
-    return ids.map((tweetId) => createTweetLink(tweetId)).join(", ");
+  let out = text.replace(urlLink, (_match, label: string, tweetId: string) => {
+    const trimmed = label.trim();
+    return /^\d*$/.test(trimmed)
+      ? mark(tweetId)
+      : `${trimmed} ${mark(tweetId)}`;
   });
 
-  const standalonePostIdRegex = new RegExp(postIdAttributeCapturePattern, "gi");
+  const postId = new RegExp(
+    `Post\\s+id\\s*=\\s*["'\u2018\u2019\u201c\u201d]?(${TWEET_ID})["'\u2018\u2019\u201c\u201d]?`,
+    "gi",
+  );
+  out = out.replace(postId, (_match, tweetId: string) => mark(tweetId));
 
-  formattedText = formattedText.replace(
-    standalonePostIdRegex,
-    (_match, tweetId: string) => createTweetLink(tweetId),
+  const wrappedUrl = new RegExp(
+    `[【<\\[(]\\s*${STATUS_URL}\\s*[】>\\])]`,
+    "gi",
+  );
+  out = out.replace(wrappedUrl, (_match, tweetId: string) => mark(tweetId));
+  const bareUrl = new RegExp(STATUS_URL, "gi");
+  out = out.replace(bareUrl, (_match, tweetId: string) => mark(tweetId));
+
+  const idGroup = new RegExp(
+    `[\\[(【]\\s*(${TWEET_ID}(?:\\s*,\\s*${TWEET_ID})*)\\s*[\\])】]`,
+    "g",
+  );
+  out = out.replace(idGroup, (_match, ids: string) =>
+    ids
+      .split(",")
+      .map((id) => mark(id.trim()))
+      .join(" "),
   );
 
-  const linkGroupRegex =
-    /\(\s*(\[[0-9]{5,}\]\(https?:\/\/(?:x|twitter)\.com\/[^)]+\)\s*(?:,\s*\[[0-9]{5,}\]\(https?:\/\/(?:x|twitter)\.com\/[^)]+\)\s*)*)\s*\)/gi;
-  const markdownLinkRegex =
-    /\[([0-9]{5,})\]\((https?:\/\/(?:x|twitter)\.com\/[^)]+)\)/gi;
+  const codeId = new RegExp(`\`\\s*(${TWEET_ID})\\s*\``, "g");
+  out = out.replace(codeId, (_match, tweetId: string) => mark(tweetId));
 
-  formattedText = formattedText.replace(linkGroupRegex, (match) => {
-    markdownLinkRegex.lastIndex = 0;
-    const citations: CitationMatch[] = [];
-    let innerMatch: RegExpExecArray | null;
-    while ((innerMatch = markdownLinkRegex.exec(match)) !== null) {
-      const [, tweetId, url] = innerMatch;
-      if (!TWEET_STATUS_URL_REGEX.test(url)) continue;
-      citations.push({
-        tweetId,
-        url,
-      });
-    }
-    if (citations.length === 0) return match;
-    return buildCitationMarkdown(citations, getCitationIndex);
-  });
+  const looseId = new RegExp(
+    `(?<![\\w/=${MARK}])(${TWEET_ID})(?![\\w${MARK}])`,
+    "g",
+  );
+  out = out.replace(looseId, (_match, tweetId: string) => mark(tweetId));
 
-  const plainIdGroupRegex = /\(\s*(\d{5,}(?:\s*,\s*\d{5,})*)\s*\)/g;
+  // Brackets or parentheses that now hold nothing but citations are noise.
+  const wrappedMarks = new RegExp(
+    `[\\[(]\\s*(${MARK_GROUP}(?:\\s*[,;]?\\s*${MARK_GROUP})*)\\s*[\\])]`,
+    "g",
+  );
+  out = out.replace(wrappedMarks, (_match, marks: string) =>
+    marks.replace(/\s*[,;]\s*|\s+/g, " ").trim(),
+  );
+  const markRun = new RegExp(
+    `${MARK_GROUP}(?:\\s*[,;]\\s*${MARK_GROUP})+`,
+    "g",
+  );
+  out = out.replace(markRun, (run) => run.replace(/\s*[,;]\s*/g, " "));
 
-  formattedText = formattedText.replace(plainIdGroupRegex, (match, inner) => {
-    const ids = inner
-      .split(",")
-      .map((id: string) => id.trim())
-      .filter((id: string) => /^\d{5,}$/.test(id));
-    if (ids.length === 0) return match;
-    const citations = ids.map((tweetId: string) => ({
-      tweetId,
-      url: `${DEFAULT_TWEET_STATUS_URL}${tweetId}`,
-    }));
-    return buildCitationMarkdown(citations, getCitationIndex);
-  });
-
-  const bracketIdGroupRegex =
-    /\[\s*(\d{12,}(?:\s*,\s*\d{12,})*)\s*\](?!\()/g;
-
-  formattedText = formattedText.replace(bracketIdGroupRegex, (match, inner) => {
-    const ids = inner
-      .split(",")
-      .map((id: string) => id.trim())
-      .filter((id: string) => /^\d{12,}$/.test(id));
-    if (ids.length === 0) return match;
-    const citations = ids.map((tweetId: string) => ({
-      tweetId,
-      url: `${DEFAULT_TWEET_STATUS_URL}${tweetId}`,
-    }));
-    return buildCitationMarkdown(citations, getCitationIndex);
-  });
-
-  const standaloneTweetLinkRegex =
-    /\[[^\]]+\]\((https?:\/\/(?:x|twitter)\.com\/[^)]+)\)/gi;
-
-  formattedText = formattedText.replace(
-    standaloneTweetLinkRegex,
-    (match, url: string) => {
-      if (!TWEET_STATUS_URL_REGEX.test(url)) return match;
-      const tweetId = extractTweetIdFromUrl(url);
-      if (!tweetId) return match;
-      const index = getCitationIndex(tweetId);
-      return `[${index}](${normalizeTweetUrl(url, tweetId)})`;
-    },
+  // A citation glued to the preceding word reads badly once it is a pill.
+  out = out.replace(
+    new RegExp(`([\\w"'\u2019\u201d])(?=${MARK}\\d)`, "g"),
+    "$1 ",
   );
 
-  return formattedText;
+  const order = new Map<string, number>();
+  return out.replace(MARK_REGEX, (_match, tweetId: string) => {
+    if (!order.has(tweetId)) order.set(tweetId, order.size + 1);
+    return `[${order.get(tweetId)}](${DEFAULT_TWEET_STATUS_URL}${tweetId})`;
+  });
 };
 
 // extract Unix timestamp from a UUID v7 value without an external library

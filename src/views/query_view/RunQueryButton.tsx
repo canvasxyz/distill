@@ -27,7 +27,7 @@ export function RunQueryButton({
       size="2"
       variant={variant}
     >
-      Ask Distill <span aria-hidden="true">↗</span>
+      Ask Distill
       {showShortcut && isMacPlatform && (
         <Text className="shortcut-hint" size="1" style={{ opacity: 0.8 }}>
           ⌘⏎

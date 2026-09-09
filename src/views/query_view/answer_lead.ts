@@ -1,5 +1,6 @@
-// Wrap the answer's existing opening blocks, without rewriting its content or
+// Wrap the whole answer in the lead section, without rewriting its content or
 // splitting Markdown strings (which would break lists and reference links).
+// The opening heading and paragraph get their display treatment from CSS.
 type Node = {
   type: string;
   children?: Node[];
@@ -9,13 +10,8 @@ type Node = {
 
 export function answerLead(person?: string) {
   return () => (tree: { children: Node[] }) => {
-    const first = tree.children[0];
-    if (!first || !["heading", "paragraph"].includes(first.type)) return;
-    const count =
-      first.type === "heading" && tree.children[1]?.type === "paragraph"
-        ? 2
-        : 1;
-    const lead = tree.children.splice(0, count);
+    if (!tree.children.length) return;
+    const body = tree.children.splice(0);
     const label = (text: string, className: string): Node => ({
       type: "paragraph",
       children: [{ type: "text", value: text }],
@@ -26,11 +22,7 @@ export function answerLead(person?: string) {
       data: { hName: "section", hProperties: { className: "answer-lead" } },
       children: [
         label(person || "An impression", "answer-lead-person"),
-        ...lead,
-        label(
-          "A guess, not a verdict. Made from tweets, not the whole person.",
-          "answer-lead-caveat",
-        ),
+        ...body,
       ],
     });
   };

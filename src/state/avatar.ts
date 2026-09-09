@@ -1,7 +1,7 @@
 import type { StateCreator } from "zustand";
 import { v7 as uuidv7 } from "uuid";
 import type { StoreSlices } from "./types";
-import type { Account, Tweet } from "../types";
+import type { Account } from "../types";
 import { db } from "../db";
 import {
   DEFAULT_IMAGE_GEN_MODEL,
@@ -38,7 +38,7 @@ export type GeneratedAvatar = {
   cost?: number;
 };
 
-export type AvatarStage = "analysing" | "rendering";
+export type AvatarStage = "fetching" | "analysing" | "rendering";
 
 export type AvatarSlice = {
   selectedImageModel: string;
@@ -49,7 +49,9 @@ export type AvatarSlice = {
   avatarError: string | null;
   avatarDescription: string | null;
   latestAvatar: GeneratedAvatar | null;
-  generateAvatar: (account: Account, tweets: Tweet[]) => Promise<void>;
+  // Fetches the account's most recent posts if needed, then builds a prompt
+  // and renders an image from it.
+  generateAvatar: (account: Account) => Promise<void>;
   clearCachedPrompt: (accountId: string, textModel: string) => Promise<void>;
   // Re-render an image from an existing description (skips the analysis step)
   regenerateAvatarImage: (avatar: GeneratedAvatar) => Promise<void>;
@@ -83,35 +85,27 @@ export const createAvatarSlice: StateCreator<
     set({ selectedImageModel: model });
   },
   useCurrentAvatarAsReference: true,
-  setUseCurrentAvatarAsReference: (v) => set({ useCurrentAvatarAsReference: v }),
+  setUseCurrentAvatarAsReference: (v) =>
+    set({ useCurrentAvatarAsReference: v }),
   avatarStage: null,
   avatarError: null,
   avatarDescription: null,
   latestAvatar: null,
 
-  generateAvatar: async (account, tweets) => {
+  generateAvatar: async (account) => {
     if (get().avatarStage) return;
     const config: LLMQueryConfig =
-      AVAILABLE_LLM_CONFIGS[get().selectedConfigIndex] || AVAILABLE_LLM_CONFIGS[0];
+      AVAILABLE_LLM_CONFIGS[get().selectedConfigIndex] ||
+      AVAILABLE_LLM_CONFIGS[0];
     const batchSize = getBatchSizeForConfig(config);
-    // Most recent N tweets (tweets are stored newest-first)
-    const sample = [...tweets]
-      .sort(
-        (a, b) =>
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
-      )
-      .slice(0, batchSize);
-
-    if (sample.length === 0) {
-      set({ avatarError: "No tweets available for this account." });
-      return;
-    }
-
     const textModel = config[0];
-    const cached = await db.avatarPromptCache.get([account.accountId, textModel]);
+    const cached = await db.avatarPromptCache.get([
+      account.accountId,
+      textModel,
+    ]);
 
     set({
-      avatarStage: cached ? "rendering" : "analysing",
+      avatarStage: cached ? "rendering" : "fetching",
       avatarError: null,
       avatarDescription: cached?.description ?? null,
       latestAvatar: null,
@@ -125,6 +119,28 @@ export const createAvatarSlice: StateCreator<
         description = cached.description;
         numTweets = cached.numTweets;
       } else {
+        const tweets = await get().preparePosts(account, {
+          rangeSelection: { type: "last-tweets", numTweets: batchSize },
+          includeReplies: true,
+          includeRetweets: true,
+          limit: batchSize,
+        });
+        // Most recent N tweets
+        const sample = [...tweets]
+          .sort(
+            (a, b) =>
+              new Date(b.created_at).getTime() -
+              new Date(a.created_at).getTime(),
+          )
+          .slice(0, batchSize);
+        if (sample.length === 0) {
+          set({
+            avatarStage: null,
+            avatarError: "No tweets available for this account.",
+          });
+          return;
+        }
+        set({ avatarStage: "analysing" });
         const analysis = await analyseTweetsForAvatar({
           tweets: sample,
           account,
@@ -170,7 +186,8 @@ export const createAvatarSlice: StateCreator<
       set({
         avatarStage: null,
         avatarError:
-          (error as Error)?.message || "Avatar generation failed. Please try again.",
+          (error as Error)?.message ||
+          "Avatar generation failed. Please try again.",
       });
     }
   },
@@ -212,7 +229,8 @@ export const createAvatarSlice: StateCreator<
       set({
         avatarStage: null,
         avatarError:
-          (error as Error)?.message || "Avatar generation failed. Please try again.",
+          (error as Error)?.message ||
+          "Avatar generation failed. Please try again.",
       });
     }
   },

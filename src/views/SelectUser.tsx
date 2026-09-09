@@ -1,5 +1,6 @@
 import { useLiveQuery } from "dexie-react-hooks";
 import { Avatar } from "@radix-ui/themes";
+import { ChevronDownIcon } from "@radix-ui/react-icons";
 import { db } from "../db";
 import { useSelectedAccount } from "../hooks/useSelectedAccount";
 
@@ -34,7 +35,7 @@ export function SelectUser({ onOpen }: { onOpen?: () => void }) {
           {account ? `@${account.username}` : "Yourself or someone else"}
         </span>
       </span>
-      <span aria-hidden="true">⌄</span>
+      <ChevronDownIcon aria-hidden="true" />
     </button>
   );
 }

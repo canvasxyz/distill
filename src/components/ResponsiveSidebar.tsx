@@ -1,18 +1,19 @@
 import { useState } from "react";
 import { NavLink } from "react-router";
 import {
+  ArrowRightIcon,
   ChatBubbleIcon,
   FaceIcon,
-  CounterClockwiseClockIcon,
   GearIcon,
   HamburgerMenuIcon,
   Cross2Icon,
+  ExternalLinkIcon,
 } from "@radix-ui/react-icons";
 import { PastQueries } from "../views/query_view/SidebarQueries";
 import { useSelectedAccount } from "../hooks/useSelectedAccount";
 import { useStore } from "../state/store";
 import { SelectUser } from "../views/SelectUser";
-import { getCommunityArchiveUserProgressLabel } from "./CommunityArchiveUserProgress";
+import { getFetchPostsProgressLabel } from "./CommunityArchiveUserProgress";
 import "./ResponsiveSidebar.css";
 
 export function ResponsiveSidebar() {
@@ -22,7 +23,7 @@ export function ResponsiveSidebar() {
     setMobileOpen(false);
     openPeople();
   };
-  const { loadCommunityArchiveUserProgress } = useStore();
+  const { fetchPostsProgress } = useStore();
 
   const sidebarContent = (
     <div className="sidebar-inner">
@@ -45,20 +46,29 @@ export function ResponsiveSidebar() {
           <FaceIcon />
           Make an avatar
         </NavLink>
-        <NavLink to="/history">
-          <CounterClockwiseClockIcon />
-          Past questions
-        </NavLink>
       </nav>
-      {loadCommunityArchiveUserProgress && (
+      {fetchPostsProgress && (
         <p className="sidebar-label" role="status">
-          {getCommunityArchiveUserProgressLabel(
-            loadCommunityArchiveUserProgress,
-          )}
+          {getFetchPostsProgressLabel(fetchPostsProgress)}
         </p>
       )}
-      <section className="sidebar-recents" aria-label="Recent questions">
-        <p className="sidebar-label">Last time you asked</p>
+      <section
+        className="sidebar-recents"
+        aria-label="Recent questions and avatars"
+      >
+        <div className="sidebar-recents-heading">
+          <p className="sidebar-label">Recently</p>
+          <NavLink
+            to="/history"
+            className="sidebar-see-all"
+            aria-label="See all past questions and avatars"
+            onClick={() => setMobileOpen(false)}
+          >
+            <span className="see-all-short">See all</span>
+            <span className="see-all-long">Past questions & avatars</span>
+            <ArrowRightIcon aria-hidden="true" />
+          </NavLink>
+        </div>
         <PastQueries onNavigate={() => setMobileOpen(false)} />
       </section>
       <div className="sidebar-bottom">
@@ -78,7 +88,8 @@ export function ResponsiveSidebar() {
           >
             Made possible by
             <br />
-            Community Archive ↗
+            Community Archive
+            <ExternalLinkIcon className="inline-icon" aria-hidden="true" />
           </a>
         </footer>
       </div>

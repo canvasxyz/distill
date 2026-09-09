@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { UploadIcon } from "@radix-ui/react-icons";
 import { useStore } from "../state/store";
 
 export function ArchiveDropZone({ onImported }: { onImported?: () => void }) {
@@ -83,7 +84,8 @@ export function ArchiveDropZone({ onImported }: { onImported?: () => void }) {
         onDrop={handleDrop}
         title="Drop zip archive here or click to upload"
       >
-        Import my archive ↗
+        <UploadIcon className="inline-icon leading" aria-hidden="true" />
+        Import my archive
       </button>
       {error && (
         <p role="alert" className="archive-upload-error">

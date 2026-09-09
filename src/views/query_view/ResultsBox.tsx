@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Flex, Text, Progress } from "@radix-ui/themes";
+import { CheckIcon, ChevronDownIcon, CopyIcon } from "@radix-ui/react-icons";
 import type { QueryResult } from "./ai_utils";
 import { getAnswerScope } from "./answer_sources";
 
@@ -20,7 +21,12 @@ export const CopyButton = ({ text }: { text: string }) => {
   };
 
   return (
-    <button onClick={handleCopy} className="plain-button" aria-live="polite">
+    <button onClick={handleCopy} className="action-button" aria-live="polite">
+      {copied ? (
+        <CheckIcon aria-hidden="true" />
+      ) : (
+        <CopyIcon aria-hidden="true" />
+      )}
       {copied
         ? "Copied!"
         : failed
@@ -145,12 +151,13 @@ export function QueryResultActions({
   return (
     <div className="result-actions">
       <button
-        className="plain-button"
+        className="disclosure-button"
         onClick={onShowEvidence}
         aria-expanded={sourcesOpen}
         aria-controls={sourcesId}
       >
-        The tweets behind this {sourcesOpen ? "−" : "+"}
+        The tweets behind this
+        <ChevronDownIcon className="disclosure-chevron" aria-hidden="true" />
       </button>
       <CopyButton text={resultText} />
     </div>

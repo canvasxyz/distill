@@ -14,7 +14,7 @@ const getTweetTimestamp = (createdAt: string) => {
 };
 
 function AllTweetsViewInner() {
-  const { allTweets } = useStore();
+  const { allTweets, accounts } = useStore();
 
   const [params] = useSearchParams();
   const searchParam = params.get("search");
@@ -39,15 +39,24 @@ function AllTweetsViewInner() {
     limit: 20,
   });
 
+  const account = accounts.find((a) => a.accountId === accountIdParam);
   return (
-    <TweetsView
-      searchParam={searchParam}
-      title="All Tweets"
-      allTweets={filteredTweets}
-      tweetsToDisplay={itemsToDisplay!}
-      navigateNext={navigateNext}
-      navigatePrevious={navigatePrevious}
-    />
+    <>
+      {account && !account.fromArchive && (
+        <p className="quiet-note" style={{ margin: "0 0 12px" }}>
+          Posts are fetched from Community Archive when a question needs them.
+          This shows what has been fetched for @{account.username} so far.
+        </p>
+      )}
+      <TweetsView
+        searchParam={searchParam}
+        title="All Tweets"
+        allTweets={filteredTweets}
+        tweetsToDisplay={itemsToDisplay!}
+        navigateNext={navigateNext}
+        navigatePrevious={navigatePrevious}
+      />
+    </>
   );
 }
 

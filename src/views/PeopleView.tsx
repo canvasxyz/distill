@@ -2,7 +2,11 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { Link, useLocation, useNavigate } from "react-router";
 import { Avatar, DropdownMenu, Spinner } from "@radix-ui/themes";
-import { ChevronRightIcon } from "@radix-ui/react-icons";
+import {
+  ArrowLeftIcon,
+  ChevronRightIcon,
+  ExternalLinkIcon,
+} from "@radix-ui/react-icons";
 import type { Account } from "../types";
 import {
   PINNED_USERNAMES,
@@ -13,27 +17,27 @@ import { useStore } from "../state/store";
 import { db } from "../db";
 import { PageContent } from "../components/PageContent";
 import { ArchiveDropZone } from "../components/ArchiveDropZone";
-import { getCommunityArchiveUserProgressLabel } from "../components/CommunityArchiveUserProgress";
 
 function SavedPerson({
   account,
   avatarUrl,
-  postCount,
+  storedPostCount,
   current = false,
   disabled,
   onSelect,
-  onRefresh,
   onRemove,
 }: {
   account: Account;
   avatarUrl?: string;
-  postCount: number;
+  storedPostCount: number;
   current?: boolean;
   disabled: boolean;
   onSelect: () => void;
-  onRefresh: () => void;
   onRemove: () => void;
 }) {
+  const totalPosts = account.fromArchive
+    ? storedPostCount
+    : (account.numTweets ?? null);
   const identity = (
     <>
       <Avatar
@@ -45,9 +49,9 @@ function SavedPerson({
       <span className="person-row-text">
         <strong>{account.accountDisplayName || account.username}</strong>
         <small>
-          <span className="person-username">@{account.username}</span> ·{" "}
-          {postCount.toLocaleString()} loaded posts
-          {account.fromArchive ? " · Your import" : ""}
+          <span className="person-username">@{account.username}</span>
+          {totalPosts != null && ` · ${totalPosts.toLocaleString()} posts`}
+          {account.fromArchive ? " · Your import" : " · Community Archive"}
         </small>
       </span>
     </>
@@ -85,11 +89,6 @@ function SavedPerson({
               Browse posts
             </Link>
           </DropdownMenu.Item>
-          {!account.fromArchive && (
-            <DropdownMenu.Item onSelect={onRefresh}>
-              Refresh full archive
-            </DropdownMenu.Item>
-          )}
           <DropdownMenu.Item color="red" onSelect={onRemove}>
             Remove @{account.username} archive
           </DropdownMenu.Item>
@@ -119,17 +118,15 @@ export function PeopleView() {
   };
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
-  const [fullHistory, setFullHistory] = useState(false);
-  const [loadingPerson, setLoadingPerson] = useState("");
-  const [loadError, setLoadError] = useState("");
+  const [addingPerson, setAddingPerson] = useState("");
+  const [addError, setAddError] = useState("");
   const [failedPerson, setFailedPerson] = useState("");
   const { selectedAccountId, setSelectedAccountId } = useSelectedAccount();
   const {
     accounts: savedAccounts,
     allTweets,
     removeArchive,
-    loadCommunityArchiveUser,
-    loadCommunityArchiveUserProgress,
+    addCommunityArchiveUser,
     ingestTwitterArchiveProgress,
   } = useStore();
   const profiles = useLiveQuery(() => db.profiles.toArray(), [], []);
@@ -156,8 +153,7 @@ export function PeopleView() {
     loadMore,
     retry,
   } = useCommunityArchiveAccounts(true, debouncedQuery);
-  const busy =
-    !!loadCommunityArchiveUserProgress || !!ingestTwitterArchiveProgress;
+  const busy = !!addingPerson || !!ingestTwitterArchiveProgress;
   const searchPending = query.trim() !== debouncedQuery;
   const currentAccount = savedAccounts.find(
     (a) => a.accountId === selectedAccountId,
@@ -185,21 +181,26 @@ export function PeopleView() {
       ),
     },
   ];
-  async function loadPerson(id: string, username: string, limit?: number) {
+  // Choosing someone only saves who they are. Their posts are fetched the
+  // first time a question or avatar needs them.
+  async function choosePerson(
+    id: string,
+    username: string,
+    numTweets: number | null,
+  ) {
     if (busy) return;
-    setLoadError("");
+    setAddError("");
     setFailedPerson("");
-    setLoadingPerson(username);
+    setAddingPerson(username);
     try {
-      await loadCommunityArchiveUser(id, limit);
+      await addCommunityArchiveUser(id, numTweets);
       setSelectedAccountId(id);
       returnToWorkspace();
     } catch {
-      useStore.setState({ loadCommunityArchiveUserProgress: null });
       setFailedPerson(username);
-      setLoadError(`@${username} couldn’t be loaded. Please try again.`);
+      setAddError(`@${username} couldn’t be added. Please try again.`);
     } finally {
-      setLoadingPerson("");
+      setAddingPerson("");
     }
   }
   async function removePerson(id: string) {
@@ -213,7 +214,7 @@ export function PeopleView() {
       setFailedPerson("");
       await removeArchive(id);
     } catch {
-      setLoadError("Couldn’t remove this archive. Please try again.");
+      setAddError("Couldn’t remove this archive. Please try again.");
     }
   }
   const savedPerson = (account: Account, current = false) => (
@@ -225,12 +226,11 @@ export function PeopleView() {
       avatarUrl={
         profiles.find((p) => p.accountId === account.accountId)?.avatarMediaUrl
       }
-      postCount={counts.get(account.accountId) ?? 0}
+      storedPostCount={counts.get(account.accountId) ?? 0}
       onSelect={() => {
         setSelectedAccountId(account.accountId);
         returnToWorkspace();
       }}
-      onRefresh={() => void loadPerson(account.accountId, account.username)}
       onRemove={() => void removePerson(account.accountId)}
     />
   );
@@ -239,7 +239,8 @@ export function PeopleView() {
       <div className="people-picker">
         <div className="people-page-actions">
           <button className="plain-button" onClick={returnToWorkspace}>
-            ← Back
+            <ArrowLeftIcon aria-hidden="true" />
+            Back
           </button>
           <div className="people-import">
             <ArchiveDropZone onImported={returnToWorkspace} />
@@ -255,9 +256,10 @@ export function PeopleView() {
               target="_blank"
               rel="noopener noreferrer"
             >
-              Community Archive ↗
+              Community Archive
+              <ExternalLinkIcon className="inline-icon" aria-hidden="true" />
             </a>
-            .
+            . Their posts are fetched when you first ask about them.
           </p>
         </header>
         {currentAccount && (
@@ -269,31 +271,6 @@ export function PeopleView() {
             {savedPerson(currentAccount, true)}
           </section>
         )}
-        <div className="people-tools">
-          <details className="people-options">
-            <summary>
-              Loading options{" "}
-              <span>
-                · {fullHistory ? "Full archive" : "Latest 10,000 posts"}
-              </span>
-            </summary>
-            <div className="archive-load-choice">
-              <label htmlFor="archive-amount">When loading someone new</label>
-              <select
-                id="archive-amount"
-                value={fullHistory ? "full" : "recent"}
-                disabled={busy}
-                onChange={(e) => setFullHistory(e.target.value === "full")}
-              >
-                <option value="recent">Latest 10,000 posts</option>
-                <option value="full">Full archive · takes longer</option>
-              </select>
-              <small>
-                This is what gets loaded, not how many posts each answer uses.
-              </small>
-            </div>
-          </details>
-        </div>
         <label className="field-label" htmlFor="people-search">
           {currentAccount ? "Choose another person" : "Find someone"}
         </label>
@@ -307,15 +284,15 @@ export function PeopleView() {
           onChange={(e) => setQuery(e.target.value)}
         />
         <div id="people-results" className="people-results" aria-busy={busy}>
-          {loadError &&
+          {addError &&
             !newAccounts.some((a) => a.username === failedPerson) && (
               <p role="alert" className="archive-upload-error">
-                {loadError}
+                {addError}
               </p>
             )}
           {savedMatches.length > 0 && (
-            <section aria-label="Other loaded archives">
-              <h3>Other loaded archives</h3>
+            <section aria-label="Others you’ve chosen">
+              <h3>Others you’ve chosen</h3>
               {savedMatches.map((a) => savedPerson(a))}
             </section>
           )}
@@ -334,12 +311,12 @@ export function PeopleView() {
                         <button
                           className="person-row-select"
                           disabled={busy}
-                          aria-label={`Load @${a.username}, ${fullHistory ? "full archive" : "latest 10,000 posts"}`}
+                          aria-label={`Choose @${a.username}`}
                           onClick={() =>
-                            void loadPerson(
+                            void choosePerson(
                               a.accountId,
                               a.username,
-                              fullHistory ? undefined : 10000,
+                              a.numTweets,
                             )
                           }
                         >
@@ -356,33 +333,29 @@ export function PeopleView() {
                             <small>
                               {a.numTweets == null
                                 ? "Post count unavailable"
-                                : `${a.numTweets.toLocaleString()} available posts`}
+                                : `${a.numTweets.toLocaleString()} posts`}
                             </small>
                           </span>
                           <ChevronRightIcon aria-hidden="true" />
                         </button>
-                        {loadingPerson === a.username && (
+                        {addingPerson === a.username && (
                           <p className="person-loading" role="status">
                             <Spinner />
                             <span>
-                              Loading{" "}
+                              Adding{" "}
                               <span className="person-username">
                                 @{a.username}
                               </span>
-                              …{" "}
-                              {loadCommunityArchiveUserProgress &&
-                                getCommunityArchiveUserProgressLabel(
-                                  loadCommunityArchiveUserProgress,
-                                )}
+                              …
                             </span>
                           </p>
                         )}
-                        {loadError && failedPerson === a.username && (
+                        {addError && failedPerson === a.username && (
                           <p
                             role="alert"
                             className="person-error archive-upload-error"
                           >
-                            {loadError}
+                            {addError}
                           </p>
                         )}
                       </div>
@@ -417,16 +390,16 @@ export function PeopleView() {
                 ? "Finding more…"
                 : error
                   ? "Try again"
-                  : "More people ↓"}
+                  : "More people"}
             </button>
           )}
-          {loadingPerson &&
-            !newAccounts.some((a) => a.username === loadingPerson) && (
+          {addingPerson &&
+            !newAccounts.some((a) => a.username === addingPerson) && (
               <p className="person-loading" role="status">
                 <Spinner />
                 <span>
-                  Loading{" "}
-                  <span className="person-username">@{loadingPerson}</span>…
+                  Adding{" "}
+                  <span className="person-username">@{addingPerson}</span>…
                 </span>
               </p>
             )}
